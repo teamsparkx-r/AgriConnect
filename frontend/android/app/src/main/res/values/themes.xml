@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.AgriConnect" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Main theme colors -->
+        <item name="colorPrimary">@color/emerald_600</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

@@ -1,0 +1,31 @@
+# Android
+.gradle/
+build/
+local.properties
+.idea/workspace.xml
+.idea/libraries/
+.idea/shelf/
+.idea/assetWizardSettings.xml
+.idea/modules.xml
+.idea/navEditor.xml
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+.env
+backend/agriconnect.db
+backend/server.log
+backend/server3000.log
+
+# Node (Web)
+node_modules/
+dist/
+.DS_Store

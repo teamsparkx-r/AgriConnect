@@ -1,0 +1,25 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "AgriConnect"
+include ':app'
+include ':data'
+
+// Use a build directory outside of OneDrive to avoid AccessDeniedException
+def tempBuildDir = "C:/temp/AgriConnect"
+
+gradle.beforeProject { project ->
+    def subPath = project.path == ":" ? "root" : project.path.replace(':', '_')
+    project.layout.buildDirectory.set(file("${tempBuildDir}/${subPath}"))
+}
