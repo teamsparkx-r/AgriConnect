@@ -10,9 +10,9 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.6
       - key: DB_PASSWORD
-        value: "AgriConnect123."
+        value: "Agri1234rudra"
       - key: DATABASE_URL
-        value: "postgresql://postgres.bgcgmmrmakgvuiozqvjy@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres?sslmode=require"
+        value: "postgresql://postgres.bgcgmmrmakgvuiozqvjy@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?sslmode=require"
       - key: SECRET_KEY
         generateValue: true
       - key: ALGORITHM

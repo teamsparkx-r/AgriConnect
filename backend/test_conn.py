@@ -21,9 +21,9 @@ def test_raw_conn():
 
         # YOU CAN EDIT THESE TO MATCH YOUR SUPABASE CREDENTIALS
         db_user = "postgres"
-        db_password = "AgriConnect123."
-        db_host = "db.bgcgmmrmakgvuiozqvjy.supabase.co"
-        db_port = "5432"
+        db_password = "Agri1234rudra"
+        db_host = "aws-0-ap-northeast-1.pooler.supabase.com"
+        db_port = "6543"
         db_name = "postgres"
 
         if db_password != "REPLACE_WITH_YOUR_ACTUAL_PASSWORD":
