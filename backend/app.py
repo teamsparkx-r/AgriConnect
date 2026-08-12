@@ -7,7 +7,7 @@ from buyer import router as buyer_router
 from admin import router as admin_router
 from auth_routes import router as auth_router
 from auth import AuthService
-from models import User, Product, Booking, ProductStatus, BookingStatus, UserRole, Farmer, Buyer
+from models import User, Product, Booking, ProductStatus, BookingStatus, UserRole, Farmer, Buyer, ProductCategory, AccountStatus
 import os
 from dotenv import load_dotenv
 
@@ -31,26 +31,28 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin123!")
 def seed_db():
     db = SessionLocal()
     try:
-        # Create default admin
-        existing_admin = db.query(User).filter(User.role == UserRole.ADMIN).first()
+        # 1. Create default admin
+        admin_id = "2687eded-053d-4cbc-8a06-18be9ad5888b"
+        existing_admin = db.query(User).filter(User.id == admin_id).first()
         if not existing_admin:
             admin_user = User(
+                id=admin_id,
                 mobile_number=ADMIN_MOBILE,
-                email=None,
-                password_hash=AuthService.hash_password(ADMIN_PASSWORD),
+                password_hash=AuthService.hash_password(ADMIN_PASSWORD[:72]),
                 full_name="AgriConnect Admin",
                 role=UserRole.ADMIN,
-                account_status="active"
+                account_status=AccountStatus.ACTIVE
             )
             db.add(admin_user)
             print(f"Created default admin user: {ADMIN_MOBILE}")
 
-        # Create Demo Farmer
-        demo_farmer_mobile = "8888888888"
-        existing_farmer = db.query(User).filter(User.mobile_number == demo_farmer_mobile).first()
+        # 2. Create Demo Farmer
+        farmer_user_id = "5737b51e-8640-48c2-bdaa-63fbba1b70a7"
+        existing_farmer = db.query(User).filter(User.id == farmer_user_id).first()
         if not existing_farmer:
             farmer_user = User(
-                mobile_number=demo_farmer_mobile,
+                id=farmer_user_id,
+                mobile_number="8888888888",
                 password_hash=AuthService.hash_password("Farmer123!"),
                 full_name="Demo Farmer",
                 role=UserRole.FARMER,
@@ -68,14 +70,10 @@ def seed_db():
             db.add(farmer_profile)
             db.flush()
 
-            # Add diverse demo products
+            # Add demo products
             products_data = [
-                {"name": "Organic Wheat", "category": "grains", "qty": 1000, "price": 25.0, "img": "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800"},
-                {"name": "Red Tomatoes", "category": "vegetables", "qty": 500, "price": 18.5, "img": "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800"},
-                {"name": "Basmati Rice", "category": "grains", "qty": 2000, "price": 65.0, "img": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800"},
-                {"name": "Fresh Alphonso Mangoes", "category": "fruits", "qty": 100, "price": 450.0, "img": "https://images.unsplash.com/photo-1553279768-865429fa0078?w=800"},
-                {"name": "Kashmiri Chillies", "category": "spices", "qty": 50, "price": 120.0, "img": "https://images.unsplash.com/photo-1597131628347-c96939c3f42c?w=800"},
-                {"name": "Yellow Dal", "category": "pulses", "qty": 800, "price": 95.0, "img": "https://images.unsplash.com/photo-1585994192701-d1939103bc39?w=800"},
+                {"name": "Organic Wheat", "category": ProductCategory.GRAINS, "qty": 1000, "price": 25.0, "img": "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800"},
+                {"name": "Red Tomatoes", "category": ProductCategory.VEGETABLES, "qty": 500, "price": 18.5, "img": "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800"},
             ]
 
             for p in products_data:
@@ -85,21 +83,24 @@ def seed_db():
                     category=p["category"],
                     description=f"High quality {p['name']} directly from the farm.",
                     quantity=p["qty"],
-                    unit="kg" if p["category"] != "fruits" else "box",
+                    unit="kg",
                     expected_price=p["price"],
                     status=ProductStatus.ACTIVE,
-                    images=p["img"]
+                    images=p["img"],
+                    state="Maharashtra",
+                    district="Pune",
+                    village="Demo Village"
                 )
                 db.add(new_p)
+            print(f"Created demo farmer and products")
 
-            print(f"Created demo farmer and products: {demo_farmer_mobile}")
-
-        # Create Demo Buyer
-        demo_buyer_mobile = "7777777777"
-        existing_buyer = db.query(User).filter(User.mobile_number == demo_buyer_mobile).first()
+        # 3. Create Demo Buyer
+        buyer_user_id = "c5393115-bd07-4f3e-aee3-89d3d97745b9"
+        existing_buyer = db.query(User).filter(User.id == buyer_user_id).first()
         if not existing_buyer:
             buyer_user = User(
-                mobile_number=demo_buyer_mobile,
+                id=buyer_user_id,
+                mobile_number="7777777777",
                 password_hash=AuthService.hash_password("Buyer123!"),
                 full_name="Demo Buyer",
                 role=UserRole.BUYER,
@@ -114,11 +115,13 @@ def seed_db():
                 district="Mumbai"
             )
             db.add(buyer_profile)
-            print(f"Created demo buyer: {demo_buyer_mobile}")
+            print(f"Created demo buyer")
 
         db.commit()
     except Exception as e:
         print(f"Error seeding database: {e}")
+        import traceback
+        traceback.print_exc()
         db.rollback()
     finally:
         db.close()
