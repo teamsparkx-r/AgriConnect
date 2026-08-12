@@ -64,9 +64,9 @@ AgriConnect is a completely FREE marketplace platform that connects farmers dire
    python -m uvicorn app:app --reload --host 0.0.0.0 --port 8000
    ```
 
-   The API is available at: `https://agriconnect-backend.onrender.com`
-- Swagger UI: `https://agriconnect-backend.onrender.com/docs`
-- ReDoc: `https://agriconnect-backend.onrender.com/redoc`
+   The API is available at: `https://agriconnect-backend-2jig.onrender.com`
+- Swagger UI: `https://agriconnect-backend-2jig.onrender.com/docs`
+- ReDoc: `https://agriconnect-backend-2jig.onrender.com/redoc`
 
 ---
 

@@ -8,7 +8,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'https://agriconnect-backend.onrender.com',
+        target: 'https://agriconnect-backend-2jig.onrender.com',
         changeOrigin: true,
         rewrite: (path) => path
       }
