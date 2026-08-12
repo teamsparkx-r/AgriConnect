@@ -8,7 +8,8 @@ import requests
 import json
 from datetime import datetime, timedelta
 
-BASE_URL = "http://localhost:8000"
+# BASE_URL = "http://localhost:8000"
+BASE_URL = "https://agriconnect-backend.onrender.com"
 
 # Color codes for terminal output
 GREEN = '\033[92m'
