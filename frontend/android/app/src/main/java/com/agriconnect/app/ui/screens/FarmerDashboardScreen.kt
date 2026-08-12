@@ -144,7 +144,7 @@ fun FarmerDashboardScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(text = error!!, color = MaterialTheme.colorScheme.onErrorContainer, style = MaterialTheme.typography.bodyMedium)
-                                    Text(text = "Target: http://192.168.1.45:8000/", color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f), style = MaterialTheme.typography.labelSmall)
+                                    Text(text = "Target: https://agriconnect-backend-2jig.onrender.com/", color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f), style = MaterialTheme.typography.labelSmall)
                                     TextButton(onClick = { viewModel.fetchDashboard(token, userId) }) {
                                         Text("RETRY SYNC", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
                                     }

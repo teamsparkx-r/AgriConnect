@@ -209,7 +209,7 @@ fun MerchantPortalScreen(
                                         style = MaterialTheme.typography.bodyMedium
                                     )
                                     Text(
-                                        text = "Target: http://192.168.1.45:8000/",
+                                        text = "Target: https://agriconnect-backend-2jig.onrender.com/",
                                         color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f),
                                         style = MaterialTheme.typography.labelSmall
                                     )

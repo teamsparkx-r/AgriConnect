@@ -7,8 +7,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    // Use 10.0.2.2 for Android Emulator, or your PC's IP (e.g., 192.168.x.x) for Physical Device
-    private const val BASE_URL = "http://192.168.1.45:8000/"
+    // Use your PC's IP for local testing, or the production URL for deployment
+    private const val BASE_URL = "https://agriconnect-backend-2jig.onrender.com/"
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
