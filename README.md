@@ -56,7 +56,7 @@ AgriConnect is a completely FREE marketplace platform that connects farmers dire
 
 3. **Install dependencies**
    ```bash
-   pip install -r requriments.txt
+   pip install -r requirements.txt
    ```
 
 4. **Run the server**
@@ -406,7 +406,7 @@ frontend/
    cd backend
    python -m venv venv
    venv\Scripts\activate
-   pip install -r requriments.txt
+   pip install -r requirements.txt
    python -m uvicorn app:app --reload
    ```
 

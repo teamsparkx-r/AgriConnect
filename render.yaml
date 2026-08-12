@@ -7,7 +7,7 @@ services:
     rootDir: backend
     envVars:
       - key: DATABASE_URL
-        sync: false
+        value: "" # Set this in Render Dashboard
       - key: SECRET_KEY
         generateValue: true
       - key: ALGORITHM
