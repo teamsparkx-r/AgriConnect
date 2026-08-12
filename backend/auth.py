@@ -6,6 +6,12 @@ from models import User, OTPRecord, UserRole, AccountStatus
 import random
 import os
 from typing import Optional, Tuple
+import logging
+
+# Fix for passlib/bcrypt compatibility issue
+import bcrypt
+if not hasattr(bcrypt, "__about__"):
+    bcrypt.__about__ = type('About', (object,), {'__version__': bcrypt.__version__})
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

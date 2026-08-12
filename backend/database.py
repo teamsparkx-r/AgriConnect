@@ -10,6 +10,13 @@ load_dotenv()
 
 # Database URL
 DATABASE_URL = os.getenv("DATABASE_URL")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+
+if DATABASE_URL and DB_PASSWORD and "@" in DATABASE_URL and ":" not in DATABASE_URL.split("@")[0][11:]:
+    # Insert password into URL if it's missing (helps with special characters in passwords)
+    parts = DATABASE_URL.split("@")
+    DATABASE_URL = f"{parts[0]}:{DB_PASSWORD}@{parts[1]}"
+
 if not DATABASE_URL:
     db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "agriconnect.db"))
     DATABASE_URL = f"sqlite:///{db_path}"
