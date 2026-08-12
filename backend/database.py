@@ -19,12 +19,20 @@ if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 # Create engine with appropriate options
-engine = create_engine(
-    DATABASE_URL,
-    # SSL mode is often required for Supabase
-    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {"sslmode": "require"},
-    poolclass=StaticPool if "sqlite" in DATABASE_URL else None,
-)
+engine_args = {}
+if "sqlite" in DATABASE_URL:
+    engine_args["connect_args"] = {"check_same_thread": False}
+    engine_args["poolclass"] = StaticPool
+else:
+    # Postgres/Supabase settings
+    engine_args["connect_args"] = {
+        "sslmode": "require",
+        "connect_timeout": 10
+    }
+    # For serverless/Render, it's often better to let SQLAlchemy handle pooling
+    # unless using an external pooler like Supavisor (Port 6543)
+
+engine = create_engine(DATABASE_URL, **engine_args)
 
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
