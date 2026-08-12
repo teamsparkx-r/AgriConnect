@@ -10,7 +10,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.6
       - key: DATABASE_URL
-        value: "" # Set this in Render Dashboard
+        value: "postgresql://postgres.bgcgmmrmakgvuiozqvjy:AgriConnect123.@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres?sslmode=require"
       - key: SECRET_KEY
         generateValue: true
       - key: ALGORITHM
