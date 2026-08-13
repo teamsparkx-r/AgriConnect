@@ -8,4 +8,5 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="emerald_600">#16a34a</color>
+    <color name="ic_launcher_background">#FFFFFF</color>
 </resources>
