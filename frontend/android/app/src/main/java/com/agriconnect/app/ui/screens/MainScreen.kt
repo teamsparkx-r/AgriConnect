@@ -88,19 +88,20 @@ fun AppBottomNav(
         NavigationBar(
             containerColor = Color.Transparent,
             tonalElevation = 0.dp,
-            modifier = Modifier.height(84.dp)
+            modifier = Modifier.height(84.dp),
+            windowInsets = WindowInsets(0)
         ) {
             when (role) {
                 "farmer" -> {
                     NavButton(
                         active = currentRoute == Screen.FarmerDashboard.route,
-                        icon = Icons.Outlined.GridView,
+                        icon = if (currentRoute == Screen.FarmerDashboard.route) Icons.Filled.GridView else Icons.Outlined.GridView,
                         label = "Home",
                         onClick = { onNavigate(Screen.FarmerDashboard.route) }
                     )
                     NavButton(
                         active = currentRoute == Screen.MyProducts.route,
-                        icon = Icons.Outlined.Inventory2,
+                        icon = if (currentRoute == Screen.MyProducts.route) Icons.Filled.Inventory2 else Icons.Outlined.Inventory2,
                         label = "Stock",
                         onClick = { onNavigate(Screen.MyProducts.route) }
                     )
@@ -109,7 +110,7 @@ fun AppBottomNav(
                         FloatingActionButton(
                             onClick = onAddClick,
                             containerColor = Color.White,
-                            contentColor = Emerald600,
+                            contentColor = Color.Black,
                             shape = RoundedCornerShape(16.dp),
                             elevation = FloatingActionButtonDefaults.elevation(4.dp),
                             modifier = Modifier.size(48.dp)
@@ -120,13 +121,13 @@ fun AppBottomNav(
 
                     NavButton(
                         active = currentRoute == Screen.FarmerBookings.route,
-                        icon = Icons.Outlined.ReceiptLong,
+                        icon = if (currentRoute == Screen.FarmerBookings.route) Icons.Filled.ReceiptLong else Icons.Outlined.ReceiptLong,
                         label = "Orders",
                         onClick = { onNavigate(Screen.FarmerBookings.route) }
                     )
                     NavButton(
                         active = currentRoute == Screen.FarmerProfile.route,
-                        icon = Icons.Outlined.AccountCircle,
+                        icon = if (currentRoute == Screen.FarmerProfile.route) Icons.Filled.AccountCircle else Icons.Outlined.AccountCircle,
                         label = "Profile",
                         onClick = { onNavigate(Screen.FarmerProfile.route) }
                     )
@@ -134,31 +135,31 @@ fun AppBottomNav(
                 else -> { // Merchant / Default
                     NavButton(
                         active = currentRoute == Screen.MerchantPortal.route,
-                        icon = Icons.Outlined.Home,
+                        icon = if (currentRoute == Screen.MerchantPortal.route) Icons.Filled.Home else Icons.Outlined.Home,
                         label = "Home",
                         onClick = { onNavigate(Screen.MerchantPortal.route) }
                     )
                     NavButton(
                         active = currentRoute == Screen.Explore.route,
-                        icon = Icons.Outlined.Search,
+                        icon = if (currentRoute == Screen.Explore.route) Icons.Filled.Search else Icons.Outlined.Search,
                         label = "Browse",
                         onClick = { onNavigate(Screen.Explore.route) }
                     )
                     NavButton(
                         active = currentRoute == Screen.Saved.route,
-                        icon = Icons.Outlined.FavoriteBorder,
+                        icon = if (currentRoute == Screen.Saved.route) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         label = "Saved",
                         onClick = { onNavigate(Screen.Saved.route) }
                     )
                     NavButton(
                         active = currentRoute == Screen.MyBookings.route,
-                        icon = Icons.Outlined.ShoppingBag,
+                        icon = if (currentRoute == Screen.MyBookings.route) Icons.Filled.ShoppingBag else Icons.Outlined.ShoppingBag,
                         label = "Orders",
                         onClick = { onNavigate(Screen.MyBookings.route) }
                     )
                     NavButton(
                         active = currentRoute == Screen.MerchantProfile.route,
-                        icon = Icons.Outlined.AccountCircle,
+                        icon = if (currentRoute == Screen.MerchantProfile.route) Icons.Filled.AccountCircle else Icons.Outlined.AccountCircle,
                         label = "Profile",
                         onClick = { onNavigate(Screen.MerchantProfile.route) }
                     )
@@ -195,8 +196,8 @@ fun RowScope.NavButton(
         colors = NavigationBarItemDefaults.colors(
             selectedIconColor = Color.Black,
             selectedTextColor = Color.Black,
-            unselectedIconColor = Color.Gray.copy(alpha = 0.5f),
-            unselectedTextColor = Color.Gray.copy(alpha = 0.5f),
+            unselectedIconColor = Color.White.copy(alpha = 0.6f),
+            unselectedTextColor = Color.White.copy(alpha = 0.6f),
             indicatorColor = Color.Transparent
         )
     )

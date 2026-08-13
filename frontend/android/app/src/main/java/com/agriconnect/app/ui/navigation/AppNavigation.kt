@@ -36,6 +36,9 @@ sealed class Screen(val route: String) {
     // Farmer Flow
     object FarmerDashboard : Screen("farmer/dashboard")
     object MyProducts : Screen("farmer/products")
+    object FarmerProductDetail : Screen("farmer/product-detail/{id}") {
+        fun createRoute(id: String) = "farmer/product-detail/$id"
+    }
     object AddProduct : Screen("farmer/add-product")
     object EditProduct : Screen("farmer/edit-product/{id}") {
         fun createRoute(id: String) = "farmer/edit-product/$id"
@@ -188,7 +191,7 @@ fun AppNavigation(
                 onBookSlotClick = { navController.navigate(Screen.AddProduct.route) },
                 onMyBookingsClick = { navController.navigate(Screen.FarmerBookings.route) },
                 onMyProductsClick = { navController.navigate(Screen.MyProducts.route) },
-                onProductClick = { id -> navController.navigate(Screen.EditProduct.createRoute(id)) },
+                onProductClick = { id -> navController.navigate(Screen.FarmerProductDetail.createRoute(id)) },
                 onNotificationsClick = { navController.navigate(Screen.FarmerNotifications.route) },
                 onProfileClick = { navController.navigate(Screen.FarmerProfile.route) }
             )
@@ -200,7 +203,20 @@ fun AppNavigation(
                 userId = user?.id ?: "",
                 viewModel = productViewModel,
                 onAddProduct = { navController.navigate(Screen.AddProduct.route) },
-                onEditProduct = { id: String -> navController.navigate(Screen.EditProduct.createRoute(id)) },
+                onEditProduct = { id: String -> navController.navigate(Screen.FarmerProductDetail.createRoute(id)) },
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(
+            route = Screen.FarmerProductDetail.route,
+            arguments = listOf(navArgument("id") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id") ?: ""
+            FarmerProductDetailScreen(
+                productId = id,
+                token = authViewModel.token.value ?: "",
+                viewModel = productViewModel,
+                onEditClick = { productId -> navController.navigate(Screen.EditProduct.createRoute(productId)) },
                 onBack = { navController.popBackStack() }
             )
         }
