@@ -15,9 +15,8 @@ if not hasattr(bcrypt, "__about__"):
 
 # Password hashing
 pwd_context = CryptContext(
-    schemes=["bcrypt"],
+    schemes=["pbkdf2_sha256", "bcrypt"],
     deprecated="auto",
-    bcrypt__truncate_error=False  # Allow passlib to handle truncation safely
 )
 
 # JWT configuration
@@ -38,17 +37,20 @@ class AuthService:
     
     @staticmethod
     def hash_password(password: str) -> str:
-        """Hash a password (truncation handled by passlib config)"""
+        """Hash a password using pbkdf2_sha256 (avoids bcrypt 72-byte bug)"""
         if not password:
             return ""
-        return pwd_context.hash(password)
+        return pwd_context.hash(str(password))
     
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
-        """Verify a password against hash (truncation handled by passlib config)"""
+        """Verify a password against hash"""
         if not plain_password or not hashed_password:
             return False
-        return pwd_context.verify(plain_password, hashed_password)
+        try:
+            return pwd_context.verify(str(plain_password), hashed_password)
+        except Exception:
+            return False
     
     @staticmethod
     def create_access_token(user_id: str, role: str) -> Tuple[str, datetime]:
