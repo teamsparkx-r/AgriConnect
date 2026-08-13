@@ -152,10 +152,8 @@ fun AppNavigation(
             LoginScreen(
                 role = "admin",
                 viewModel = authViewModel,
-                onLoginSuccess = {
-                    navController.navigate(Screen.AdminDashboard.route) {
-                        popUpTo(Screen.RoleSelection.route) { inclusive = true }
-                    }
+                onLoginSuccess = { mobile ->
+                    navController.navigate(Screen.VerifyOtp.createRoute(mobile, "admin"))
                 },
                 onSignupClick = { /* No admin signup */ }
             )

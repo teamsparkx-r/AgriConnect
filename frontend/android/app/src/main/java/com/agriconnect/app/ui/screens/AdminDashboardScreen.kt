@@ -31,6 +31,7 @@ fun AdminDashboardScreen(
 ) {
     val dashboardData by viewModel.dashboardData
     val loading by viewModel.loading
+    val error by viewModel.error
 
     LaunchedEffect(key1 = true) {
         viewModel.fetchDashboard(token)
@@ -48,6 +49,20 @@ fun AdminDashboardScreen(
         if (loading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            }
+        } else if (error != null) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(Icons.Default.CloudOff, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(64.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(error!!, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.error)
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(onClick = { viewModel.fetchDashboard(token) }) {
+                    Text("RETRY CONNECTION")
+                }
             }
         } else {
             Column(

@@ -40,23 +40,27 @@ class AdminViewModel : ViewModel() {
                 // I'll need to add it or use a generic Map for now if I want to avoid errors.
                 // Actually, it's better to add it to AgriConnectApi.
                 val response = RetrofitClient.instance.getAdminDashboard("Bearer $token")
-                if (response.isSuccessful && response.body() != null) {
-                    val body = response.body()!!
-                    val statsMap = body["stats"] as? Map<String, Any>
-                    val stats = AdminStats(
-                        totalFarmers = (statsMap?.get("total_farmers") as? Number)?.toInt() ?: 0,
-                        totalMerchants = (statsMap?.get("total_merchants") as? Number)?.toInt() ?: 0,
-                        activeProducts = (statsMap?.get("active_products") as? Number)?.toInt() ?: 0,
-                        totalBookings = (statsMap?.get("total_bookings") as? Number)?.toInt() ?: 0,
-                        totalRevenue = (statsMap?.get("total_revenue") as? Number)?.toDouble() ?: 0.0,
-                        pendingReports = (statsMap?.get("pending_reports") as? Number)?.toInt() ?: 0
-                    )
-                    _dashboardData.value = AdminDashboardData(
-                        stats = stats,
-                        recentActivity = (body["recent_activity"] as? List<Map<String, Any>>) ?: emptyList()
-                    )
+                if (response.isSuccessful) {
+                    val body = response.body()
+                    if (body != null && body["success"] == true) {
+                        val statsMap = body["stats"] as? Map<String, Any>
+                        val stats = AdminStats(
+                            totalFarmers = (statsMap?.get("total_farmers") as? Number)?.toInt() ?: 0,
+                            totalMerchants = (statsMap?.get("total_merchants") as? Number)?.toInt() ?: 0,
+                            activeProducts = (statsMap?.get("active_products") as? Number)?.toInt() ?: 0,
+                            totalBookings = (statsMap?.get("total_bookings") as? Number)?.toInt() ?: 0,
+                            totalRevenue = (statsMap?.get("total_revenue") as? Number)?.toDouble() ?: 0.0,
+                            pendingReports = (statsMap?.get("pending_reports") as? Number)?.toInt() ?: 0
+                        )
+                        _dashboardData.value = AdminDashboardData(
+                            stats = stats,
+                            recentActivity = (body["recent_activity"] as? List<Map<String, Any>>) ?: emptyList()
+                        )
+                    } else {
+                        _error.value = "Control center rejected the synchronization request."
+                    }
                 } else {
-                    _error.value = "Failed to synchronize with control center."
+                    _error.value = "Failed to synchronize with control center (Error ${response.code()})."
                 }
             } catch (e: Exception) {
                 _error.value = "Network failure in administration link."
