@@ -35,15 +35,18 @@ def seed_db():
         admin_id = "2687eded-053d-4cbc-8a06-18be9ad5888b"
         existing_admin = db.query(User).filter(User.id == admin_id).first()
         if not existing_admin:
+            # Safe truncation for bcrypt (72 byte limit)
+            safe_password = str(ADMIN_PASSWORD)[:72]
             admin_user = User(
                 id=admin_id,
                 mobile_number=ADMIN_MOBILE,
-                password_hash=AuthService.hash_password(ADMIN_PASSWORD[:72]),
+                password_hash=AuthService.hash_password(safe_password),
                 full_name="AgriConnect Admin",
                 role=UserRole.ADMIN,
                 account_status=AccountStatus.ACTIVE
             )
             db.add(admin_user)
+            db.flush()
             print(f"Created default admin user: {ADMIN_MOBILE}")
 
         # 2. Create Demo Farmer
@@ -118,8 +121,9 @@ def seed_db():
             print(f"Created demo buyer")
 
         db.commit()
+        print("Database seeded successfully!")
     except Exception as e:
-        print(f"Error seeding database: {e}")
+        print(f"CRITICAL ERROR during seeding: {e}")
         import traceback
         traceback.print_exc()
         db.rollback()
