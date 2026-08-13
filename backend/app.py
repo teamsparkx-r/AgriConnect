@@ -35,12 +35,11 @@ def seed_db():
         admin_id = "2687eded-053d-4cbc-8a06-18be9ad5888b"
         existing_admin = db.query(User).filter(User.id == admin_id).first()
         if not existing_admin:
-            # Safe truncation for bcrypt (72 byte limit)
-            safe_password = str(ADMIN_PASSWORD)[:72]
+            print(f"Seeding admin. Password length: {len(str(ADMIN_PASSWORD))}")
             admin_user = User(
                 id=admin_id,
                 mobile_number=ADMIN_MOBILE,
-                password_hash=AuthService.hash_password(safe_password),
+                password_hash=AuthService.hash_password(str(ADMIN_PASSWORD)),
                 full_name="AgriConnect Admin",
                 role=UserRole.ADMIN,
                 account_status=AccountStatus.ACTIVE

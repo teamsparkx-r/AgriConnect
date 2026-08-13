@@ -34,12 +34,24 @@ class AuthService:
     
     @staticmethod
     def hash_password(password: str) -> str:
-        """Hash a password"""
+        """Hash a password with safe truncation for bcrypt"""
+        if not password:
+            return ""
+        # Bcrypt has a 72-byte limit. We truncate safely to 72 bytes.
+        pwd_bytes = password.encode('utf-8')
+        if len(pwd_bytes) > 72:
+            password = pwd_bytes[:72].decode('utf-8', errors='ignore')
         return pwd_context.hash(password)
     
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
-        """Verify a password against hash"""
+        """Verify a password against hash with safe truncation"""
+        if not plain_password or not hashed_password:
+            return False
+        # Same truncation as hashing
+        pwd_bytes = plain_password.encode('utf-8')
+        if len(pwd_bytes) > 72:
+            plain_password = pwd_bytes[:72].decode('utf-8', errors='ignore')
         return pwd_context.verify(plain_password, hashed_password)
     
     @staticmethod
