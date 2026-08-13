@@ -14,7 +14,11 @@ if not hasattr(bcrypt, "__about__"):
     bcrypt.__about__ = type('About', (object,), {'__version__': bcrypt.__version__})
 
 # Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto",
+    bcrypt__truncate_error=False  # Allow passlib to handle truncation safely
+)
 
 # JWT configuration
 SECRET_KEY = os.getenv("SECRET_KEY", "your-super-secret-key-change-in-production")
@@ -34,24 +38,16 @@ class AuthService:
     
     @staticmethod
     def hash_password(password: str) -> str:
-        """Hash a password with safe truncation for bcrypt"""
+        """Hash a password (truncation handled by passlib config)"""
         if not password:
             return ""
-        # Bcrypt has a 72-byte limit. We truncate safely to 72 bytes.
-        pwd_bytes = password.encode('utf-8')
-        if len(pwd_bytes) > 72:
-            password = pwd_bytes[:72].decode('utf-8', errors='ignore')
         return pwd_context.hash(password)
     
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
-        """Verify a password against hash with safe truncation"""
+        """Verify a password against hash (truncation handled by passlib config)"""
         if not plain_password or not hashed_password:
             return False
-        # Same truncation as hashing
-        pwd_bytes = plain_password.encode('utf-8')
-        if len(pwd_bytes) > 72:
-            plain_password = pwd_bytes[:72].decode('utf-8', errors='ignore')
         return pwd_context.verify(plain_password, hashed_password)
     
     @staticmethod

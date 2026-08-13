@@ -122,7 +122,7 @@ def seed_db():
         db.commit()
         print("Database seeded successfully!")
     except Exception as e:
-        print(f"CRITICAL ERROR during seeding: {e}")
+        print(f"CRITICAL ERROR during seeding: {type(e).__name__}: {e}")
         import traceback
         traceback.print_exc()
         db.rollback()
