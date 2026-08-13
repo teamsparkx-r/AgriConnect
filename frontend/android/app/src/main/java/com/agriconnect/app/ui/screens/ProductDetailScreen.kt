@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.agriconnect.app.ui.components.*
+import com.agriconnect.app.ui.theme.Emerald600
 import com.agriconnect.app.ui.viewmodel.AuthViewModel
 import com.agriconnect.app.ui.viewmodel.ProductViewModel
 import com.agriconnect.app.ui.viewmodel.MerchantViewModel
@@ -62,10 +63,10 @@ fun ProductDetailScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 modifier = Modifier.statusBarsPadding(),
-                title = { Text("Product Details", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black) },
+                title = { Text("Product Details", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
                 actions = {
@@ -76,11 +77,11 @@ fun ProductDetailScreen(
                         Icon(
                             if (isSaved) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = "Save",
-                            tint = if (isSaved) MaterialTheme.colorScheme.error else Color.Gray
+                            tint = if (isSaved) MaterialTheme.colorScheme.error else Color.White
                         )
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Emerald600)
             )
         }
     ) { padding ->

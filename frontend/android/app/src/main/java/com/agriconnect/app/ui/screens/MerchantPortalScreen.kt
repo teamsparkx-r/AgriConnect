@@ -61,23 +61,24 @@ fun MerchantPortalScreen(
                 modifier = Modifier.statusBarsPadding(),
                 title = { 
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Agriculture, null, tint = Emerald600, modifier = Modifier.size(24.dp))
+                        Icon(Icons.Default.Agriculture, null, tint = Color.White, modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "AgriConnect", 
                             style = MaterialTheme.typography.titleLarge, 
                             fontWeight = FontWeight.Black,
-                            letterSpacing = (-1).sp
+                            letterSpacing = (-1).sp,
+                            color = Color.White
                         ) 
                     }
                 },
                 actions = {
                     IconButton(onClick = onNotificationsClick) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = null)
+                        Icon(Icons.Outlined.Notifications, contentDescription = null, tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.White
+                    containerColor = Emerald600
                 )
             )
         }
@@ -316,7 +317,7 @@ fun CategoryChip(label: String, onClick: () -> Unit) {
             text = label,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Black
         )
     }
 }

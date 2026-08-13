@@ -55,13 +55,13 @@ fun BookSellingSlotScreen(
     ) {
         // App Bar
         TopAppBar(
-            title = { Text("Initialize Supply Path", fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+            title = { Text("Initialize Supply Path", fontWeight = FontWeight.Black, fontSize = 18.sp, color = Color.White) },
             navigationIcon = {
                 IconButton(onClick = { /* Handle back */ }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                 }
             },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Emerald600)
         )
 
         Column(modifier = Modifier.padding(24.dp)) {
@@ -71,10 +71,11 @@ fun BookSellingSlotScreen(
             OutlinedTextField(
                 value = cropName,
                 onValueChange = { cropName = it },
-                label = { Text("Produce Label") },
+                label = { Text("Produce Label", fontWeight = FontWeight.Black) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                placeholder = { Text("e.g. Sona Masuri Rice") }
+                placeholder = { Text("e.g. Sona Masuri Rice", fontWeight = FontWeight.Bold) },
+                textStyle = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Black)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -89,10 +90,11 @@ fun BookSellingSlotScreen(
                     value = category.uppercase(),
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Registry Group") },
+                    label = { Text("Registry Group", fontWeight = FontWeight.Black) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCat) },
                     modifier = Modifier.menuAnchor().fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Black)
                 )
                 ExposedDropdownMenu(
                     expanded = expandedCat,

@@ -28,6 +28,7 @@ import com.agriconnect.app.ui.viewmodel.FarmerViewModel
 @Composable
 fun FarmerBookingsScreen(
     onBack: () -> Unit,
+    onBookingClick: (String) -> Unit,
     authViewModel: AuthViewModel = viewModel(),
     farmerViewModel: FarmerViewModel = viewModel()
 ) {
@@ -54,13 +55,13 @@ fun FarmerBookingsScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 modifier = Modifier.statusBarsPadding(),
-                title = { Text("Marketplace Inquiries", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black) },
+                title = { Text("Marketplace Inquiries", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Emerald600)
             )
         }
     ) { padding ->
@@ -122,12 +123,14 @@ fun FarmerBookingsScreen(
                     contentPadding = PaddingValues(24.dp)
                 ) {
                     items(filteredBookings) { booking ->
+                        val id = booking["booking_id"] as? String ?: ""
                         InquiryCard(
                             crop = booking["product_name"] as? String ?: "Unknown",
                             buyer = booking["buyer_id_alias"] as? String ?: "Anonymous Buyer",
                             status = booking["status"] as? String ?: "Pending",
                             date = (booking["created_at"] as? String)?.take(10) ?: "",
-                            location = booking["buyer_district"] as? String ?: "Remote"
+                            location = booking["buyer_district"] as? String ?: "Remote",
+                            onClick = { onBookingClick(id) }
                         )
                     }
                 }
@@ -137,8 +140,8 @@ fun FarmerBookingsScreen(
 }
 
 @Composable
-fun InquiryCard(crop: String, buyer: String, status: String, date: String, location: String) {
-    AgriCard {
+fun InquiryCard(crop: String, buyer: String, status: String, date: String, location: String, onClick: () -> Unit) {
+    AgriCard(onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Surface(
                 color = if (status.lowercase() == "confirmed") Color(0xFFECFDF5) else Color(0xFFF3F4F6),

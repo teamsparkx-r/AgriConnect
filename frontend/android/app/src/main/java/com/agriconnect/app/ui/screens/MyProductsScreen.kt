@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.agriconnect.app.ui.components.*
+import com.agriconnect.app.ui.theme.Emerald600
 import com.agriconnect.app.ui.viewmodel.ProductViewModel
 import com.agriconnect.data.model.Product
 import androidx.compose.material.icons.outlined.ErrorOutline
@@ -48,16 +49,17 @@ fun MyProductsScreen(
                 title = {
                     Text(
                         "Inventory Registry",
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.White
+                    containerColor = Emerald600
                 )
             )
         },

@@ -118,13 +118,13 @@ fun AddProductScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 modifier = Modifier.statusBarsPadding(),
-                title = { Text("Supply Registration", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black) },
+                title = { Text("Supply Registration", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Emerald600)
             )
         }
     ) { padding ->

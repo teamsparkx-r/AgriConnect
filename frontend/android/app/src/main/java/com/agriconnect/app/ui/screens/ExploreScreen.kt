@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.agriconnect.app.ui.components.AgriTextField
 import com.agriconnect.app.ui.components.SlotCard
+import com.agriconnect.app.ui.theme.Emerald600
 import com.agriconnect.app.ui.viewmodel.ProductViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,13 +55,13 @@ fun ExploreScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 modifier = Modifier.statusBarsPadding(),
-                title = { Text("Global Discovery", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black) },
+                title = { Text("Global Discovery", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Emerald600)
             )
         }
     ) { padding ->

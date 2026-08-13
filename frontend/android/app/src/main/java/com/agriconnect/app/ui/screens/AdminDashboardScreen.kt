@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.agriconnect.app.ui.components.AgriCard
+import com.agriconnect.app.ui.theme.Emerald600
 import com.agriconnect.app.ui.viewmodel.AdminViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,8 +42,8 @@ fun AdminDashboardScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Control Center", style = MaterialTheme.typography.titleLarge) },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
+                title = { Text("Control Center", style = MaterialTheme.typography.titleLarge, color = Color.White) },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Emerald600)
             )
         }
     ) { padding ->

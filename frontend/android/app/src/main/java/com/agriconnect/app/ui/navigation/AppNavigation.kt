@@ -41,6 +41,9 @@ sealed class Screen(val route: String) {
         fun createRoute(id: String) = "farmer/edit-product/$id"
     }
     object FarmerBookings : Screen("farmer/bookings")
+    object FarmerBookingDetail : Screen("farmer/booking-detail/{id}") {
+        fun createRoute(id: String) = "farmer/booking-detail/$id"
+    }
     object FarmerProfile : Screen("farmer/profile")
     object FarmerNotifications : Screen("farmer/notifications")
 
@@ -185,6 +188,7 @@ fun AppNavigation(
                 onBookSlotClick = { navController.navigate(Screen.AddProduct.route) },
                 onMyBookingsClick = { navController.navigate(Screen.FarmerBookings.route) },
                 onMyProductsClick = { navController.navigate(Screen.MyProducts.route) },
+                onProductClick = { id -> navController.navigate(Screen.EditProduct.createRoute(id)) },
                 onNotificationsClick = { navController.navigate(Screen.FarmerNotifications.route) },
                 onProfileClick = { navController.navigate(Screen.FarmerProfile.route) }
             )
@@ -228,8 +232,23 @@ fun AppNavigation(
         composable(Screen.FarmerBookings.route) {
             FarmerBookingsScreen(
                 onBack = { navController.popBackStack() },
+                onBookingClick = { id -> navController.navigate(Screen.FarmerBookingDetail.createRoute(id)) },
                 authViewModel = authViewModel,
                 farmerViewModel = farmerViewModel
+            )
+        }
+        composable(
+            route = Screen.FarmerBookingDetail.route,
+            arguments = listOf(navArgument("id") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id") ?: ""
+            val user = authViewModel.user.value
+            FarmerBookingDetailScreen(
+                bookingId = id,
+                token = authViewModel.token.value ?: "",
+                userId = user?.id ?: "",
+                viewModel = farmerViewModel,
+                onBack = { navController.popBackStack() }
             )
         }
         composable(Screen.FarmerProfile.route) {

@@ -2,6 +2,7 @@ package com.agriconnect.app.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.agriconnect.app.ui.components.AgriButton
 import com.agriconnect.app.ui.components.AgriTextField
+import com.agriconnect.app.ui.theme.Emerald600
 import com.agriconnect.app.ui.viewmodel.AuthViewModel
 
 @Composable
@@ -32,104 +34,122 @@ fun VerifyOtpScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp),
+            .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(64.dp))
-        
-        Text(
-            text = "Verify Security Key",
-            style = MaterialTheme.typography.headlineMedium,
-            color = Color.Black
-        )
-        
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        Text(
-            text = "Enter the 6-digit code sent to +91 $mobile",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray
-        )
-        
-        Spacer(modifier = Modifier.height(48.dp))
-        
-        AgriTextField(
-            value = otpCode,
-            onValueChange = { 
-                if (it.length <= 6) {
-                    otpCode = it
-                    showNoAccount = false
-                }
-            },
-            label = "OTP Code",
-            placeholder = "000000",
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-            isError = error != null,
-            errorMessage = error
-        )
-        
-        if (showNoAccount) {
-            Spacer(modifier = Modifier.height(32.dp))
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f)),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+        // Green Header
+        Surface(
+            color = Emerald600,
+            modifier = Modifier.fillMaxWidth().statusBarsPadding(),
+            shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(top = 40.dp, bottom = 48.dp, start = 24.dp, end = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Text(
+                    text = "Verify Security Key",
+                    style = MaterialTheme.typography.displayMedium,
+                    color = Color.White,
+                    fontWeight = FontWeight.Black
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Text(
+                    text = "Enter the 6-digit code sent to +91 $mobile",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.8f),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(48.dp))
+            
+            AgriTextField(
+                value = otpCode,
+                onValueChange = { 
+                    if (it.length <= 6) {
+                        otpCode = it
+                        showNoAccount = false
+                    }
+                },
+                label = "OTP Code",
+                placeholder = "000000",
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                isError = error != null,
+                errorMessage = error
+            )
+            
+            if (showNoAccount) {
+                Spacer(modifier = Modifier.height(32.dp))
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f)),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
-                    Text(
-                        text = "No account found in our registry.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.error,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    TextButton(onClick = { onVerifySuccess("none") }) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         Text(
-                            text = "START REGISTRATION",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp
+                            text = "No account found in our registry.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.Black
                         )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        TextButton(onClick = { onVerifySuccess("none") }) {
+                            Text(
+                                text = "START REGISTRATION",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = Emerald600,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.sp
+                            )
+                        }
                     }
                 }
             }
-        }
-        
-        Spacer(modifier = Modifier.height(32.dp))
-        
-        if (!showNoAccount) {
-            AgriButton(
-                text = "Verify",
-                onClick = { 
-                    viewModel.verifyOtp(mobile, otpCode) { userRole ->
-                        if (userRole == "none") {
-                            showNoAccount = true
-                        } else {
-                            onVerifySuccess(userRole)
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            if (!showNoAccount) {
+                AgriButton(
+                    text = "Verify",
+                    onClick = { 
+                        viewModel.verifyOtp(mobile, otpCode) { userRole ->
+                            if (userRole == "none") {
+                                showNoAccount = true
+                            } else {
+                                onVerifySuccess(userRole)
+                            }
                         }
-                    }
-                },
-                loading = loading,
-                enabled = otpCode.length == 6
-            )
-        }
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        TextButton(
-            onClick = { /* Resend OTP */ }
-        ) {
-            Text(
-                text = "RESEND SECURITY CODE",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold
-            )
+                    },
+                    loading = loading,
+                    enabled = otpCode.length == 6
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            TextButton(
+                onClick = { /* Resend OTP */ }
+            ) {
+                Text(
+                    text = "RESEND SECURITY CODE",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Emerald600,
+                    fontWeight = FontWeight.Black
+                )
+            }
         }
     }
 }

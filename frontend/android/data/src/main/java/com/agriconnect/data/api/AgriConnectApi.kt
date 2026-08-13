@@ -53,6 +53,13 @@ interface AgriConnectApi {
         @Query("status") status: String? = null
     ): Response<FarmerBookingsResponse>
 
+    @GET("api/farmer/bookings/{booking_id}")
+    suspend fun getFarmerBookingDetail(
+        @Header("Authorization") token: String,
+        @Path("booking_id") bookingId: String,
+        @Query("user_id") userId: String
+    ): Response<Map<String, Any>>
+
     @PUT("api/farmer/profile/{user_id}")
     suspend fun updateFarmerProfile(
         @Header("Authorization") token: String,

@@ -79,7 +79,7 @@ fun AppBottomNav(
     onAddClick: () -> Unit
 ) {
     Surface(
-        color = Color.White,
+        color = Emerald600,
         tonalElevation = 0.dp,
         shadowElevation = 16.dp,
         shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
@@ -108,8 +108,8 @@ fun AppBottomNav(
                     Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                         FloatingActionButton(
                             onClick = onAddClick,
-                            containerColor = Color.Black,
-                            contentColor = Color.White,
+                            containerColor = Color.White,
+                            contentColor = Emerald600,
                             shape = RoundedCornerShape(16.dp),
                             elevation = FloatingActionButtonDefaults.elevation(4.dp),
                             modifier = Modifier.size(48.dp)
@@ -193,8 +193,8 @@ fun RowScope.NavButton(
             ) 
         },
         colors = NavigationBarItemDefaults.colors(
-            selectedIconColor = Emerald600,
-            selectedTextColor = Emerald600,
+            selectedIconColor = Color.Black,
+            selectedTextColor = Color.Black,
             unselectedIconColor = Color.Gray.copy(alpha = 0.5f),
             unselectedTextColor = Color.Gray.copy(alpha = 0.5f),
             indicatorColor = Color.Transparent

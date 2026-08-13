@@ -15,6 +15,9 @@ class FarmerViewModel : ViewModel() {
     private val _bookings = mutableStateOf<List<Map<String, Any>>>(emptyList())
     val bookings: State<List<Map<String, Any>>> = _bookings
 
+    private val _currentBooking = mutableStateOf<Map<String, Any>?>(null)
+    val currentBooking: State<Map<String, Any>?> = _currentBooking
+
     private val _loading = mutableStateOf(false)
     val loading: State<Boolean> = _loading
 
@@ -53,6 +56,22 @@ class FarmerViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 _error.value = "Inquiries registry offline."
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun fetchBookingDetail(token: String, bookingId: String, userId: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val response = RetrofitClient.instance.getFarmerBookingDetail("Bearer $token", bookingId, userId)
+                if (response.isSuccessful) {
+                    _currentBooking.value = response.body()
+                }
+            } catch (e: Exception) {
+                // error handling
             } finally {
                 _loading.value = false
             }

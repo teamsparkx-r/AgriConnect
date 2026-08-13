@@ -18,6 +18,9 @@ import androidx.compose.ui.unit.sp
 import com.agriconnect.app.ui.theme.Emerald600
 import com.agriconnect.data.model.Product
 
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
+
 @Composable
 fun RecentProductItem(product: Product, onClick: (() -> Unit)? = null) {
     AgriCard(onClick = onClick, modifier = Modifier.padding(vertical = 6.dp)) {
@@ -29,17 +32,26 @@ fun RecentProductItem(product: Product, onClick: (() -> Unit)? = null) {
                     .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = when(product.category?.lowercase() ?: "other") {
-                        "vegetables" -> Icons.Default.Agriculture
-                        "fruits" -> Icons.Default.Eco
-                        "grains" -> Icons.Default.Grass
-                        else -> Icons.Default.Inventory
-                    },
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(28.dp)
-                )
+                if (product.images != null && (product.images!!.startsWith("http") || product.images!!.startsWith("content"))) {
+                    AsyncImage(
+                        model = product.images,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = when(product.category?.lowercase() ?: "other") {
+                            "vegetables" -> Icons.Default.Agriculture
+                            "fruits" -> Icons.Default.Eco
+                            "grains" -> Icons.Default.Grass
+                            else -> Icons.Default.Inventory
+                        },
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
@@ -47,7 +59,7 @@ fun RecentProductItem(product: Product, onClick: (() -> Unit)? = null) {
                     text = product.name ?: "Unknown Crop",
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.Black,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Black
                 )
                 Text(
                     text = "${product.quantity ?: 0f} ${product.unit ?: "units"} • ₹${product.expectedPrice?.toInt() ?: 0}/${product.unit ?: "unit"}",
@@ -87,7 +99,7 @@ fun RecentInquiryItem(title: String, buyer: String, status: String = "Pending", 
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleMedium, color = Color.Black, fontWeight = FontWeight.Bold)
+                Text(title, style = MaterialTheme.typography.titleMedium, color = Color.Black, fontWeight = FontWeight.Black)
                 Text("BUYER: $buyer", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
             }
             Button(
@@ -123,21 +135,30 @@ fun SlotCard(product: Product, onClick: () -> Unit) {
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = when(product.category?.lowercase() ?: "other") {
-                        "vegetables" -> Icons.Default.Agriculture
-                        "fruits" -> Icons.Default.Eco
-                        "grains" -> Icons.Default.Grass
-                        else -> Icons.Default.Inventory
-                    },
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                    modifier = Modifier.size(70.dp)
-                )
+                if (product.images != null && (product.images!!.startsWith("http") || product.images!!.startsWith("content"))) {
+                    AsyncImage(
+                        model = product.images,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = when(product.category?.lowercase() ?: "other") {
+                            "vegetables" -> Icons.Default.Agriculture
+                            "fruits" -> Icons.Default.Eco
+                            "grains" -> Icons.Default.Grass
+                            else -> Icons.Default.Inventory
+                        },
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                        modifier = Modifier.size(70.dp)
+                    )
+                }
                 Text(
                     text = "VISUAL NODE VERIFIED",
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray.copy(alpha = 0.4f),
+                    color = if (product.images != null) Color.White else Color.Gray.copy(alpha = 0.4f),
                     modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp),
                     letterSpacing = 1.sp,
                     fontWeight = FontWeight.Bold
@@ -166,7 +187,7 @@ fun SlotCard(product: Product, onClick: () -> Unit) {
                             text = "FARMER-${product.farmerIdAlias ?: product.farmerId?.takeLast(4) ?: "NODE"}",
                             style = MaterialTheme.typography.titleMedium,
                             color = Color.Black,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Black
                         )
                         Text(
                             text = "${product.village ?: "Remote"}, ${product.district ?: ""}",

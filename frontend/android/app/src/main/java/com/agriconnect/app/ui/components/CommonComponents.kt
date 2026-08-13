@@ -84,8 +84,8 @@ fun AgriTextField(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            label = { Text(label, style = MaterialTheme.typography.bodyMedium) },
-            placeholder = { Text(placeholder, style = MaterialTheme.typography.bodyMedium) },
+            label = { Text(label, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Black) },
+            placeholder = { Text(placeholder, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold) },
             modifier = Modifier.fillMaxWidth(),
             leadingIcon = leadingIcon?.let { { Icon(it, contentDescription = null, modifier = Modifier.size(20.dp)) } },
             trailingIcon = trailingIcon,
@@ -95,7 +95,7 @@ fun AgriTextField(
             isError = isError,
             prefix = prefix,
             shape = RoundedCornerShape(16.dp),
-            textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.Black),
+            textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.Black, fontWeight = FontWeight.Black),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = Color.LightGray.copy(alpha = 0.3f),
@@ -164,7 +164,7 @@ fun AgriSectionTitle(
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Black,
                 color = Color.Black,
-                letterSpacing = (-1).sp
+                letterSpacing = (-0.5).sp
             )
             if (actionText != null && onActionClick != null) {
                 Text(
@@ -274,7 +274,7 @@ fun ProfileListItem(
                 text = label, 
                 style = MaterialTheme.typography.bodyLarge, 
                 color = contentColor,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Black
             )
             if (subtitle != null) {
                 Text(

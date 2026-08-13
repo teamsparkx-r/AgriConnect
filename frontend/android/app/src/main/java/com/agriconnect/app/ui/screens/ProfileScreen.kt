@@ -46,10 +46,10 @@ fun ProfileScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 modifier = Modifier.statusBarsPadding(),
-                title = { Text("Profile", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black) },
+                title = { Text("Profile", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black, color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
                 actions = {
@@ -67,15 +67,15 @@ fun ProfileScreen(
                                 if (success) isEditMode = false
                             }
                         }) {
-                            Icon(Icons.Default.Check, contentDescription = "Save", tint = Emerald600)
+                            Icon(Icons.Default.Check, contentDescription = "Save", tint = Color.White)
                         }
                     } else {
                         IconButton(onClick = { isEditMode = true }) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.White)
                         }
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Emerald600)
             )
         },
         containerColor = Color(0xFFF9FAFB)

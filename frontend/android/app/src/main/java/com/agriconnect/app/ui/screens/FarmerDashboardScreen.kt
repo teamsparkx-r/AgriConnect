@@ -25,6 +25,7 @@ import com.agriconnect.app.ui.components.*
 import com.agriconnect.app.ui.theme.Emerald600
 import com.agriconnect.app.ui.viewmodel.FarmerViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FarmerDashboardScreen(
     token: String,
@@ -34,6 +35,7 @@ fun FarmerDashboardScreen(
     onBookSlotClick: () -> Unit,
     onMyBookingsClick: () -> Unit,
     onMyProductsClick: () -> Unit,
+    onProductClick: (String) -> Unit,
     onNotificationsClick: () -> Unit = {},
     onProfileClick: () -> Unit
 ) {
@@ -47,7 +49,33 @@ fun FarmerDashboardScreen(
     }
 
     Scaffold(
-        containerColor = Color(0xFFF9FAFB)
+        containerColor = Color(0xFFF9FAFB),
+        topBar = {
+            CenterAlignedTopAppBar(
+                modifier = Modifier.statusBarsPadding(),
+                title = { 
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Agriculture, null, tint = Color.White, modifier = Modifier.size(24.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "AgriConnect", 
+                            style = MaterialTheme.typography.titleLarge, 
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = (-1).sp,
+                            color = Color.White
+                        ) 
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNotificationsClick) {
+                        Icon(Icons.Outlined.Notifications, contentDescription = null, tint = Color.White)
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Emerald600
+                )
+            )
+        }
     ) { padding ->
         if (loading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -65,8 +93,7 @@ fun FarmerDashboardScreen(
                     color = Color.White,
                     tonalElevation = 2.dp,
                     shadowElevation = 1.dp,
-                    shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp),
-                    modifier = Modifier.statusBarsPadding()
+                    shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
                 ) {
                     Column(modifier = Modifier.padding(24.dp)) {
                         Row(
@@ -87,14 +114,6 @@ fun FarmerDashboardScreen(
                                     fontWeight = FontWeight.Black
                                 )
                             }
-                            IconButton(
-                                onClick = onNotificationsClick,
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                            ) {
-                                Icon(Icons.Outlined.Notifications, null, tint = Color.Gray)
-                            }
                         }
                         
                         Spacer(modifier = Modifier.height(28.dp))
@@ -104,7 +123,7 @@ fun FarmerDashboardScreen(
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             Surface(
-                                color = Emerald600.copy(alpha = 0.05f),
+                                color = Color.White.copy(alpha = 0.1f),
                                 shape = RoundedCornerShape(20.dp),
                                 modifier = Modifier.weight(1f)
                             ) {
@@ -112,8 +131,8 @@ fun FarmerDashboardScreen(
                                     Icon(Icons.Outlined.WbSunny, null, tint = Color(0xFFF59E0B), modifier = Modifier.size(20.dp))
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column {
-                                        Text("28°C", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                                        Text("WARANGAL", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                                        Text("28°C", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color.White)
+                                        Text("WARANGAL", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.7f))
                                     }
                                 }
                             }
@@ -122,7 +141,7 @@ fun FarmerDashboardScreen(
                                 onClick = onBookSlotClick,
                                 modifier = Modifier.weight(1f).height(56.dp),
                                 shape = RoundedCornerShape(20.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black)
                             ) {
                                 Text("Add Produce", fontWeight = FontWeight.Black)
                             }
@@ -201,7 +220,7 @@ fun FarmerDashboardScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     dashboardData?.recentProducts?.take(3)?.forEach { product ->
-                        RecentProductItem(product, onClick = { onMyProductsClick() })
+                        RecentProductItem(product, onClick = { onProductClick(product.id) })
                         Spacer(modifier = Modifier.height(12.dp))
                     }
 

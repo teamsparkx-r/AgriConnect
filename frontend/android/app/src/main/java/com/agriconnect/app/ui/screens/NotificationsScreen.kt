@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.agriconnect.app.ui.components.EmptyStateCard
+import com.agriconnect.app.ui.theme.Emerald600
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,13 +25,13 @@ fun NotificationsScreen(onBack: () -> Unit) {
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Network Alerts", style = MaterialTheme.typography.titleLarge) },
+                title = { Text("Network Alerts", style = MaterialTheme.typography.titleLarge, color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Emerald600)
             )
         }
     ) { padding ->
