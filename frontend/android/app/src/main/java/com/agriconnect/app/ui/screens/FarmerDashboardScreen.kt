@@ -88,7 +88,7 @@ fun FarmerDashboardScreen(
                     .padding(padding)
                     .verticalScroll(rememberScrollState())
             ) {
-                // Header (Rapido inspired)
+                // Welcome Section
                 Surface(
                     color = Color.White,
                     tonalElevation = 2.dp,
@@ -105,7 +105,8 @@ fun FarmerDashboardScreen(
                                 Text(
                                     text = "Welcome back,",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.Gray
+                                    color = Color.Gray,
+                                    fontWeight = FontWeight.Black
                                 )
                                 Text(
                                     text = "${userName.split(" ").firstOrNull() ?: "Farmer"}! 👋",
@@ -123,7 +124,7 @@ fun FarmerDashboardScreen(
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             Surface(
-                                color = Color.White.copy(alpha = 0.1f),
+                                color = Emerald600.copy(alpha = 0.05f),
                                 shape = RoundedCornerShape(20.dp),
                                 modifier = Modifier.weight(1f)
                             ) {
@@ -131,8 +132,8 @@ fun FarmerDashboardScreen(
                                     Icon(Icons.Outlined.WbSunny, null, tint = Color(0xFFF59E0B), modifier = Modifier.size(20.dp))
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column {
-                                        Text("28°C", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color.White)
-                                        Text("WARANGAL", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.7f))
+                                        Text("28°C", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black)
+                                        Text("WARANGAL", style = MaterialTheme.typography.labelSmall, color = Color.Gray, fontWeight = FontWeight.Black)
                                     }
                                 }
                             }
@@ -141,7 +142,7 @@ fun FarmerDashboardScreen(
                                 onClick = onBookSlotClick,
                                 modifier = Modifier.weight(1f).height(56.dp),
                                 shape = RoundedCornerShape(20.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black)
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = Color.White)
                             ) {
                                 Text("Add Produce", fontWeight = FontWeight.Black)
                             }
@@ -162,10 +163,10 @@ fun FarmerDashboardScreen(
                                 Icon(Icons.Outlined.ErrorOutline, null, tint = MaterialTheme.colorScheme.error)
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
-                                    Text(text = error!!, color = MaterialTheme.colorScheme.onErrorContainer, style = MaterialTheme.typography.bodyMedium)
-                                    Text(text = "Target: https://agriconnect-backend-2jig.onrender.com/", color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f), style = MaterialTheme.typography.labelSmall)
+                                    Text(text = error!!, color = MaterialTheme.colorScheme.onErrorContainer, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Black)
+                                    Text(text = "Target: https://agriconnect-backend-2jig.onrender.com/", color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black)
                                     TextButton(onClick = { viewModel.fetchDashboard(token, userId) }) {
-                                        Text("RETRY SYNC", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+                                        Text("RETRY SYNC", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Black)
                                     }
                                 }
                             }

@@ -126,7 +126,7 @@ fun MerchantPortalScreen(
                                 Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                                     Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(Color(0xFFF59E0B)))
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("India's verified farm marketplace", style = MaterialTheme.typography.labelSmall, color = Color(0xFFF59E0B))
+                                    Text("India's verified farm marketplace", style = MaterialTheme.typography.labelSmall, color = Color(0xFFF59E0B), fontWeight = FontWeight.Black)
                                 }
                             }
                             
@@ -136,13 +136,15 @@ fun MerchantPortalScreen(
                                 text = "FIELD TO MARKET.",
                                 color = Color.White,
                                 style = MaterialTheme.typography.displayLarge,
-                                lineHeight = 38.sp
+                                lineHeight = 38.sp,
+                                fontWeight = FontWeight.Black
                             )
                             Text(
                                 text = "MEDIATED. VERIFIED.",
                                 color = Emerald600,
                                 style = MaterialTheme.typography.displayLarge,
-                                lineHeight = 38.sp
+                                lineHeight = 38.sp,
+                                fontWeight = FontWeight.Black
                             )
                             
                             Spacer(modifier = Modifier.height(16.dp))
@@ -151,7 +153,8 @@ fun MerchantPortalScreen(
                                 text = "Source inventory directly from approved farmers across India. Zero mediator fees.",
                                 color = Color.White.copy(alpha = 0.8f),
                                 style = MaterialTheme.typography.bodyLarge,
-                                lineHeight = 22.sp
+                                lineHeight = 22.sp,
+                                fontWeight = FontWeight.ExtraBold
                             )
                             
                             Spacer(modifier = Modifier.height(32.dp))
@@ -173,11 +176,12 @@ fun MerchantPortalScreen(
                                         text = "Search crops, regions...", 
                                         modifier = Modifier.weight(1f),
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = Color.LightGray
+                                        color = Color.LightGray,
+                                        fontWeight = FontWeight.Black
                                     )
                                     Button(
                                         onClick = onExploreClick,
-                                        colors = ButtonDefaults.buttonColors(containerColor = Emerald600),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
                                         shape = RoundedCornerShape(12.dp),
                                         modifier = Modifier.height(44.dp)
                                     ) {
@@ -207,12 +211,14 @@ fun MerchantPortalScreen(
                                     Text(
                                         text = merchantError ?: productError ?: "Sync error",
                                         color = MaterialTheme.colorScheme.onErrorContainer,
-                                        style = MaterialTheme.typography.bodyMedium
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Black
                                     )
                                     Text(
                                         text = "Target: https://agriconnect-backend-2jig.onrender.com/",
                                         color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f),
-                                        style = MaterialTheme.typography.labelSmall
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Black
                                     )
                                 }
                             }
