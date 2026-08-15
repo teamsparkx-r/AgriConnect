@@ -500,8 +500,11 @@ def get_buyer_bookings(user_id: str, db: Session = Depends(get_db)):
 @router.get("/bookings/{booking_id}")
 def get_booking_details(booking_id: str, user_id: str, db: Session = Depends(get_db)):
     """Get detailed booking info"""
+    # Try searching by human-readable ID first, then fallback to UUID
     booking = db.query(Booking).filter(Booking.booking_id == booking_id).first()
-    
+    if not booking:
+        booking = db.query(Booking).filter(Booking.id == booking_id).first()
+
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
     
