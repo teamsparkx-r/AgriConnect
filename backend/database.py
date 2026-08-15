@@ -54,6 +54,11 @@ def init_db():
     """Initialize database - create all tables"""
     print(f"Connecting to database: {DATABASE_URL.split('@')[-1]}") # Log host safely
     Base.metadata.create_all(bind=engine)
+
+    # Run custom migrations
+    from migrate import migrate
+    migrate()
+
     print("Database tables initialized successfully!")
 
 # Dependency to get DB session
