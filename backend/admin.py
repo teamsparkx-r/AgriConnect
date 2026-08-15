@@ -49,9 +49,10 @@ def get_admin_dashboard(db: Session = Depends(get_db)):
             "time": u.created_at
         })
     for b in recent_bookings:
+        product_name = b.product.name if b.product else "Unknown Product"
         activity.append({
             "type": "booking",
-            "message": f"Merchant booked '{b.product.name}'",
+            "message": f"Merchant booked '{product_name}'",
             "time": b.created_at
         })
 

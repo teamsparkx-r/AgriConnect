@@ -238,9 +238,9 @@ def get_farmer_dashboard(user_id: str, db: Session = Depends(get_db)):
         "recent_bookings": [
             {
                 "id": b.booking_id,
-                "product_name": b.product.name,
-                "buyer_name": b.buyer.user.full_name,
-                "status": b.status.value,
+                "product_name": b.product.name if b.product else "Unknown Product",
+                "buyer_name": b.buyer.user.full_name if b.buyer and b.buyer.user else "Anonymous Buyer",
+                "status": b.status.value if hasattr(b.status, 'value') else str(b.status),
                 "created_at": b.created_at
             } for b in recent_bookings
         ],

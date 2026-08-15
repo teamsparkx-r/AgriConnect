@@ -240,9 +240,9 @@ def get_merchant_dashboard(user_id: str, db: Session = Depends(get_db)):
         "recent_bookings": [
             {
                 "id": f"AGR-{b.booking_id}",
-                "product": b.product.name,
-                "farmer": b.farmer.user.full_name,
-                "status": b.status.value,
+                "product": b.product.name if b.product else "Unknown Product",
+                "farmer": b.farmer.user.full_name if b.farmer and b.farmer.user else "Verified Farmer",
+                "status": b.status.value if hasattr(b.status, 'value') else str(b.status),
                 "color": "bg-green-100 text-green-700" if b.status == BookingStatus.CONFIRMED else "bg-blue-100 text-blue-700"
             } for b in recent_bookings
         ],
