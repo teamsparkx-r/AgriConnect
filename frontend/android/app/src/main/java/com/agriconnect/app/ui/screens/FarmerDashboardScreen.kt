@@ -44,6 +44,7 @@ fun FarmerDashboardScreen(
 ) {
     val dashboardData by viewModel.dashboardData
     val loading by viewModel.loading
+    val hasUnread by viewModel.hasUnread
 
     LaunchedEffect(token, userId) {
         if (token.isNotEmpty()) {
@@ -55,6 +56,7 @@ fun FarmerDashboardScreen(
         containerColor = AgriBackground,
         topBar = {
             AgriTopAppBar(
+                hasUnreadNotifications = hasUnread,
                 onMenuClick = onMenuClick,
                 onProfileClick = onProfileClick,
                 onNotificationsClick = onNotificationsClick

@@ -402,6 +402,18 @@ def get_admin_notifications(db: Session = Depends(get_db)):
         ]
     }
 
+@router.post("/notifications/read-all")
+def mark_all_notifications_read(db: Session = Depends(get_db)):
+    """Mark all notifications as read for admin"""
+    from models import Notification
+    admin_id = "2687eded-053d-4cbc-8a06-18be9ad5888b"
+    db.query(Notification).filter(
+        Notification.user_id == admin_id,
+        Notification.is_read == False
+    ).update({"is_read": True})
+    db.commit()
+    return {"success": True, "message": "All notifications marked as read"}
+
 # ==================== ANNOUNCEMENTS ====================
 
 class AnnouncementRequest(BaseModel):

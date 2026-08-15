@@ -102,6 +102,12 @@ interface AgriConnectApi {
         @Path("user_id") userId: String
     ): Response<Map<String, Any>>
 
+    @POST("api/farmer/notifications/read-all")
+    suspend fun markFarmerNotificationsRead(
+        @Header("Authorization") token: String,
+        @Query("user_id") userId: String
+    ): Response<Map<String, Any>>
+
     // Buyer/Discovery Endpoints
     @GET("api/buyer/dashboard/{user_id}")
     suspend fun getBuyerDashboard(
@@ -153,6 +159,12 @@ interface AgriConnectApi {
     suspend fun getBuyerNotifications(
         @Header("Authorization") token: String,
         @Path("user_id") userId: String
+    ): Response<Map<String, Any>>
+
+    @POST("api/buyer/notifications/read-all")
+    suspend fun markBuyerNotificationsRead(
+        @Header("Authorization") token: String,
+        @Query("user_id") userId: String
     ): Response<Map<String, Any>>
 
     // Saved Products
@@ -221,6 +233,11 @@ interface AgriConnectApi {
 
     @GET("api/admin/notifications")
     suspend fun getAdminNotifications(
+        @Header("Authorization") token: String
+    ): Response<Map<String, Any>>
+
+    @POST("api/admin/notifications/read-all")
+    suspend fun markAdminNotificationsRead(
         @Header("Authorization") token: String
     ): Response<Map<String, Any>>
     

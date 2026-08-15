@@ -825,6 +825,16 @@ def get_notifications(user_id: str, db: Session = Depends(get_db)):
         "unread_count": len([n for n in notifications if not n.is_read])
     }
 
+@router.post("/notifications/read-all")
+def mark_all_notifications_read(user_id: str, db: Session = Depends(get_db)):
+    """Mark all notifications as read for buyer"""
+    db.query(Notification).filter(
+        Notification.user_id == user_id,
+        Notification.is_read == False
+    ).update({"is_read": True})
+    db.commit()
+    return {"success": True, "message": "All notifications marked as read"}
+
 @router.get("/farmers/{farmer_id}")
 def get_farmer_public_profile(farmer_id: str, db: Session = Depends(get_db)):
     """Get a farmer's public profile for buyers"""

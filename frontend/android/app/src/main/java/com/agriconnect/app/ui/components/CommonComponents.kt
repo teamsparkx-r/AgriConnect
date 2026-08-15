@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 fun AgriTopAppBar(
     title: String = "AgriConnect",
     showLogo: Boolean = true,
+    hasUnreadNotifications: Boolean = false,
     onMenuClick: (() -> Unit)? = null,
     onProfileClick: (() -> Unit)? = null,
     onNotificationsClick: (() -> Unit)? = null,
@@ -76,7 +77,22 @@ fun AgriTopAppBar(
         actions = {
             if (onNotificationsClick != null) {
                 IconButton(onClick = onNotificationsClick) {
-                    Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = White)
+                    BadgedBox(
+                        badge = {
+                            if (hasUnreadNotifications) {
+                                Badge(
+                                    containerColor = Color.Red,
+                                    modifier = Modifier.size(8.dp).offset(x = (-4).dp, y = 4.dp)
+                                )
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Notifications,
+                            contentDescription = "Notifications",
+                            tint = White
+                        )
+                    }
                 }
             }
             if (onProfileClick != null) {

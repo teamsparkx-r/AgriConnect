@@ -38,6 +38,7 @@ fun AdminDashboardScreen(
     val dashboardData by viewModel.dashboardData
     val loading by viewModel.loading
     val error by viewModel.error
+    val hasUnread by viewModel.hasUnread
 
     LaunchedEffect(key1 = true) {
         viewModel.fetchDashboard(token)
@@ -49,6 +50,7 @@ fun AdminDashboardScreen(
         topBar = {
             AgriTopAppBar(
                 title = "Admin Panel",
+                hasUnreadNotifications = hasUnread,
                 onMenuClick = onMenuClick,
                 onNotificationsClick = onNotificationsClick,
                 onProfileClick = onProfileClick

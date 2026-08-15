@@ -31,6 +31,8 @@ class MerchantViewModel : ViewModel() {
     private val _notifications = mutableStateOf<List<Map<String, Any>>>(emptyList())
     val notifications: State<List<Map<String, Any>>> = _notifications
 
+    val hasUnread = mutableStateOf(false)
+
     fun fetchDashboard(token: String, userId: String) {
         viewModelScope.launch {
             _loading.value = true
@@ -91,12 +93,26 @@ class MerchantViewModel : ViewModel() {
             try {
                 val response = RetrofitClient.instance.getBuyerNotifications("Bearer $token", userId)
                 if (response.isSuccessful) {
-                    _notifications.value = (response.body()?.get("notifications") as? List<Map<String, Any>>) ?: emptyList()
+                    val list = (response.body()?.get("notifications") as? List<Map<String, Any>>) ?: emptyList()
+                    _notifications.value = list
+                    hasUnread.value = list.any { (it["is_read"] as? Boolean) == false }
                 }
             } catch (e: Exception) {
                 // error handling
             } finally {
                 _loading.value = false
+            }
+        }
+    }
+
+    fun markAsRead(token: String, userId: String) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.markBuyerNotificationsRead("Bearer $token", userId)
+                if (response.isSuccessful) {
+                    hasUnread.value = false
+                }
+            } catch (e: Exception) {
             }
         }
     }

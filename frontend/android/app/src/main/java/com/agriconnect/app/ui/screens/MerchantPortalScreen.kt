@@ -48,6 +48,7 @@ fun MerchantPortalScreen(
     val products by productViewModel.products
     val productLoading by productViewModel.loading
     val dashboardData by merchantViewModel.dashboardData
+    val hasUnread by merchantViewModel.hasUnread
 
     val categories = listOf("Vegetables", "Fruits", "Grains", "Pulses", "Spices")
 
@@ -55,6 +56,7 @@ fun MerchantPortalScreen(
         if (token.isNotEmpty()) {
             productViewModel.fetchDiscoveryProducts(token)
             merchantViewModel.fetchDashboard(token, userId)
+            merchantViewModel.fetchNotifications(token, userId)
         }
     }
 
@@ -62,6 +64,7 @@ fun MerchantPortalScreen(
         containerColor = AgriBackground,
         topBar = {
             AgriTopAppBar(
+                hasUnreadNotifications = hasUnread,
                 onProfileClick = onProfileClick,
                 onNotificationsClick = onNotificationsClick,
                 onMenuClick = onMenuClick

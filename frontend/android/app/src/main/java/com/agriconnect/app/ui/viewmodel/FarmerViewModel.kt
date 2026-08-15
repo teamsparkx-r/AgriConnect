@@ -24,6 +24,11 @@ class FarmerViewModel : ViewModel() {
     private val _error = mutableStateOf<String?>(null)
     val error: State<String?> = _error
 
+    private val _notifications = mutableStateOf<List<Map<String, Any>>>(emptyList())
+    val notifications: State<List<Map<String, Any>>> = _notifications
+    
+    val hasUnread = mutableStateOf(false)
+
     fun fetchDashboard(token: String, userId: String) {
         viewModelScope.launch {
             _loading.value = true
@@ -31,7 +36,10 @@ class FarmerViewModel : ViewModel() {
             try {
                 val response = RetrofitClient.instance.getFarmerDashboard("Bearer $token", userId)
                 if (response.isSuccessful) {
-                    _dashboardData.value = response.body()
+                    val body = response.body()
+                    _dashboardData.value = body
+                    // Backend returns unread count in stats
+                    hasUnread.value = (body?.stats?.unreadMessages ?: 0) > 0
                 } else {
                     _error.value = "Failed to sync with farmer network."
                 }
@@ -39,6 +47,36 @@ class FarmerViewModel : ViewModel() {
                 _error.value = "Dashboard connection offline."
             } finally {
                 _loading.value = false
+            }
+        }
+    }
+
+    fun fetchNotifications(token: String, userId: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val response = RetrofitClient.instance.getNotifications("Bearer $token", userId)
+                if (response.isSuccessful) {
+                    val list = (response.body()?.get("notifications") as? List<Map<String, Any>>) ?: emptyList()
+                    _notifications.value = list
+                    hasUnread.value = list.any { (it["is_read"] as? Boolean) == false }
+                }
+            } catch (e: Exception) {
+                // error handling
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun markAsRead(token: String, userId: String) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.markFarmerNotificationsRead("Bearer $token", userId)
+                if (response.isSuccessful) {
+                    hasUnread.value = false
+                }
+            } catch (e: Exception) {
             }
         }
     }

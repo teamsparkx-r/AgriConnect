@@ -40,18 +40,34 @@ fun NotificationsScreen(
     LaunchedEffect(key1 = true) {
         if (token.isNotEmpty()) {
             when (role) {
-                "farmer" -> farmerViewModel?.fetchDashboard(token, userId) // Use dashboard for notifications for now or add specific fetch
-                "buyer" -> merchantViewModel?.fetchNotifications(token, userId)
-                "admin" -> adminViewModel?.fetchNotifications(token)
+                "farmer" -> {
+                    farmerViewModel?.fetchNotifications(token, userId)
+                    farmerViewModel?.markAsRead(token, userId)
+                }
+                "buyer" -> {
+                    merchantViewModel?.fetchNotifications(token, userId)
+                    merchantViewModel?.markAsRead(token, userId)
+                }
+                "admin" -> {
+                    adminViewModel?.fetchNotifications(token)
+                    adminViewModel?.markAsRead(token)
+                }
             }
         }
     }
 
     val notifications = when (role) {
-        "farmer" -> farmerViewModel?.dashboardData?.value?.notifications ?: emptyList()
+        "farmer" -> farmerViewModel?.notifications?.value ?: emptyList()
         "buyer" -> merchantViewModel?.notifications?.value ?: emptyList()
         "admin" -> adminViewModel?.notifications?.value ?: emptyList()
         else -> emptyList()
+    }
+
+    val unread = when (role) {
+        "farmer" -> (farmerViewModel?.dashboardData?.value?.stats?.unreadMessages ?: 0) > 0
+        "buyer" -> merchantViewModel?.hasUnread?.value ?: false
+        "admin" -> adminViewModel?.hasUnread?.value ?: false
+        else -> false
     }
 
     Scaffold(
@@ -59,6 +75,7 @@ fun NotificationsScreen(
         topBar = {
             AgriTopAppBar(
                 title = "Notifications",
+                hasUnreadNotifications = unread,
                 onMenuClick = onMenuClick,
                 onBackClick = onBack
             )
@@ -81,15 +98,16 @@ fun NotificationsScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(notifications) { item ->
-                    val type = (item as? Map<String, Any>)?.get("notification_type") as? String ?: (item as? com.agriconnect.data.api.FarmerNotification)?.type ?: ""
-                    val title = (item as? Map<String, Any>)?.get("title") as? String ?: (item as? com.agriconnect.data.api.FarmerNotification)?.title ?: "Notification"
-                    val message = (item as? Map<String, Any>)?.get("message") as? String ?: (item as? com.agriconnect.data.api.FarmerNotification)?.message ?: ""
-                    val relatedId = (item as? Map<String, Any>)?.get("related_id") as? String ?: (item as? com.agriconnect.data.api.FarmerNotification)?.relatedId ?: ""
+                    val type = item["notification_type"] as? String ?: ""
+                    val title = item["title"] as? String ?: "Notification"
+                    val message = item["message"] as? String ?: ""
+                    val relatedId = item["related_id"] as? String ?: ""
+                    val createdAt = item["created_at"] as? String ?: ""
                     
                     NotificationCard(
                         title = title,
                         description = message,
-                        time = (item as? Map<String, Any>)?.get("created_at") as? String ?: (item as? com.agriconnect.data.api.FarmerNotification)?.createdAt ?: "",
+                        time = createdAt,
                         icon = when (type) {
                             "new_enquiry", "counter_offer", "merchant_responded" -> Icons.Default.Handshake
                             "order_confirmed" -> Icons.Default.CheckCircle

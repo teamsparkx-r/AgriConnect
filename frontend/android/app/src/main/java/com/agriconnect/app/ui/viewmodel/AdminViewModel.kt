@@ -33,6 +33,8 @@ class AdminViewModel : ViewModel() {
 
     private val _notifications = mutableStateOf<List<Map<String, Any>>>(emptyList())
     val notifications: State<List<Map<String, Any>>> = _notifications
+    
+    val hasUnread = mutableStateOf(false)
 
     private val _loading = mutableStateOf(false)
     val loading: State<Boolean> = _loading
@@ -124,7 +126,9 @@ class AdminViewModel : ViewModel() {
                 if (response.isSuccessful) {
                     val body = response.body()
                     if (body != null && body["success"] == true) {
-                        _notifications.value = (body["notifications"] as? List<Map<String, Any>>) ?: emptyList()
+                        val list = (body["notifications"] as? List<Map<String, Any>>) ?: emptyList()
+                        _notifications.value = list
+                        hasUnread.value = list.any { (it["is_read"] as? Boolean) == false }
                     }
                 }
             } catch (e: Exception) {
@@ -148,6 +152,18 @@ class AdminViewModel : ViewModel() {
                 // handle error
             } finally {
                 _loading.value = false
+            }
+        }
+    }
+
+    fun markAsRead(token: String) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.markAdminNotificationsRead("Bearer $token")
+                if (response.isSuccessful) {
+                    hasUnread.value = false
+                }
+            } catch (e: Exception) {
             }
         }
     }
