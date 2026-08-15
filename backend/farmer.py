@@ -65,6 +65,11 @@ class ProductUpdateRequest(BaseModel):
     village: Optional[str] = None
     farm_address: Optional[str] = None
 
+class CounterOfferRequest(BaseModel):
+    quantity: float
+    price: float
+    message: Optional[str] = None
+
 # ==================== ENDPOINTS ====================
 
 @router.post("/register")
@@ -112,7 +117,8 @@ def register_farmer(request: FarmerRegisterRequest, db: Session = Depends(get_db
                 "id": user.id,
                 "role": user.role.value,
                 "mobile": user.mobile_number,
-                "full_name": user.full_name
+                "full_name": user.full_name,
+                "account_status": user.account_status.value
             }
         }
     except Exception as e:
@@ -170,7 +176,8 @@ def login_farmer(request: FarmerLoginRequest, db: Session = Depends(get_db)):
         "refresh_token": refresh_token,
         "user_id": user.id,
         "farmer_id": farmer.id if farmer else None,
-        "role": user.role.value
+        "role": user.role.value,
+        "account_status": user.account_status.value
     }
 
 @router.get("/dashboard")
@@ -242,6 +249,7 @@ def get_farmer_dashboard(user_id: str, db: Session = Depends(get_db)):
                 "title": n.title,
                 "message": n.message,
                 "type": n.notification_type,
+                "related_id": n.related_id,
                 "created_at": n.created_at
             } for n in recent_notifications
         ]
@@ -250,6 +258,10 @@ def get_farmer_dashboard(user_id: str, db: Session = Depends(get_db)):
 @router.post("/products")
 def create_product(request: ProductCreateRequest, user_id: str, db: Session = Depends(get_db)):
     """Create a new product listing"""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user or user.account_status != AccountStatus.ACTIVE:
+        raise HTTPException(status_code=403, detail="Account not approved for listing crops.")
+
     farmer = db.query(Farmer).filter(Farmer.user_id == user_id).first()
     
     if not farmer:
@@ -495,6 +507,8 @@ def get_booking_details(booking_id: str, user_id: str, db: Session = Depends(get
             "product_quantity": booking.product.quantity,
             "product_unit": booking.product.unit,
             "expected_price": booking.product.expected_price,
+            "requested_quantity": booking.requested_quantity,
+            "negotiated_price": booking.negotiated_price,
             "buyer_id_alias": f"MERCH-{booking.buyer_id[:6].upper()}",
             "buyer_type": booking.buyer.buyer_type.value,
             "buyer_district": booking.buyer.district,
@@ -502,6 +516,126 @@ def get_booking_details(booking_id: str, user_id: str, db: Session = Depends(get
             "created_at": booking.created_at.isoformat()
         }
     }
+
+@router.post("/bookings/{booking_id}/accept")
+def farmer_accept_offer(booking_id: str, user_id: str, db: Session = Depends(get_db)):
+    """Farmer accepts the current offer from Merchant"""
+    booking = db.query(Booking).filter(Booking.booking_id == booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    farmer = db.query(Farmer).filter(Farmer.user_id == user_id).first()
+    if booking.farmer_id != farmer.id:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    booking.status = BookingStatus.CONFIRMED
+    booking.updated_at = datetime.utcnow()
+
+    # Create history entry
+    from models import NegotiationHistory
+    negotiation = NegotiationHistory(
+        booking_id=booking.id,
+        sender_id=user_id,
+        receiver_id=booking.buyer.user_id,
+        quantity=booking.requested_quantity,
+        price=booking.negotiated_price,
+        status=BookingStatus.ACCEPTED
+    )
+    db.add(negotiation)
+
+    # Notify merchant
+    new_notif = Notification(
+        user_id=booking.buyer.user_id,
+        title="Deal Confirmed!",
+        message=f"Farmer has accepted your offer for {booking.product.name}. Order is now CONFIRMED.",
+        notification_type="order_confirmed",
+        related_id=booking.booking_id
+    )
+    db.add(new_notif)
+    db.commit()
+
+    return {"success": True, "message": "Offer accepted and order confirmed."}
+
+@router.post("/bookings/{booking_id}/reject")
+def farmer_reject_offer(booking_id: str, user_id: str, db: Session = Depends(get_db)):
+    """Farmer rejects the current offer from Merchant"""
+    booking = db.query(Booking).filter(Booking.booking_id == booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    farmer = db.query(Farmer).filter(Farmer.user_id == user_id).first()
+    if booking.farmer_id != farmer.id:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    booking.status = BookingStatus.REJECTED
+    booking.updated_at = datetime.utcnow()
+
+    # Record history
+    from models import NegotiationHistory
+    negotiation = NegotiationHistory(
+        booking_id=booking.id,
+        sender_id=user_id,
+        receiver_id=booking.buyer.user_id,
+        quantity=booking.requested_quantity,
+        price=booking.negotiated_price,
+        status=BookingStatus.REJECTED
+    )
+    db.add(negotiation)
+
+    # Notify merchant
+    new_notif = Notification(
+        user_id=booking.buyer.user_id,
+        title="Inquiry Rejected",
+        message=f"Farmer has rejected the enquiry for {booking.product.name}.",
+        notification_type="negotiation_rejected",
+        related_id=booking.booking_id
+    )
+    db.add(new_notif)
+    db.commit()
+
+    return {"success": True, "message": "Inquiry rejected."}
+
+@router.post("/bookings/{booking_id}/counter")
+def farmer_counter_offer(booking_id: str, user_id: str, request: CounterOfferRequest, db: Session = Depends(get_db)):
+    """Farmer sends a counter offer to Merchant"""
+    booking = db.query(Booking).filter(Booking.booking_id == booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    farmer = db.query(Farmer).filter(Farmer.user_id == user_id).first()
+    if booking.farmer_id != farmer.id:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    booking.status = BookingStatus.COUNTER_OFFER
+    booking.requested_quantity = request.quantity
+    booking.negotiated_price = request.price
+    booking.updated_at = datetime.utcnow()
+
+    # Record history
+    from models import NegotiationHistory
+    negotiation = NegotiationHistory(
+        booking_id=booking.id,
+        sender_id=user_id,
+        receiver_id=booking.buyer.user_id,
+        quantity=request.quantity,
+        price=request.price,
+        message=request.message,
+        status=BookingStatus.COUNTER_OFFER
+    )
+    db.add(negotiation)
+
+    # Notify merchant
+    new_notif = Notification(
+        user_id=booking.buyer.user_id,
+        title="New Counter Offer",
+        message=f"Farmer has responded to your {booking.product.name} enquiry with a counter offer: {request.quantity} {booking.product.unit} @ ₹{request.price}/{booking.product.unit}",
+        notification_type="counter_offer",
+        related_id=booking.booking_id
+    )
+    db.add(new_notif)
+    db.commit()
+
+    return {"success": True, "message": "Counter offer sent successfully."}
 
 @router.get("/profile/{user_id}")
 def get_farmer_profile(user_id: str, db: Session = Depends(get_db)):
@@ -593,6 +727,7 @@ def get_notifications(user_id: str, db: Session = Depends(get_db)):
                 "title": n.title,
                 "message": n.message,
                 "notification_type": n.notification_type,
+                "related_id": n.related_id,
                 "is_read": n.is_read,
                 "created_at": n.created_at.isoformat()
             }

@@ -212,6 +212,60 @@ def get_user_detail(user_id: str, db: Session = Depends(get_db)):
 
     return {"success": True, "user": detail}
 
+@router.post("/users/{user_id}/approve")
+def approve_user(user_id: str, db: Session = Depends(get_db)):
+    """Approve a pending user registration"""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.account_status = AccountStatus.ACTIVE
+
+    # Create notification for user
+    from models import Notification
+    message = "Your AgriConnect account has been approved. You can now list and sell your crops." if user.role == UserRole.FARMER else "Your AgriConnect account has been approved. You can now send enquiries and place orders."
+    new_notif = Notification(
+        user_id=user.id,
+        title="Account Approved",
+        message=message,
+        notification_type="account_approved"
+    )
+    db.add(new_notif)
+
+    # Log action
+    log = AuditLog(admin_id="2687eded-053d-4cbc-8a06-18be9ad5888b", action="approve_user", target_id=user.id)
+    db.add(log)
+
+    db.commit()
+    return {"success": True, "message": "User approved successfully"}
+
+@router.post("/users/{user_id}/reject")
+def reject_user(user_id: str, reason: Optional[str] = None, db: Session = Depends(get_db)):
+    """Reject a pending user registration"""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.account_status = AccountStatus.REJECTED
+
+    # Create notification for user
+    from models import Notification
+    message = f"Your AgriConnect account registration was not approved. Reason: {reason}" if reason else "Your AgriConnect account registration was not approved. Please contact support."
+    new_notif = Notification(
+        user_id=user.id,
+        title="Account Rejected",
+        message=message,
+        notification_type="account_rejected"
+    )
+    db.add(new_notif)
+
+    # Log action
+    log = AuditLog(admin_id="2687eded-053d-4cbc-8a06-18be9ad5888b", action="reject_user", target_id=user.id, reason=reason)
+    db.add(log)
+
+    db.commit()
+    return {"success": True, "message": "User rejected"}
+
 @router.get("/products/{product_id}")
 def get_admin_product_detail(product_id: str, db: Session = Depends(get_db)):
     """Get detailed info for a product listing"""
@@ -319,6 +373,31 @@ def get_audit_logs(db: Session = Depends(get_db)):
                 "reason": l.reason,
                 "time": l.created_at
             } for l in logs
+        ]
+    }
+
+@router.get("/notifications")
+def get_admin_notifications(db: Session = Depends(get_db)):
+    """Get notifications for the admin"""
+    from models import Notification
+    admin_id = "2687eded-053d-4cbc-8a06-18be9ad5888b"
+    notifications = db.query(Notification).filter(
+        Notification.user_id == admin_id
+    ).order_by(desc(Notification.created_at)).all()
+
+    return {
+        "success": True,
+        "notifications": [
+            {
+                "id": n.id,
+                "title": n.title,
+                "message": n.message,
+                "notification_type": n.notification_type,
+                "related_id": n.related_id,
+                "is_read": n.is_read,
+                "created_at": n.created_at.isoformat()
+            }
+            for n in notifications
         ]
     }
 

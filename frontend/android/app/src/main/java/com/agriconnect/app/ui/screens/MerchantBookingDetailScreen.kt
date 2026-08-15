@@ -17,18 +17,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.agriconnect.app.ui.components.AgriCard
-import com.agriconnect.app.ui.components.AgriSectionTitle
+import com.agriconnect.app.ui.components.*
 import com.agriconnect.app.ui.theme.*
-import com.agriconnect.app.ui.viewmodel.FarmerViewModel
+import com.agriconnect.app.ui.viewmodel.MerchantViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FarmerBookingDetailScreen(
+fun MerchantBookingDetailScreen(
     bookingId: String,
     token: String,
     userId: String,
-    viewModel: FarmerViewModel,
+    viewModel: MerchantViewModel,
     onBack: () -> Unit
 ) {
     val bookingData by viewModel.currentBooking
@@ -46,8 +45,8 @@ fun FarmerBookingDetailScreen(
     Scaffold(
         containerColor = AgriBackground,
         topBar = {
-            com.agriconnect.app.ui.components.AgriTopAppBar(
-                title = "Inquiry Details",
+            AgriTopAppBar(
+                title = "Order Details",
                 showLogo = false,
                 onBackClick = onBack
             )
@@ -65,7 +64,7 @@ fun FarmerBookingDetailScreen(
             val booking = (bookingData?.get("booking") as? Map<String, Any>) ?: emptyMap()
             val status = (booking["status"] as? String) ?: "pending"
             val unit = (booking["product_unit"] as? String) ?: "kg"
-
+            
             val reqQty = (booking["requested_quantity"] as? Number)?.toFloat() 
                 ?: (booking["product_quantity"] as? Number)?.toFloat() 
                 ?: (booking["quantity"] as? Number)?.toFloat() 
@@ -82,7 +81,7 @@ fun FarmerBookingDetailScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(24.dp)
             ) {
-                // Merchant Header
+                // Farmer Header
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
@@ -96,13 +95,13 @@ fun FarmerBookingDetailScreen(
                     Spacer(modifier = Modifier.width(20.dp))
                     Column {
                         Text(
-                            text = booking["buyer_id_alias"] as? String ?: "VERIFIED MERCHANT",
+                            text = booking["farmer_name"] as? String ?: "VERIFIED FARMER",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Black,
                             color = Gray900
                         )
                         Text(
-                            text = "${booking["buyer_district"] ?: "Unknown"} District",
+                            text = "${booking["farmer_village"] ?: "Remote"} Source",
                             style = MaterialTheme.typography.labelSmall,
                             color = Gray500,
                             fontWeight = FontWeight.Black
@@ -146,7 +145,7 @@ fun FarmerBookingDetailScreen(
                             }
                         }
                         
-                        if (status == "enquiry_sent" || status == "merchant_responded") {
+                        if (status == "counter_offer") {
                             Spacer(modifier = Modifier.height(20.dp))
                             Divider(color = Gray100, thickness = 0.5.dp)
                             Spacer(modifier = Modifier.height(16.dp))
@@ -180,7 +179,7 @@ fun FarmerBookingDetailScreen(
                                     Text("COUNTER", fontWeight = FontWeight.Black, color = AgriPrimary, fontSize = 12.sp)
                                 }
                             }
-                        } else if (status == "counter_offer") {
+                        } else if (status == "enquiry_sent" || status == "merchant_responded") {
                             Spacer(modifier = Modifier.height(20.dp))
                             Divider(color = Gray100, thickness = 0.5.dp)
                             Spacer(modifier = Modifier.height(16.dp))
@@ -190,11 +189,11 @@ fun FarmerBookingDetailScreen(
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = Error.copy(alpha = 0.1f), contentColor = Error)
                             ) {
-                                Text("REJECT & END NEGOTIATION", fontWeight = FontWeight.Black, fontSize = 12.sp)
+                                Text("CANCEL ENQUIRY", fontWeight = FontWeight.Black, fontSize = 12.sp)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                "WAITING FOR MERCHANT", 
+                                "AWAITING FARMER RESPONSE", 
                                 style = MaterialTheme.typography.labelSmall, 
                                 color = Warning, 
                                 fontWeight = FontWeight.Black,
@@ -214,7 +213,7 @@ fun FarmerBookingDetailScreen(
                     border = androidx.compose.foundation.BorderStroke(1.dp, Gray100.copy(alpha = 0.5f))
                 ) {
                     Column(modifier = Modifier.padding(24.dp)) {
-                        StatusRow("Reservation ID", "#${bookingId.take(8).uppercase()}")
+                        StatusRow("Order ID", "#${bookingId.take(8).uppercase()}")
                         Divider(modifier = Modifier.padding(vertical = 16.dp), thickness = 0.5.dp, color = Gray100)
                         
                         val statusColor = when(status.lowercase()) {
@@ -226,7 +225,7 @@ fun FarmerBookingDetailScreen(
                         }
                         
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = "Registry Status", style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Black)
+                            Text(text = "Current Status", style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Black)
                             Surface(color = statusColor.copy(alpha = 0.1f), shape = RoundedCornerShape(8.dp)) {
                                 Text(
                                     text = status.replace("_", " ").uppercase(),
@@ -239,7 +238,7 @@ fun FarmerBookingDetailScreen(
                         }
 
                         Divider(modifier = Modifier.padding(vertical = 16.dp), thickness = 0.5.dp, color = Color.LightGray.copy(alpha = 0.3f))
-                        StatusRow("Creation Date", (booking["created_at"] as? String)?.take(10) ?: "N/A")
+                        StatusRow("Booked On", (booking["created_at"] as? String)?.take(10) ?: "N/A")
                     }
                 }
 
@@ -254,7 +253,7 @@ fun FarmerBookingDetailScreen(
                     ) {
                         Icon(Icons.Default.Call, null)
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("CONTACT MERCHANT", fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+                        Text("CONTACT FARMER", fontWeight = FontWeight.Black, letterSpacing = 1.sp)
                     }
                 }
             }
@@ -270,23 +269,23 @@ fun FarmerBookingDetailScreen(
             title = { Text("Send Counter Offer", fontWeight = FontWeight.Black) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    com.agriconnect.app.ui.components.AgriTextField(
+                    AgriTextField(
                         value = counterQty,
                         onValueChange = { counterQty = it },
                         label = "Quantity ($unit)",
                         keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
                     )
-                    com.agriconnect.app.ui.components.AgriTextField(
+                    AgriTextField(
                         value = counterPrice,
                         onValueChange = { counterPrice = it },
                         label = "Counter Price (₹ / $unit)",
                         keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
                     )
-                    com.agriconnect.app.ui.components.AgriTextField(
+                    AgriTextField(
                         value = counterMessage,
                         onValueChange = { counterMessage = it },
-                        label = "Message to Merchant",
-                        placeholder = "e.g. My best price for this quantity"
+                        label = "Message to Farmer",
+                        placeholder = "e.g. Can we meet halfway?"
                     )
                 }
             },
@@ -314,13 +313,5 @@ fun FarmerBookingDetailScreen(
             containerColor = White,
             shape = RoundedCornerShape(24.dp)
         )
-    }
-}
-
-@Composable
-fun StatusRow(label: String, value: String) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(text = label, style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Black)
-        Text(text = value, style = MaterialTheme.typography.bodyMedium, color = Gray900, fontWeight = FontWeight.Black)
     }
 }

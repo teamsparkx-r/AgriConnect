@@ -15,21 +15,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.agriconnect.app.ui.components.AgriTopAppBar
 import com.agriconnect.app.ui.theme.Emerald600
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CropManagementScreen() {
+fun CropManagementScreen(
+    onMenuClick: () -> Unit = {},
+    onBack: () -> Unit = {}
+) {
     val crops = listOf("Cotton", "Paddy", "Maize", "Red Chilli", "Turmeric")
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Crop Management", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = { }) { Icon(Icons.Default.ArrowBack, null) }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+            AgriTopAppBar(
+                title = "Crop Management",
+                showLogo = false,
+                onMenuClick = onMenuClick,
+                onBackClick = onBack
             )
         },
         floatingActionButton = {

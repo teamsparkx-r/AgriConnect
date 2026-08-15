@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.agriconnect.app.ui.components.*
-import com.agriconnect.app.ui.theme.Emerald600
+import com.agriconnect.app.ui.theme.*
 import com.agriconnect.app.ui.viewmodel.AuthViewModel
 import com.agriconnect.app.ui.viewmodel.ProductViewModel
 import com.agriconnect.app.ui.viewmodel.MerchantViewModel
@@ -46,6 +46,11 @@ fun ProductDetailScreen(
     val product = products.find { it.id == productId } ?: currentProduct
     
     var isBooked by remember { mutableStateOf(false) }
+    var showEnquiryDialog by remember { mutableStateOf(false) }
+    
+    var requestedQty by remember { mutableStateOf(product?.quantity?.toString() ?: "") }
+    var proposedPrice by remember { mutableStateOf(product?.expectedPrice?.toString() ?: "") }
+    var message by remember { mutableStateOf("") }
     
     val savedProducts by merchantViewModel.savedProducts
     val isSaved = savedProducts.contains(productId)
@@ -234,34 +239,36 @@ fun ProductDetailScreen(
                         Spacer(modifier = Modifier.height(24.dp))
 
                         if (!isBooked) {
+                            val context = androidx.compose.ui.platform.LocalContext.current
                             AgriButton(
-                                text = "Secure this supply",
+                                text = "Send Purchase Enquiry",
                                 loading = merchantLoading,
                                 onClick = { 
                                     if (token == null || user == null) onLoginRequired() 
-                                    else {
-                                        merchantViewModel.createBooking(token!!, user!!.id, productId) { success ->
-                                            if (success) isBooked = true
-                                        }
+                                    else if (user?.accountStatus == "pending") {
+                                        android.widget.Toast.makeText(context, "Account verification pending. Enquiries restricted.", android.widget.Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        showEnquiryDialog = true
                                     }
                                 }
                             )
                         } else {
                             Column(modifier = Modifier.animateContentSize()) {
                                 Surface(
-                                    color = MaterialTheme.colorScheme.primary,
+                                    color = Warning.copy(alpha = 0.1f),
                                     shape = RoundedCornerShape(16.dp),
+                                    border = BorderStroke(1.dp, Warning.copy(alpha = 0.5f)),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Row(
                                         modifier = Modifier.padding(20.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Icon(Icons.Default.CheckCircle, null, tint = Color.White, modifier = Modifier.size(32.dp))
+                                        Icon(Icons.Default.Info, null, tint = Warning, modifier = Modifier.size(32.dp))
                                         Spacer(modifier = Modifier.width(16.dp))
                                         Column {
-                                            Text("RESERVATION ACTIVE", color = Color.White, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black)
-                                            Text("Contact Unlocked", color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.bodyMedium)
+                                            Text("ENQUIRY SENT", color = Warning, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black)
+                                            Text("Awaiting farmer response", color = Warning.copy(alpha = 0.8f), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                                         }
                                     }
                                 }
@@ -273,6 +280,79 @@ fun ProductDetailScreen(
                 }
             }
         }
+    }
+
+    if (showEnquiryDialog && product != null) {
+        AlertDialog(
+            onDismissRequest = { showEnquiryDialog = false },
+            title = { Text("Send Purchase Enquiry", fontWeight = FontWeight.Black) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text("Negotiate quantity and price directly with the farmer.", style = MaterialTheme.typography.bodySmall, color = Gray600)
+                    
+                    AgriTextField(
+                        value = requestedQty,
+                        onValueChange = { requestedQty = it },
+                        label = "Required Quantity (${product.unit})",
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                    )
+                    
+                    AgriTextField(
+                        value = proposedPrice,
+                        onValueChange = { proposedPrice = it },
+                        label = "Expected Price (₹ / ${product.unit})",
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                    )
+                    
+                    AgriTextField(
+                        value = message,
+                        onValueChange = { message = it },
+                        label = "Message (Optional)",
+                        placeholder = "e.g. Need delivery by next week"
+                    )
+                }
+            },
+            confirmButton = {
+                val context = androidx.compose.ui.platform.LocalContext.current
+                AgriButton(
+                    text = "CONFIRM ENQUIRY",
+                    onClick = {
+                        val qty = requestedQty.toFloatOrNull() ?: 0f
+                        val price = proposedPrice.toFloatOrNull() ?: 0f
+                        
+                        if (qty <= 0 || price <= 0) {
+                            android.widget.Toast.makeText(context, "Please enter valid quantity and price", android.widget.Toast.LENGTH_SHORT).show()
+                        } else if (qty > (product.quantity ?: 0f)) {
+                            android.widget.Toast.makeText(context, "Requested quantity exceeds available stock (${product.quantity} ${product.unit})", android.widget.Toast.LENGTH_SHORT).show()
+                        } else {
+                            merchantViewModel.createBooking(
+                                token = token ?: "",
+                                userId = user?.id ?: "",
+                                productId = productId,
+                                quantity = qty,
+                                price = price,
+                                message = message
+                            ) { success ->
+                                if (success) {
+                                    isBooked = true
+                                    showEnquiryDialog = false
+                                } else {
+                                    android.widget.Toast.makeText(context, "Failed to send enquiry. Try again.", android.widget.Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    },
+                    modifier = Modifier.width(160.dp)
+                )
+            },
+            dismissButton = {
+                TextButton(onClick = { showEnquiryDialog = false }) {
+                    Text("CANCEL", color = Gray500, fontWeight = FontWeight.Black)
+                }
+            },
+            containerColor = White,
+            shape = RoundedCornerShape(24.dp)
+        )
     }
 }
 

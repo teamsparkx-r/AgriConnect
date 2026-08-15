@@ -3,8 +3,9 @@ package com.agriconnect.app.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.agriconnect.app.ui.components.*
+import com.agriconnect.app.ui.theme.*
 import com.agriconnect.app.ui.viewmodel.ProductViewModel
 import com.agriconnect.data.model.Product
 
@@ -38,66 +40,51 @@ fun MerchantDashboardScreen(
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = AgriBackground,
+        topBar = {
+            AgriTopAppBar(
+                onProfileClick = { },
+                onNotificationsClick = { }
+            )
+        }
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Header
+            // Discovery Toolbar
             Surface(
-                color = Color.White, 
-                shadowElevation = 2.dp,
-                shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+                color = White,
+                shadowElevation = 0.5.dp,
+                border = androidx.compose.foundation.BorderStroke(1.dp, Gray100.copy(alpha = 0.5f))
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "Welcome,",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.Gray
-                            )
-                            Text(
-                                text = "Suresh Traders",
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = Color.Black
-                            )
-                        }
-                        IconButton(
-                            onClick = { },
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                        ) {
-                            Icon(Icons.Default.Notifications, contentDescription = null, tint = Color.Gray)
-                        }
-                    }
+                    Text(
+                        text = "Market Overview",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Gray500,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = "Hello, Merchant! 👋",
+                        style = MaterialTheme.typography.displaySmall,
+                        color = Gray900,
+                        fontWeight = FontWeight.Black
+                    )
 
-                    Spacer(modifier = Modifier.height(28.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
                     // Search
                     AgriTextField(
                         value = "",
                         onValueChange = { },
-                        label = "Search crops or locations",
+                        label = "Marketplace Search",
+                        placeholder = "Search crops or locations...",
                         leadingIcon = Icons.Default.Search,
                         trailingIcon = {
-                            Box(
-                                modifier = Modifier
-                                    .padding(end = 8.dp)
-                                    .size(40.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(MaterialTheme.colorScheme.primary)
-                                    .clickable { },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(Icons.Default.Tune, contentDescription = "Filter", tint = Color.White, modifier = Modifier.size(18.dp))
+                            IconButton(onClick = { }) {
+                                Icon(Icons.Default.Tune, contentDescription = "Filter", tint = Gray400)
                             }
                         }
                     )
@@ -118,12 +105,15 @@ fun MerchantDashboardScreen(
                     Text(text = error!!, color = MaterialTheme.colorScheme.error, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                 }
             } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     items(products) { product ->
-                        SlotCard(product, onClick = { onSlotClick(product.id) })
+                        MerchantProductCard(product, onClick = { onSlotClick(product.id) })
                     }
                 }
             }

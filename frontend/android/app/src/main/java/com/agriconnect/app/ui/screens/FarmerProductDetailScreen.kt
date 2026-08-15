@@ -18,9 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.agriconnect.app.ui.components.AgriButton
-import com.agriconnect.app.ui.components.AgriSectionTitle
-import com.agriconnect.app.ui.theme.Emerald600
+import com.agriconnect.app.ui.components.*
+import com.agriconnect.app.ui.theme.*
 import com.agriconnect.app.ui.viewmodel.ProductViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,40 +27,60 @@ import com.agriconnect.app.ui.viewmodel.ProductViewModel
 fun FarmerProductDetailScreen(
     productId: String,
     token: String,
+    userId: String,
     viewModel: ProductViewModel,
     onEditClick: (String) -> Unit,
     onBack: () -> Unit
 ) {
     val currentProduct by viewModel.currentProduct
     val loading by viewModel.loading
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(productId) {
         viewModel.fetchProductDetail(productId)
     }
 
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Listing?", fontWeight = FontWeight.Black) },
+            text = { Text("This action cannot be undone. Your crop will be removed from the marketplace.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.updateProductStatus(token, userId, productId, "removed") {
+                            onBack()
+                        }
+                        showDeleteDialog = false
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = Error)
+                ) {
+                    Text("DELETE", fontWeight = FontWeight.Black)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("CANCEL", fontWeight = FontWeight.Bold, color = Gray500)
+                }
+            },
+            shape = RoundedCornerShape(24.dp),
+            containerColor = White
+        )
+    }
+
     Scaffold(
-        containerColor = Color(0xFFF9FAFB),
+        containerColor = AgriBackground,
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier.statusBarsPadding(),
-                title = { Text("Supply Node Detail", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = Color.White) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { onEditClick(productId) }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Emerald600)
+            AgriTopAppBar(
+                title = "Supply Node Detail",
+                showLogo = false,
+                onBackClick = onBack
             )
         }
     ) { padding ->
         if (loading && currentProduct == null) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Emerald600)
+                CircularProgressIndicator(color = AgriPrimary)
             }
         } else if (currentProduct == null) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
@@ -78,8 +97,8 @@ fun FarmerProductDetailScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(300.dp)
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .height(320.dp)
+                        .background(Gray100)
                 ) {
                     if (product.images != null && (product.images!!.startsWith("http") || product.images!!.startsWith("content"))) {
                         AsyncImage(
@@ -93,7 +112,28 @@ fun FarmerProductDetailScreen(
                             Icons.Default.Agriculture, 
                             null, 
                             modifier = Modifier.size(100.dp).align(Alignment.Center), 
-                            tint = Emerald600.copy(alpha = 0.2f)
+                            tint = AgriPrimary.copy(alpha = 0.1f)
+                        )
+                    }
+                    
+                    // Status Badge
+                    val status = product.status ?: "active"
+                    val statusColor = when(status.lowercase()) {
+                        "active" -> Success
+                        "sold" -> Info
+                        else -> Warning
+                    }
+                    Surface(
+                        color = statusColor,
+                        shape = RoundedCornerShape(bottomStart = 20.dp),
+                        modifier = Modifier.align(Alignment.TopEnd)
+                    ) {
+                        Text(
+                            text = status.uppercase(),
+                            color = White,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Black,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                         )
                     }
                 }
@@ -101,14 +141,14 @@ fun FarmerProductDetailScreen(
                 Column(modifier = Modifier.padding(24.dp)) {
                     Text(
                         text = product.name ?: "Unknown Crop",
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = MaterialTheme.typography.displayMedium,
                         fontWeight = FontWeight.Black,
-                        color = Color.Black
+                        color = Gray900
                     )
                     Text(
                         text = product.category?.uppercase() ?: "GENERAL",
                         style = MaterialTheme.typography.labelLarge,
-                        color = Emerald600,
+                        color = AgriPrimary,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 1.sp
                     )
@@ -119,9 +159,9 @@ fun FarmerProductDetailScreen(
                     Text(
                         text = product.description ?: "Verified supply node in the decentralized marketplace.",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Color.DarkGray,
+                        color = Gray600,
                         lineHeight = 24.sp,
-                        fontWeight = FontWeight.ExtraBold
+                        fontWeight = FontWeight.Bold
                     )
 
                     Spacer(modifier = Modifier.height(32.dp))
@@ -131,13 +171,60 @@ fun FarmerProductDetailScreen(
                         InfoBox(Modifier.weight(1f), "Market Rate", "₹${product.expectedPrice}/${product.unit}")
                     }
 
-                    Spacer(modifier = Modifier.height(48.dp))
+                    Spacer(modifier = Modifier.height(40.dp))
+                    
+                    AgriSectionTitle(title = "Management Actions")
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    if (product.status?.lowercase() == "active") {
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            AgriButton(
+                                text = "MARK SOLD",
+                                onClick = { viewModel.updateProductStatus(token, userId, productId, "sold") {} },
+                                modifier = Modifier.weight(1f),
+                                containerColor = Info
+                            )
+                            AgriButton(
+                                text = "DEACTIVATE",
+                                onClick = { viewModel.updateProductStatus(token, userId, productId, "draft") {} },
+                                modifier = Modifier.weight(1f),
+                                containerColor = Warning
+                            )
+                        }
+                    } else if (product.status?.lowercase() == "sold") {
+                        AgriButton(
+                            text = "REACTIVATE LISTING",
+                            onClick = { viewModel.updateProductStatus(token, userId, productId, "active") {} },
+                            containerColor = Success
+                        )
+                    } else {
+                        AgriButton(
+                            text = "PUBLISH LISTING",
+                            onClick = { viewModel.updateProductStatus(token, userId, productId, "active") {} },
+                            containerColor = AgriPrimary
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        AgriButton(
+                            text = "EDIT",
+                            onClick = { onEditClick(productId) },
+                            modifier = Modifier.weight(1f),
+                            containerColor = Gray100,
+                            contentColor = Gray900
+                        )
+                        AgriButton(
+                            text = "DELETE",
+                            onClick = { showDeleteDialog = true },
+                            modifier = Modifier.weight(1f),
+                            containerColor = Error.copy(alpha = 0.1f),
+                            contentColor = Error
+                        )
+                    }
 
-                    AgriButton(
-                        text = "UPDATE REGISTRY DATA",
-                        onClick = { onEditClick(productId) },
-                        containerColor = Color.Black
-                    )
+                    Spacer(modifier = Modifier.height(40.dp))
                 }
             }
         }
@@ -149,12 +236,12 @@ fun InfoBox(modifier: Modifier, label: String, value: String) {
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(20.dp),
-        color = Color.White,
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.2f))
+        color = White,
+        border = androidx.compose.foundation.BorderStroke(1.dp, Gray100.copy(alpha = 0.5f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(label, style = MaterialTheme.typography.labelSmall, color = Color.Gray, fontWeight = FontWeight.Black)
-            Text(value, style = MaterialTheme.typography.titleMedium, color = Color.Black, fontWeight = FontWeight.Black)
+            Text(label, style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Black)
+            Text(value, style = MaterialTheme.typography.titleMedium, color = Gray900, fontWeight = FontWeight.Black)
         }
     }
 }

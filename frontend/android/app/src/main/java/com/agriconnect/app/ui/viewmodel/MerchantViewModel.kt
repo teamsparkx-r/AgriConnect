@@ -25,6 +25,12 @@ class MerchantViewModel : ViewModel() {
     private val _savedProducts = mutableStateOf<List<String>>(emptyList())
     val savedProducts: State<List<String>> = _savedProducts
 
+    private val _currentBooking = mutableStateOf<Map<String, Any>?>(null)
+    val currentBooking: State<Map<String, Any>?> = _currentBooking
+
+    private val _notifications = mutableStateOf<List<Map<String, Any>>>(emptyList())
+    val notifications: State<List<Map<String, Any>>> = _notifications
+
     fun fetchDashboard(token: String, userId: String) {
         viewModelScope.launch {
             _loading.value = true
@@ -63,11 +69,100 @@ class MerchantViewModel : ViewModel() {
         }
     }
 
-    fun createBooking(token: String, userId: String, productId: String, onResult: (Boolean) -> Unit) {
+    fun fetchBookingDetail(token: String, bookingId: String, userId: String) {
         viewModelScope.launch {
             _loading.value = true
             try {
-                val request = BookingCreateRequest(productId = productId, termsAccepted = true)
+                val response = RetrofitClient.instance.getBuyerBookingDetail("Bearer $token", bookingId, userId)
+                if (response.isSuccessful) {
+                    _currentBooking.value = response.body()
+                }
+            } catch (e: Exception) {
+                // error handling
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun fetchNotifications(token: String, userId: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val response = RetrofitClient.instance.getBuyerNotifications("Bearer $token", userId)
+                if (response.isSuccessful) {
+                    _notifications.value = (response.body()?.get("notifications") as? List<Map<String, Any>>) ?: emptyList()
+                }
+            } catch (e: Exception) {
+                // error handling
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun acceptOffer(token: String, bookingId: String, userId: String, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val response = RetrofitClient.instance.merchantAcceptOffer("Bearer $token", bookingId, userId)
+                if (response.isSuccessful) {
+                    onSuccess()
+                    fetchBookingDetail(token, bookingId, userId)
+                }
+            } catch (e: Exception) {
+                // handle error
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun rejectOffer(token: String, bookingId: String, userId: String, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val response = RetrofitClient.instance.merchantRejectOffer("Bearer $token", bookingId, userId)
+                if (response.isSuccessful) {
+                    onSuccess()
+                    fetchBookingDetail(token, bookingId, userId)
+                }
+            } catch (e: Exception) {
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun counterOffer(token: String, bookingId: String, userId: String, quantity: Float, price: Float, message: String?, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val request = com.agriconnect.data.model.CounterOfferRequest(quantity, price, message)
+                val response = RetrofitClient.instance.merchantCounterOffer("Bearer $token", bookingId, userId, request)
+                if (response.isSuccessful) {
+                    onSuccess()
+                    fetchBookingDetail(token, bookingId, userId)
+                }
+            } catch (e: Exception) {
+                // handle error
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun createBooking(token: String, userId: String, productId: String, quantity: Float, price: Float, message: String? = null, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val request = BookingCreateRequest(
+                    productId = productId, 
+                    quantity = quantity, 
+                    price = price, 
+                    message = message,
+                    termsAccepted = true
+                )
                 val response = RetrofitClient.instance.createBooking("Bearer $token", userId, request)
                 if (response.isSuccessful) {
                     onResult(true)

@@ -14,9 +14,11 @@ class UserRole(str, enum.Enum):
     ADMIN = "admin"
 
 class AccountStatus(str, enum.Enum):
+    PENDING = "pending"
     ACTIVE = "active"
     SUSPENDED = "suspended"
     DELETED = "deleted"
+    REJECTED = "rejected"
 
 class BuyerType(str, enum.Enum):
     WHOLESALER = "wholesaler"
@@ -55,10 +57,17 @@ class ProductStatus(str, enum.Enum):
     REMOVED = "removed"
 
 class BookingStatus(str, enum.Enum):
-    INITIATED = "initiated"
+    PENDING = "pending"
+    ENQUIRY_SENT = "enquiry_sent"
+    FARMER_RESPONDED = "farmer_responded"
+    COUNTER_OFFER = "counter_offer"
+    MERCHANT_RESPONDED = "merchant_responded"
+    ACCEPTED = "accepted"
     CONFIRMED = "confirmed"
     COMPLETED = "completed"
+    REJECTED = "rejected"
     CANCELLED = "cancelled"
+    EXPIRED = "expired"
 
 class ReportReason(str, enum.Enum):
     FALSE_PRODUCT_INFO = "false_product_info"
@@ -86,7 +95,7 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     full_name = Column(String(100), nullable=False)
     role = Column(Enum(UserRole), nullable=False)
-    account_status = Column(Enum(AccountStatus), default=AccountStatus.ACTIVE, nullable=False)
+    account_status = Column(Enum(AccountStatus), default=AccountStatus.PENDING, nullable=False)
     mobile_verified = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -195,7 +204,9 @@ class Booking(Base):
     buyer_id = Column(String(36), ForeignKey("buyers.id"), nullable=False)
     farmer_id = Column(String(36), ForeignKey("farmers.id"), nullable=False)
     product_id = Column(String(36), ForeignKey("products.id"), nullable=False)
-    status = Column(Enum(BookingStatus), default=BookingStatus.INITIATED, index=True)
+    status = Column(Enum(BookingStatus), default=BookingStatus.PENDING, index=True)
+    requested_quantity = Column(Float, nullable=True)
+    negotiated_price = Column(Float, nullable=True)
     contact_unlocked_at = Column(DateTime, nullable=True)
     terms_accepted = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
@@ -206,6 +217,24 @@ class Booking(Base):
     buyer = relationship("Buyer", foreign_keys=[buyer_id], back_populates="bookings")
     farmer = relationship("Farmer", foreign_keys=[farmer_id], back_populates="bookings")
     product = relationship("Product", back_populates="bookings")
+    negotiations = relationship("NegotiationHistory", back_populates="booking", cascade="all, delete-orphan")
+
+class NegotiationHistory(Base):
+    __tablename__ = "negotiation_history"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    booking_id = Column(String(36), ForeignKey("bookings.id"), nullable=False)
+    sender_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    receiver_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    quantity = Column(Float, nullable=False)
+    price = Column(Float, nullable=False)
+    message = Column(Text, nullable=True)
+    status = Column(Enum(BookingStatus), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    booking = relationship("Booking", back_populates="negotiations")
+    sender = relationship("User", foreign_keys=[sender_id])
+    receiver = relationship("User", foreign_keys=[receiver_id])
 
 # ==================== REPORTS ====================
 class Report(Base):

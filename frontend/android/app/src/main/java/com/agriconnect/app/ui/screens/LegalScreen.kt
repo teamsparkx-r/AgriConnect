@@ -15,20 +15,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.agriconnect.app.ui.theme.Emerald600
 
+import com.agriconnect.app.ui.components.AgriTopAppBar
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LegalScreen(onBack: () -> Unit) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Legal & Protocol", style = MaterialTheme.typography.titleLarge, color = Color.White) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Emerald600)
+            AgriTopAppBar(
+                title = "Legal & Protocol",
+                showLogo = false,
+                onBackClick = onBack
             )
         }
     ) { padding ->

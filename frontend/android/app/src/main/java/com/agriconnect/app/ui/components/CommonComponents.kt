@@ -20,6 +20,76 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.agriconnect.app.ui.theme.*
+import androidx.compose.material.icons.filled.Eco
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Person
+
+import androidx.compose.material.icons.filled.ArrowBack
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AgriTopAppBar(
+    title: String = "AgriConnect",
+    showLogo: Boolean = true,
+    onMenuClick: (() -> Unit)? = null,
+    onProfileClick: (() -> Unit)? = null,
+    onNotificationsClick: (() -> Unit)? = null,
+    onBackClick: (() -> Unit)? = null
+) {
+    CenterAlignedTopAppBar(
+        modifier = Modifier.statusBarsPadding(),
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (showLogo) {
+                    Icon(
+                        Icons.Default.Eco, 
+                        null, 
+                        tint = White, 
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Black,
+                    color = White,
+                    letterSpacing = (-0.5).sp
+                )
+            }
+        },
+        navigationIcon = {
+            if (onMenuClick != null) {
+                IconButton(onClick = onMenuClick) {
+                    Icon(Icons.Default.Menu, contentDescription = "Menu", tint = White)
+                }
+            } else if (onBackClick != null) {
+                IconButton(onClick = onBackClick) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = White)
+                }
+            }
+        },
+        actions = {
+            if (onNotificationsClick != null) {
+                IconButton(onClick = onNotificationsClick) {
+                    Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = White)
+                }
+            }
+            if (onProfileClick != null) {
+                IconButton(onClick = onProfileClick) {
+                    Icon(Icons.Outlined.Person, contentDescription = "Profile", tint = White)
+                }
+            }
+        },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = AgriPrimary
+        )
+    )
+}
 
 @Composable
 fun AgriButton(
@@ -28,21 +98,21 @@ fun AgriButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     loading: Boolean = false,
-    containerColor: Color = MaterialTheme.colorScheme.primary,
-    contentColor: Color = MaterialTheme.colorScheme.onPrimary,
-    shape: RoundedCornerShape = RoundedCornerShape(16.dp)
+    containerColor: Color = AgriPrimary,
+    contentColor: Color = White,
+    shape: RoundedCornerShape = RoundedCornerShape(18.dp)
 ) {
     Button(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp),
+            .height(54.dp),
         enabled = enabled && !loading,
         shape = shape,
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
             contentColor = contentColor,
-            disabledContainerColor = Color.LightGray.copy(alpha = 0.3f)
+            disabledContainerColor = Gray200
         ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
     ) {
@@ -84,8 +154,8 @@ fun AgriTextField(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            label = { Text(label, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Black) },
-            placeholder = { Text(placeholder, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold) },
+            label = { Text(label, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold) },
+            placeholder = { Text(placeholder, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium) },
             modifier = Modifier.fillMaxWidth(),
             leadingIcon = leadingIcon?.let { { Icon(it, contentDescription = null, modifier = Modifier.size(20.dp)) } },
             trailingIcon = trailingIcon,
@@ -94,21 +164,23 @@ fun AgriTextField(
             enabled = enabled,
             isError = isError,
             prefix = prefix,
-            shape = RoundedCornerShape(16.dp),
-            textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.Black, fontWeight = FontWeight.Black),
+            shape = RoundedCornerShape(18.dp),
+            textStyle = MaterialTheme.typography.bodyLarge.copy(color = Gray900, fontWeight = FontWeight.SemiBold),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = Color.LightGray.copy(alpha = 0.3f),
-                focusedLabelColor = MaterialTheme.colorScheme.primary,
-                unfocusedTextColor = Color.Black,
-                focusedTextColor = Color.Black,
-                cursorColor = MaterialTheme.colorScheme.primary
+                focusedBorderColor = AgriPrimary,
+                unfocusedBorderColor = Gray200,
+                focusedLabelColor = AgriPrimary,
+                unfocusedTextColor = Gray900,
+                focusedTextColor = Gray900,
+                cursorColor = AgriPrimary,
+                focusedContainerColor = White,
+                unfocusedContainerColor = White
             )
         )
         if (isError && errorMessage != null) {
             Text(
                 text = errorMessage,
-                color = MaterialTheme.colorScheme.error,
+                color = Error,
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.padding(start = 12.dp, top = 4.dp)
             )
@@ -127,10 +199,11 @@ fun AgriCard(
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = CardDefaults.cardColors(containerColor = White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Gray100.copy(alpha = 0.5f))
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(20.dp)) {
             content()
         }
     }
@@ -147,11 +220,12 @@ fun AgriSectionTitle(
     Column(modifier = modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         if (subtitle != null) {
             Text(
-                text = subtitle,
+                text = subtitle.uppercase(),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary,
+                color = Gray500,
                 modifier = Modifier.padding(bottom = 2.dp),
-                fontWeight = FontWeight.Black
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.sp
             )
         }
         Row(
@@ -163,14 +237,14 @@ fun AgriSectionTitle(
                 text = title,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Black,
-                color = Color.Black,
+                color = Gray900,
                 letterSpacing = (-0.5).sp
             )
             if (actionText != null && onActionClick != null) {
                 Text(
                     text = actionText,
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = AgriPrimary,
                     modifier = Modifier.clickable { onActionClick() },
                     fontWeight = FontWeight.Black
                 )
@@ -182,10 +256,10 @@ fun AgriSectionTitle(
 @Composable
 fun EmptyStateCard(message: String) {
     Surface(
-        color = Color.White,
+        color = White,
         shape = RoundedCornerShape(24.dp),
         modifier = Modifier.fillMaxWidth(),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.1f))
+        border = androidx.compose.foundation.BorderStroke(1.dp, Gray100.copy(alpha = 0.3f))
     ) {
         Column(
             modifier = Modifier.padding(32.dp),
@@ -194,16 +268,17 @@ fun EmptyStateCard(message: String) {
             Icon(
                 imageVector = Icons.Default.Inbox, 
                 contentDescription = null, 
-                tint = Color.LightGray.copy(alpha = 0.3f),
+                tint = Gray300,
                 modifier = Modifier.size(56.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray,
+                color = Gray600,
                 textAlign = TextAlign.Center,
-                lineHeight = 20.sp
+                lineHeight = 20.sp,
+                fontWeight = FontWeight.Bold
             )
         }
     }
@@ -216,14 +291,15 @@ fun DashboardStatCard(
     icon: ImageVector, 
     bgColor: Color, 
     iconColor: Color,
+    modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
     Surface(
-        color = Color.White,
+        color = White,
         shape = RoundedCornerShape(24.dp),
-        shadowElevation = 0.5.dp,
-        modifier = Modifier
-            .width(160.dp)
+        shadowElevation = 0.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, Gray100),
+        modifier = modifier
             .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
@@ -237,8 +313,8 @@ fun DashboardStatCard(
                 Icon(icon, null, tint = iconColor, modifier = Modifier.size(24.dp))
             }
             Spacer(modifier = Modifier.height(20.dp))
-            Text(label, style = MaterialTheme.typography.labelSmall, color = Color.Gray, fontWeight = FontWeight.Black)
-            Text(value, style = MaterialTheme.typography.headlineSmall, color = Color.Black, fontWeight = FontWeight.Black)
+            Text(label, style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Bold)
+            Text(value, style = MaterialTheme.typography.headlineSmall, color = Gray900, fontWeight = FontWeight.Black)
         }
     }
 }
@@ -250,7 +326,7 @@ fun ProfileListItem(
     subtitle: String? = null,
     onClick: () -> Unit,
     showChevron: Boolean = true,
-    contentColor: Color = Color.Black
+    contentColor: Color = Gray900
 ) {
     Row(
         modifier = Modifier
@@ -261,12 +337,12 @@ fun ProfileListItem(
     ) {
         Box(
             modifier = Modifier
-                .size(40.dp)
+                .size(44.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                .background(AgriSecondary),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color.Gray)
+            Icon(icon, contentDescription = null, modifier = Modifier.size(22.dp), tint = AgriPrimary)
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
@@ -280,7 +356,7 @@ fun ProfileListItem(
                 Text(
                     text = subtitle, 
                     style = MaterialTheme.typography.labelSmall, 
-                    color = Color.Gray
+                    color = Gray500
                 )
             }
         }
@@ -288,7 +364,7 @@ fun ProfileListItem(
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = Color.LightGray,
+                tint = Gray300,
                 modifier = Modifier.size(24.dp)
             )
         }

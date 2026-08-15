@@ -38,8 +38,8 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     val authViewModel: AuthViewModel = viewModel()
                     
-                    MainScreen(navController = navController, authViewModel = authViewModel) { padding ->
-                        AppNavigation(navController, authViewModel, padding)
+                    MainScreen(navController = navController, authViewModel = authViewModel) { padding, onMenuClick ->
+                        AppNavigation(navController, authViewModel, padding, onMenuClick)
                     }
                 }
             }

@@ -37,3 +37,19 @@ data class ProductCreateRequest(
     @SerializedName("farm_address") val farmAddress: String?,
     val images: String? = null
 )
+
+data class ProductUpdateRequest(
+    val name: String? = null,
+    val category: String? = null,
+    val description: String? = null,
+    val quantity: Float? = null,
+    val unit: String? = null,
+    @SerializedName("expected_price") val expectedPrice: Float? = null,
+    @SerializedName("harvest_date") val harvestDate: String? = null,
+    val status: String? = null,
+    val state: String? = null,
+    val district: String? = null,
+    val village: String? = null,
+    @SerializedName("farm_address") val farmAddress: String? = null,
+    val images: String? = null
+)

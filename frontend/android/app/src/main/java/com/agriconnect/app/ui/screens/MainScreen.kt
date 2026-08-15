@@ -2,13 +2,18 @@ package com.agriconnect.app.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,18 +25,20 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.agriconnect.app.ui.navigation.Screen
-import com.agriconnect.app.ui.theme.Emerald600
+import com.agriconnect.app.ui.theme.*
 import com.agriconnect.app.ui.viewmodel.AuthViewModel
 
 @Composable
 fun MainScreen(
     navController: NavHostController,
     authViewModel: AuthViewModel,
-    content: @Composable (PaddingValues) -> Unit
+    content: @Composable (PaddingValues, () -> Unit) -> Unit
 ) {
     val user by authViewModel.user
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
     val showBottomNav = currentRoute !in listOf(
         Screen.Splash.route,
@@ -43,32 +50,379 @@ fun MainScreen(
         Screen.AddProduct.route
     )
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        containerColor = Color(0xFFF9FAFB),
-        bottomBar = {
-            if (showBottomNav) {
-                AppBottomNav(
-                    role = user?.role ?: "guest",
-                    currentRoute = currentRoute,
-                    onNavigate = { route ->
-                        navController.navigate(route) {
-                            popUpTo(navController.graph.startDestinationId) {
-                                saveState = true
+    val onNavigate: (String) -> Unit = { route ->
+        scope.launch { drawerState.close() }
+        navController.navigate(route) {
+            popUpTo(navController.graph.startDestinationId) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
+    if (user != null) {
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                when (user?.role) {
+                    "admin" -> AdminDrawerContent(currentRoute, onNavigate, user?.fullName ?: "Admin")
+                    "farmer" -> FarmerDrawerContent(currentRoute, onNavigate, user?.fullName ?: "Farmer")
+                    else -> MerchantDrawerContent(currentRoute, onNavigate, user?.fullName ?: "Merchant")
+                }
+            }
+        ) {
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                containerColor = Color(0xFFF9FAFB),
+                bottomBar = {
+                    if (showBottomNav) {
+                        AppBottomNav(
+                            role = user?.role ?: "guest",
+                            currentRoute = currentRoute,
+                            onNavigate = onNavigate,
+                            onAddClick = {
+                                if (user?.role == "farmer") {
+                                    navController.navigate(Screen.AddProduct.route)
+                                } else {
+                                    scope.launch { drawerState.open() }
+                                }
                             }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                    onAddClick = {
-                        navController.navigate(Screen.AddProduct.route)
+                        )
                     }
-                )
+                }
+            ) { padding ->
+                content(padding) { scope.launch { drawerState.open() } }
             }
         }
-    ) { padding ->
-        content(padding)
+    } else {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = Color(0xFFF9FAFB),
+            bottomBar = {
+                if (showBottomNav) {
+                    AppBottomNav(
+                        role = "guest",
+                        currentRoute = currentRoute,
+                        onNavigate = onNavigate,
+                        onAddClick = { }
+                    )
+                }
+            }
+        ) { padding ->
+            content(padding) { }
+        }
     }
+}
+
+@Composable
+fun AdminDrawerContent(
+    currentRoute: String?,
+    onNavigate: (String) -> Unit,
+    userName: String
+) {
+    DrawerTemplate(
+        roleLabel = "Admin Panel",
+        userName = userName,
+        currentRoute = currentRoute,
+        onNavigate = onNavigate
+    ) {
+        DrawerSection("MAIN")
+        DrawerItem(
+            label = "Dashboard",
+            icon = Icons.Default.Dashboard,
+            selected = currentRoute == Screen.AdminDashboard.route,
+            onClick = { onNavigate(Screen.AdminDashboard.route) }
+        )
+        DrawerItem(
+            label = "Farmers",
+            icon = Icons.Default.Agriculture,
+            selected = currentRoute?.startsWith("admin/users/farmer") == true,
+            onClick = { onNavigate(Screen.AdminUserList.createRoute("farmer")) }
+        )
+        DrawerItem(
+            label = "Merchants",
+            icon = Icons.Default.Storefront,
+            selected = currentRoute?.startsWith("admin/users/merchant") == true,
+            onClick = { onNavigate(Screen.AdminUserList.createRoute("merchant")) }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+        DrawerSection("MANAGEMENT")
+        DrawerItem(
+            label = "Pending Slots",
+            icon = Icons.Default.Rule,
+            selected = currentRoute == Screen.AdminPendingSlots.route,
+            onClick = { onNavigate(Screen.AdminPendingSlots.route) }
+        )
+        DrawerItem(
+            label = "Crop Inventory",
+            icon = Icons.Default.Inventory2,
+            selected = currentRoute == Screen.AdminCropManagement.route,
+            onClick = { onNavigate(Screen.AdminCropManagement.route) }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+        DrawerSection("SYSTEM")
+        DrawerItem(
+            label = "Notifications",
+            icon = Icons.Default.Notifications,
+            selected = currentRoute == Screen.AdminNotifications.route,
+            onClick = { onNavigate(Screen.AdminNotifications.route) }
+        )
+        DrawerItem(
+            label = "Settings",
+            icon = Icons.Default.Settings,
+            selected = currentRoute == Screen.AdminSettings.route,
+            onClick = { onNavigate(Screen.AdminSettings.route) }
+        )
+    }
+}
+
+@Composable
+fun FarmerDrawerContent(
+    currentRoute: String?,
+    onNavigate: (String) -> Unit,
+    userName: String
+) {
+    DrawerTemplate(
+        roleLabel = "Farmer Portal",
+        userName = userName,
+        currentRoute = currentRoute,
+        onNavigate = onNavigate
+    ) {
+        DrawerSection("MY FARM")
+        DrawerItem(
+            label = "Dashboard",
+            icon = Icons.Default.GridView,
+            selected = currentRoute == Screen.FarmerDashboard.route,
+            onClick = { onNavigate(Screen.FarmerDashboard.route) }
+        )
+        DrawerItem(
+            label = "My Products",
+            icon = Icons.Default.Inventory2,
+            selected = currentRoute == Screen.MyProducts.route,
+            onClick = { onNavigate(Screen.MyProducts.route) }
+        )
+        DrawerItem(
+            label = "My Bookings",
+            icon = Icons.Default.ReceiptLong,
+            selected = currentRoute == Screen.FarmerBookings.route,
+            onClick = { onNavigate(Screen.FarmerBookings.route) }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+        DrawerSection("ACCOUNT")
+        DrawerItem(
+            label = "Profile",
+            icon = Icons.Default.AccountCircle,
+            selected = currentRoute == Screen.FarmerProfile.route,
+            onClick = { onNavigate(Screen.FarmerProfile.route) }
+        )
+        DrawerItem(
+            label = "Notifications",
+            icon = Icons.Default.Notifications,
+            selected = currentRoute == Screen.FarmerNotifications.route,
+            onClick = { onNavigate(Screen.FarmerNotifications.route) }
+        )
+        DrawerItem(
+            label = "Settings",
+            icon = Icons.Default.Settings,
+            selected = currentRoute == Screen.FarmerSettings.route,
+            onClick = { onNavigate(Screen.FarmerSettings.route) }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+        DrawerSection("SUPPORT")
+        DrawerItem(
+            label = "Help & Support",
+            icon = Icons.Default.HelpOutline,
+            selected = currentRoute == Screen.FarmerHelp.route,
+            onClick = { onNavigate(Screen.FarmerHelp.route) }
+        )
+        DrawerItem(
+            label = "About",
+            icon = Icons.Default.Info,
+            selected = currentRoute == Screen.Legal.route,
+            onClick = { onNavigate(Screen.Legal.route) }
+        )
+    }
+}
+
+@Composable
+fun MerchantDrawerContent(
+    currentRoute: String?,
+    onNavigate: (String) -> Unit,
+    userName: String
+) {
+    DrawerTemplate(
+        roleLabel = "Merchant Portal",
+        userName = userName,
+        currentRoute = currentRoute,
+        onNavigate = onNavigate
+    ) {
+        DrawerSection("MARKETPLACE")
+        DrawerItem(
+            label = "Home",
+            icon = Icons.Default.Home,
+            selected = currentRoute == Screen.MerchantPortal.route,
+            onClick = { onNavigate(Screen.MerchantPortal.route) }
+        )
+        DrawerItem(
+            label = "Browse Crops",
+            icon = Icons.Default.Search,
+            selected = currentRoute == Screen.Explore.route,
+            onClick = { onNavigate(Screen.Explore.route) }
+        )
+        DrawerItem(
+            label = "My Orders",
+            icon = Icons.Default.ShoppingBag,
+            selected = currentRoute == Screen.MyBookings.route,
+            onClick = { onNavigate(Screen.MyBookings.route) }
+        )
+        DrawerItem(
+            label = "Saved",
+            icon = Icons.Default.Favorite,
+            selected = currentRoute == Screen.Saved.route,
+            onClick = { onNavigate(Screen.Saved.route) }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+        DrawerSection("ACCOUNT")
+        DrawerItem(
+            label = "Profile",
+            icon = Icons.Default.AccountCircle,
+            selected = currentRoute == Screen.MerchantProfile.route,
+            onClick = { onNavigate(Screen.MerchantProfile.route) }
+        )
+        DrawerItem(
+            label = "Notifications",
+            icon = Icons.Default.Notifications,
+            selected = currentRoute == Screen.MerchantNotifications.route,
+            onClick = { onNavigate(Screen.MerchantNotifications.route) }
+        )
+        DrawerItem(
+            label = "Settings",
+            icon = Icons.Default.Settings,
+            selected = currentRoute == Screen.MerchantSettings.route,
+            onClick = { onNavigate(Screen.MerchantSettings.route) }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+        DrawerSection("SUPPORT")
+        DrawerItem(
+            label = "Help & Support",
+            icon = Icons.Default.HelpOutline,
+            selected = currentRoute == Screen.MerchantHelp.route,
+            onClick = { onNavigate(Screen.MerchantHelp.route) }
+        )
+        DrawerItem(
+            label = "About",
+            icon = Icons.Default.Info,
+            selected = currentRoute == Screen.Legal.route,
+            onClick = { onNavigate(Screen.Legal.route) }
+        )
+    }
+}
+
+@Composable
+fun DrawerTemplate(
+    roleLabel: String,
+    userName: String,
+    currentRoute: String?,
+    onNavigate: (String) -> Unit,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    ModalDrawerSheet(
+        drawerContainerColor = White,
+        drawerTonalElevation = 0.dp,
+        drawerShape = RoundedCornerShape(0.dp),
+        modifier = Modifier.width(300.dp).fillMaxHeight()
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Header
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Emerald600)
+                    .padding(top = 48.dp, bottom = 24.dp, start = 24.dp, end = 24.dp)
+            ) {
+                Column {
+                    Icon(Icons.Default.Eco, null, tint = White, modifier = Modifier.size(40.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text("AgriConnect", color = White, fontWeight = FontWeight.Black, fontSize = 20.sp)
+                    Text(roleLabel, color = White.copy(alpha = 0.7f), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(modifier = Modifier.size(40.dp), shape = CircleShape, color = White.copy(alpha = 0.2f)) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(userName.takeIf { it.isNotEmpty() }?.first()?.toString() ?: "U", color = White, fontWeight = FontWeight.Black)
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(userName, color = White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    }
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
+            ) {
+                content()
+                
+                Spacer(modifier = Modifier.height(40.dp))
+                Text(
+                    "Version 1.0.4-Build.2023",
+                    modifier = Modifier.padding(start = 12.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Gray400
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+    }
+}
+
+
+@Composable
+fun DrawerSection(label: String) {
+    Text(
+        text = label,
+        modifier = Modifier.padding(start = 12.dp, top = 8.dp, bottom = 8.dp),
+        style = MaterialTheme.typography.labelSmall,
+        fontWeight = FontWeight.Black,
+        color = Gray400,
+        letterSpacing = 1.sp
+    )
+}
+
+@Composable
+fun DrawerItem(
+    label: String,
+    icon: ImageVector,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    NavigationDrawerItem(
+        label = { Text(label, fontWeight = if (selected) FontWeight.Black else FontWeight.Bold) },
+        selected = selected,
+        onClick = onClick,
+        icon = { Icon(icon, null) },
+        shape = RoundedCornerShape(12.dp),
+        colors = NavigationDrawerItemDefaults.colors(
+            selectedContainerColor = Emerald600.copy(alpha = 0.1f),
+            selectedIconColor = Emerald600,
+            selectedTextColor = Emerald600,
+            unselectedContainerColor = Color.Transparent,
+            unselectedIconColor = Gray500,
+            unselectedTextColor = Gray700
+        ),
+        modifier = Modifier.padding(vertical = 2.dp)
+    )
 }
 
 @Composable
@@ -92,6 +446,32 @@ fun AppBottomNav(
             windowInsets = WindowInsets(0)
         ) {
             when (role) {
+                "admin" -> {
+                    NavButton(
+                        active = currentRoute == Screen.AdminDashboard.route,
+                        icon = if (currentRoute == Screen.AdminDashboard.route) Icons.Filled.Dashboard else Icons.Outlined.Dashboard,
+                        label = "Console",
+                        onClick = { onNavigate(Screen.AdminDashboard.route) }
+                    )
+                    NavButton(
+                        active = currentRoute?.startsWith("admin/users/farmer") == true,
+                        icon = if (currentRoute?.startsWith("admin/users/farmer") == true) Icons.Filled.Agriculture else Icons.Outlined.Agriculture,
+                        label = "Farmers",
+                        onClick = { onNavigate(Screen.AdminUserList.createRoute("farmer")) }
+                    )
+                    NavButton(
+                        active = currentRoute?.startsWith("admin/users/merchant") == true,
+                        icon = if (currentRoute?.startsWith("admin/users/merchant") == true) Icons.Filled.Storefront else Icons.Outlined.Storefront,
+                        label = "Merchants",
+                        onClick = { onNavigate(Screen.AdminUserList.createRoute("merchant")) }
+                    )
+                    NavButton(
+                        active = false, // Always "More"
+                        icon = Icons.Default.Settings,
+                        label = "More",
+                        onClick = onAddClick // Use onAddClick for More as requested
+                    )
+                }
                 "farmer" -> {
                     NavButton(
                         active = currentRoute == Screen.FarmerDashboard.route,
@@ -109,13 +489,13 @@ fun AppBottomNav(
                     Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                         FloatingActionButton(
                             onClick = onAddClick,
-                            containerColor = Color.White,
-                            contentColor = Color.Black,
-                            shape = RoundedCornerShape(16.dp),
-                            elevation = FloatingActionButtonDefaults.elevation(4.dp),
-                            modifier = Modifier.size(48.dp)
+                            containerColor = White,
+                            contentColor = Gray900,
+                            shape = RoundedCornerShape(18.dp),
+                            elevation = FloatingActionButtonDefaults.elevation(6.dp),
+                            modifier = Modifier.size(56.dp).offset(y = (-12).dp) // Raised effect
                         ) {
-                            Icon(Icons.Outlined.Add, "Add", modifier = Modifier.size(24.dp))
+                            Icon(Icons.Filled.Add, "Add", modifier = Modifier.size(28.dp))
                         }
                     }
 
@@ -126,10 +506,10 @@ fun AppBottomNav(
                         onClick = { onNavigate(Screen.FarmerBookings.route) }
                     )
                     NavButton(
-                        active = currentRoute == Screen.FarmerProfile.route,
-                        icon = if (currentRoute == Screen.FarmerProfile.route) Icons.Filled.AccountCircle else Icons.Outlined.AccountCircle,
-                        label = "Profile",
-                        onClick = { onNavigate(Screen.FarmerProfile.route) }
+                        active = currentRoute == Screen.FarmerSettings.route,
+                        icon = if (currentRoute == Screen.FarmerSettings.route) Icons.Filled.Settings else Icons.Outlined.Settings,
+                        label = "Settings",
+                        onClick = { onNavigate(Screen.FarmerSettings.route) }
                     )
                 }
                 else -> { // Merchant / Default
@@ -196,9 +576,9 @@ fun RowScope.NavButton(
         colors = NavigationBarItemDefaults.colors(
             selectedIconColor = Color.Black,
             selectedTextColor = Color.Black,
-            unselectedIconColor = Color.White.copy(alpha = 0.6f),
-            unselectedTextColor = Color.White.copy(alpha = 0.6f),
-            indicatorColor = Color.Transparent
+            unselectedIconColor = Color.White,
+            unselectedTextColor = Color.White,
+            indicatorColor = Color.White.copy(alpha = 0.9f)
         )
     )
 }

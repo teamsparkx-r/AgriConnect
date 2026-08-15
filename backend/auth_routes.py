@@ -39,6 +39,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
             "role": user.role.value,
             "mobile": user.mobile_number,
             "full_name": user.full_name,
+            "account_status": user.account_status.value
         }
     }
 
@@ -67,5 +68,6 @@ def verify_otp(request: OTPVerifyRequest, db: Session = Depends(get_db)):
             "role": user.role.value,
             "mobile": user.mobile_number,
             "full_name": user.full_name,
+            "account_status": user.account_status.value
         }
     }

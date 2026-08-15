@@ -54,9 +54,20 @@ sealed class Screen(val route: String) {
     object MerchantPortal : Screen("merchant/portal")
     object Explore : Screen("merchant/explore")
     object MyBookings : Screen("merchant/bookings")
+    object MerchantBookingDetail : Screen("merchant/booking-detail/{id}") {
+        fun createRoute(id: String) = "merchant/booking-detail/$id"
+    }
     object Saved : Screen("merchant/saved")
     object MerchantProfile : Screen("merchant/profile")
     object MerchantNotifications : Screen("merchant/notifications")
+    object MerchantSettings : Screen("merchant/settings")
+    object MerchantHelp : Screen("merchant/help")
+    
+    // Farmer Common Screens
+    object MyFarm : Screen("farmer/my-farm")
+    object FarmerSettings : Screen("farmer/settings")
+    object FarmerHelp : Screen("farmer/help")
+
     object ProductDetail : Screen("merchant/product/{id}") {
         fun createRoute(id: String) = "merchant/product/$id"
     }
@@ -69,6 +80,17 @@ sealed class Screen(val route: String) {
     object AdminDashboard : Screen("admin/dashboard")
     object AdminManagement : Screen("admin/manage")
     object AdminProfile : Screen("admin/profile")
+    object AdminUserList : Screen("admin/users/{role}") {
+        fun createRoute(role: String) = "admin/users/$role"
+    }
+    object AdminUserDetail : Screen("admin/user-detail/{id}/{role}") {
+        fun createRoute(id: String, role: String) = "admin/user-detail/$id/$role"
+    }
+    object AdminPendingSlots : Screen("admin/pending-slots")
+    object AdminCropManagement : Screen("admin/crop-management")
+    object AdminVerifications : Screen("admin/verifications")
+    object AdminNotifications : Screen("admin/notifications")
+    object AdminSettings : Screen("admin/settings")
 
     object Legal : Screen("legal")
 }
@@ -77,7 +99,8 @@ sealed class Screen(val route: String) {
 fun AppNavigation(
     navController: NavHostController,
     authViewModel: AuthViewModel,
-    padding: PaddingValues
+    padding: PaddingValues,
+    onMenuClick: () -> Unit = {}
 ) {
     val productViewModel: ProductViewModel = viewModel()
     val farmerViewModel: FarmerViewModel = viewModel()
@@ -188,12 +211,14 @@ fun AppNavigation(
                 userId = user?.id ?: "",
                 userName = user?.fullName ?: "Farmer",
                 viewModel = farmerViewModel,
+                userStatus = user?.accountStatus ?: "active",
                 onBookSlotClick = { navController.navigate(Screen.AddProduct.route) },
                 onMyBookingsClick = { navController.navigate(Screen.FarmerBookings.route) },
                 onMyProductsClick = { navController.navigate(Screen.MyProducts.route) },
                 onProductClick = { id -> navController.navigate(Screen.FarmerProductDetail.createRoute(id)) },
                 onNotificationsClick = { navController.navigate(Screen.FarmerNotifications.route) },
-                onProfileClick = { navController.navigate(Screen.FarmerProfile.route) }
+                onProfileClick = { navController.navigate(Screen.FarmerProfile.route) },
+                onMenuClick = onMenuClick
             )
         }
         composable(Screen.MyProducts.route) {
@@ -204,7 +229,8 @@ fun AppNavigation(
                 viewModel = productViewModel,
                 onAddProduct = { navController.navigate(Screen.AddProduct.route) },
                 onEditProduct = { id: String -> navController.navigate(Screen.FarmerProductDetail.createRoute(id)) },
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onMenuClick = onMenuClick
             )
         }
         composable(
@@ -212,9 +238,11 @@ fun AppNavigation(
             arguments = listOf(navArgument("id") { type = NavType.StringType })
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getString("id") ?: ""
+            val user = authViewModel.user.value
             FarmerProductDetailScreen(
                 productId = id,
                 token = authViewModel.token.value ?: "",
+                userId = user?.id ?: "",
                 viewModel = productViewModel,
                 onEditClick = { productId -> navController.navigate(Screen.EditProduct.createRoute(productId)) },
                 onBack = { navController.popBackStack() }
@@ -226,6 +254,7 @@ fun AppNavigation(
                 token = authViewModel.token.value ?: "",
                 userId = user?.id ?: "",
                 viewModel = productViewModel,
+                authViewModel = authViewModel,
                 onNext = { navController.popBackStack() },
                 onBack = { navController.popBackStack() }
             )
@@ -240,9 +269,9 @@ fun AppNavigation(
                 token = authViewModel.token.value ?: "",
                 userId = user?.id ?: "",
                 viewModel = productViewModel,
+                authViewModel = authViewModel,
                 onNext = { navController.popBackStack() },
                 onBack = { navController.popBackStack() }
-                // isEdit = true logic could be added to AddProductScreen
             )
         }
         composable(Screen.FarmerBookings.route) {
@@ -277,12 +306,36 @@ fun AppNavigation(
                     navController.navigate(Screen.Splash.route) {
                         popUpTo(0) { inclusive = true }
                     }
-                }
+                },
+                onMyFarmClick = { navController.navigate(Screen.MyFarm.route) },
+                onSettingsClick = { navController.navigate(Screen.FarmerSettings.route) },
+                onHelpClick = { navController.navigate(Screen.FarmerHelp.route) }
             )
+        }
+        composable(Screen.MyFarm.route) {
+            MyFarmScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Screen.FarmerSettings.route) {
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToLegal = { navController.navigate(Screen.Legal.route) }
+            )
+        }
+        composable(Screen.FarmerHelp.route) {
+            HelpSupportScreen(onBack = { navController.popBackStack() })
         }
 
         composable(Screen.FarmerNotifications.route) {
-            NotificationsScreen(onBack = { navController.popBackStack() })
+            val user = authViewModel.user.value
+            NotificationsScreen(
+                onBack = { navController.popBackStack() },
+                role = "farmer",
+                token = authViewModel.token.value ?: "",
+                userId = user?.id ?: "",
+                farmerViewModel = farmerViewModel,
+                onNavigateToInquiry = { id -> navController.navigate(Screen.FarmerBookingDetail.createRoute(id)) },
+                onNavigateToProfile = { navController.navigate(Screen.FarmerProfile.route) }
+            )
         }
 
         // Merchant Screens
@@ -293,24 +346,43 @@ fun AppNavigation(
                 userId = user?.id ?: "",
                 productViewModel = productViewModel,
                 merchantViewModel = merchantViewModel,
+                userStatus = user?.accountStatus ?: "active",
                 onProductClick = { id -> navController.navigate(Screen.ProductDetail.createRoute(id)) },
                 onExploreClick = { navController.navigate(Screen.Explore.route) },
                 onMyBookingsClick = { navController.navigate(Screen.MyBookings.route) },
-                onNotificationsClick = { navController.navigate(Screen.MerchantNotifications.route) }
+                onNotificationsClick = { navController.navigate(Screen.MerchantNotifications.route) },
+                onMenuClick = onMenuClick
             )
         }
         composable(Screen.Explore.route) {
             ExploreScreen(
                 token = authViewModel.token.value ?: "",
                 viewModel = productViewModel,
-                onProductClick = { id -> navController.navigate(Screen.ProductDetail.createRoute(id)) }
+                onProductClick = { id -> navController.navigate(Screen.ProductDetail.createRoute(id)) },
+                onMenuClick = onMenuClick
             )
         }
         composable(Screen.MyBookings.route) {
             MyBookingsScreen(
                 onBack = { navController.popBackStack() },
+                onBookingClick = { id -> navController.navigate(Screen.MerchantBookingDetail.createRoute(id)) },
                 authViewModel = authViewModel,
-                merchantViewModel = merchantViewModel
+                merchantViewModel = merchantViewModel,
+                onMenuClick = onMenuClick
+            )
+        }
+        composable(
+            route = Screen.MerchantBookingDetail.route,
+            arguments = listOf(navArgument("id") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id") ?: ""
+            val user = authViewModel.user.value
+            MerchantBookingDetailScreen(
+                bookingId = id,
+                token = authViewModel.token.value ?: "",
+                userId = user?.id ?: "",
+                viewModel = merchantViewModel,
+                onBack = { navController.popBackStack() }
             )
         }
         composable(Screen.Saved.route) {
@@ -334,7 +406,16 @@ fun AppNavigation(
             )
         }
         composable(Screen.MerchantNotifications.route) {
-            NotificationsScreen(onBack = { navController.popBackStack() })
+            val user = authViewModel.user.value
+            NotificationsScreen(
+                onBack = { navController.popBackStack() },
+                role = "buyer",
+                token = authViewModel.token.value ?: "",
+                userId = user?.id ?: "",
+                merchantViewModel = merchantViewModel,
+                onNavigateToInquiry = { id -> navController.navigate(Screen.MerchantBookingDetail.createRoute(id)) },
+                onNavigateToProfile = { navController.navigate(Screen.MerchantProfile.route) }
+            )
         }
         composable(
             route = Screen.ProductDetail.route,
@@ -371,15 +452,95 @@ fun AppNavigation(
         composable(Screen.AdminDashboard.route) {
             AdminDashboardScreen(
                 token = authViewModel.token.value ?: "",
-                onPendingSlotsClick = { navController.navigate(Screen.AdminManagement.route) },
-                onCropManagementClick = { navController.navigate(Screen.AdminManagement.route) }
+                onPendingSlotsClick = { navController.navigate(Screen.AdminPendingSlots.route) },
+                onCropManagementClick = { navController.navigate(Screen.AdminCropManagement.route) },
+                onMenuClick = onMenuClick,
+                onNotificationsClick = { navController.navigate(Screen.AdminNotifications.route) },
+                onProfileClick = { navController.navigate(Screen.AdminProfile.route) }
             )
         }
         composable(Screen.AdminManagement.route) {
             AdminManagementScreen(onBack = { navController.popBackStack() })
         }
         composable(Screen.AdminProfile.route) {
-            ProfileScreen(role = "admin", onBack = { navController.popBackStack() })
+            ProfileScreen(
+                role = "admin", 
+                onBack = { navController.popBackStack() },
+                authViewModel = authViewModel,
+                onLogout = {
+                    authViewModel.logout()
+                    navController.navigate(Screen.Splash.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onSettingsClick = { navController.navigate(Screen.AdminSettings.route) }
+            )
+        }
+        composable(
+            route = Screen.AdminUserList.route,
+            arguments = listOf(navArgument("role") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val role = backStackEntry.arguments?.getString("role") ?: "farmer"
+            AdminUserListScreen(
+                role = role,
+                token = authViewModel.token.value ?: "",
+                onUserClick = { id -> navController.navigate(Screen.AdminUserDetail.createRoute(id, role)) },
+                onMenuClick = onMenuClick,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(
+            route = Screen.AdminUserDetail.route,
+            arguments = listOf(
+                navArgument("id") { type = NavType.StringType },
+                navArgument("role") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id") ?: ""
+            val role = backStackEntry.arguments?.getString("role") ?: "farmer"
+            AdminUserDetailScreen(
+                userId = id,
+                role = role,
+                token = authViewModel.token.value ?: "",
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.AdminPendingSlots.route) {
+            PendingSlotsScreen(
+                onMenuClick = onMenuClick,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.AdminCropManagement.route) {
+            CropManagementScreen(
+                onMenuClick = onMenuClick,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.AdminVerifications.route) {
+            LiveVerificationScreen(
+                onMenuClick = onMenuClick,
+                onBack = { navController.popBackStack() },
+                onCallFinished = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.AdminNotifications.route) {
+            val adminViewModel: AdminViewModel = viewModel()
+            NotificationsScreen(
+                onMenuClick = onMenuClick,
+                onBack = { navController.popBackStack() },
+                role = "admin",
+                token = authViewModel.token.value ?: "",
+                adminViewModel = adminViewModel,
+                onNavigateToApproval = { id, role -> navController.navigate(Screen.AdminUserDetail.createRoute(id, role)) }
+            )
+        }
+        composable(Screen.AdminSettings.route) {
+            SettingsScreen(
+                onMenuClick = onMenuClick,
+                onBack = { navController.popBackStack() },
+                onNavigateToLegal = { navController.navigate(Screen.Legal.route) }
+            )
         }
     }
 }

@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.agriconnect.app.ui.components.*
-import com.agriconnect.app.ui.theme.Emerald600
+import com.agriconnect.app.ui.theme.*
 import com.agriconnect.app.ui.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,185 +29,159 @@ fun ProfileScreen(
     role: String, 
     onBack: () -> Unit,
     authViewModel: AuthViewModel = viewModel(),
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
+    onMyFarmClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
+    onHelpClick: () -> Unit = {}
 ) {
     val user by authViewModel.user
     val scrollState = rememberScrollState()
-    var isEditMode by remember { mutableStateOf(false) }
-    
-    // Edit fields
-    var fullName by remember(user) { mutableStateOf(user?.fullName ?: "") }
-    var email by remember(user) { mutableStateOf(user?.email ?: "") }
-    var state by remember(user) { mutableStateOf(user?.state ?: "") }
-    var district by remember(user) { mutableStateOf(user?.district ?: "") }
-    var village by remember(user) { mutableStateOf(user?.village ?: "") }
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier.statusBarsPadding(),
-                title = { Text("Profile", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black, color = Color.White) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
-                    }
-                },
-                actions = {
-                    if (isEditMode) {
-                        IconButton(onClick = { 
-                            val updates = mutableMapOf(
-                                "full_name" to fullName,
-                                "email" to email,
-                                "state" to state,
-                                "district" to district
-                            )
-                            if (role == "farmer") updates["village"] = village
-                            
-                            authViewModel.updateProfile(updates) { success ->
-                                if (success) isEditMode = false
-                            }
-                        }) {
-                            Icon(Icons.Default.Check, contentDescription = "Save", tint = Color.White)
-                        }
-                    } else {
-                        IconButton(onClick = { isEditMode = true }) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.White)
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Emerald600)
+            AgriTopAppBar(
+                title = "Profile",
+                showLogo = false,
+                onBackClick = onBack
             )
         },
-        containerColor = Color(0xFFF9FAFB)
+        containerColor = AgriBackground
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(scrollState)
+                .padding(24.dp)
         ) {
-            // Profile Card (inspired by Rapido)
+            // Profile Header Card
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                color = Color.White,
-                shadowElevation = 2.dp
+                color = White,
+                shadowElevation = 0.5.dp,
+                border = androidx.compose.foundation.BorderStroke(1.dp, Gray100.copy(alpha = 0.5f))
             ) {
-                Column {
-                    Row(
-                        modifier = Modifier.padding(20.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                Row(
+                    modifier = Modifier.padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        modifier = Modifier.size(72.dp),
+                        shape = CircleShape,
+                        color = AgriSecondary
                     ) {
-                        Surface(
-                            modifier = Modifier.size(64.dp),
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    text = user?.fullName?.firstOrNull()?.toString()?.uppercase() ?: "?",
-                                    style = MaterialTheme.typography.headlineSmall,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Black
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            if (isEditMode) {
-                                AgriTextField(value = fullName, onValueChange = { fullName = it }, label = "Name")
-                            } else {
-                                Text(text = user?.fullName ?: "Unknown", style = MaterialTheme.typography.titleLarge, color = Color.Black)
-                                Text(text = user?.mobile ?: "", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
-                            }
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = user?.fullName?.firstOrNull()?.toString()?.uppercase() ?: "D",
+                                style = MaterialTheme.typography.displaySmall,
+                                color = AgriPrimary,
+                                fontWeight = FontWeight.Black
+                            )
                         }
                     }
-                    
-                    Divider(modifier = Modifier.padding(horizontal = 20.dp), thickness = 0.5.dp, color = Color.LightGray.copy(alpha = 0.5f))
-                    
-                    Row(
-                        modifier = Modifier.padding(20.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Default.Star, null, tint = Color(0xFFF59E0B), modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(text = "4.92 My Rating", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.weight(1f))
-                        Icon(Icons.Default.ChevronRight, null, tint = Color.LightGray)
+                    Spacer(modifier = Modifier.width(20.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = user?.fullName ?: (if (role == "admin") "Administrator" else "Demo User"), 
+                            style = MaterialTheme.typography.titleLarge, 
+                            color = Gray900,
+                            fontWeight = FontWeight.Black
+                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.CheckCircle, null, tint = Success, modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = when(role) {
+                                    "admin" -> "Verified Admin"
+                                    "farmer" -> "Verified Farmer"
+                                    else -> "Verified Merchant"
+                                }, 
+                                style = MaterialTheme.typography.labelSmall, 
+                                color = Gray500,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Text(
+                            text = user?.mobile ?: "+91 98765 43210", 
+                            style = MaterialTheme.typography.bodySmall, 
+                            color = Gray400,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
-                }
-            }
-
-            // Menu Options
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                shape = RoundedCornerShape(24.dp),
-                color = Color.White,
-                shadowElevation = 2.dp
-            ) {
-                Column {
-                    ProfileListItem(
-                        icon = Icons.Outlined.HelpOutline,
-                        label = "Help & Support",
-                        onClick = { }
-                    )
-                    DividerItem()
-                    ProfileListItem(
-                        icon = Icons.Outlined.Payments,
-                        label = "Payments",
-                        onClick = { }
-                    )
-                    DividerItem()
-                    ProfileListItem(
-                        icon = Icons.Outlined.History,
-                        label = if (role == "farmer") "My Sales" else "My Orders",
-                        onClick = { }
-                    )
-                    DividerItem()
-                    ProfileListItem(
-                        icon = Icons.Outlined.Shield,
-                        label = "Security & Privacy",
-                        onClick = { }
-                    )
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Account Actions
+            // Account Group
+            Text(
+                text = "ACCOUNT",
+                style = MaterialTheme.typography.labelSmall,
+                color = Gray400,
+                modifier = Modifier.padding(start = 8.dp, bottom = 12.dp),
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.sp
+            )
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                color = Color.White,
-                shadowElevation = 2.dp
+                color = White,
+                border = androidx.compose.foundation.BorderStroke(1.dp, Gray100.copy(alpha = 0.5f))
             ) {
                 Column {
-                    ProfileListItem(
-                        icon = Icons.Outlined.Logout,
-                        label = "Terminate Session",
-                        contentColor = MaterialTheme.colorScheme.error,
-                        onClick = onLogout,
-                        showChevron = false
-                    )
+                    if (role == "admin") {
+                        ProfileListItem(icon = Icons.Outlined.Dashboard, label = "Admin Console", onClick = { })
+                        Divider(modifier = Modifier.padding(horizontal = 24.dp), thickness = 0.5.dp, color = Gray100)
+                        ProfileListItem(icon = Icons.Outlined.Security, label = "Security Audit", onClick = { })
+                    } else if (role == "farmer") {
+                        ProfileListItem(icon = Icons.Outlined.Agriculture, label = "My Farm", onClick = onMyFarmClick)
+                        Divider(modifier = Modifier.padding(horizontal = 24.dp), thickness = 0.5.dp, color = Gray100)
+                        ProfileListItem(icon = Icons.Outlined.AccountBalance, label = "Bank Details", onClick = { })
+                    } else {
+                        ProfileListItem(icon = Icons.Outlined.ShoppingBag, label = "My Orders", onClick = { })
+                    }
+                    Divider(modifier = Modifier.padding(horizontal = 24.dp), thickness = 0.5.dp, color = Gray100)
+                    ProfileListItem(icon = Icons.Outlined.Settings, label = "Settings", onClick = onSettingsClick)
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Support Group
+            Text(
+                text = "SUPPORT",
+                style = MaterialTheme.typography.labelSmall,
+                color = Gray400,
+                modifier = Modifier.padding(start = 8.dp, bottom = 12.dp),
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.sp
+            )
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                color = White,
+                border = androidx.compose.foundation.BorderStroke(1.dp, Gray100.copy(alpha = 0.5f))
+            ) {
+                Column {
+                    ProfileListItem(icon = Icons.Outlined.HelpOutline, label = "Help & Support", onClick = onHelpClick)
+                    Divider(modifier = Modifier.padding(horizontal = 24.dp), thickness = 0.5.dp, color = Gray100)
+                    ProfileListItem(icon = Icons.Outlined.Info, label = "About AgriConnect", onClick = { })
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Logout
+            AgriButton(
+                text = "Logout",
+                onClick = onLogout,
+                containerColor = Error.copy(alpha = 0.1f),
+                contentColor = Error,
+                shape = RoundedCornerShape(18.dp)
+            )
             
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
-}
-
-@Composable
-fun DividerItem() {
-    Divider(
-        modifier = Modifier.padding(start = 72.dp), 
-        thickness = 0.5.dp, 
-        color = Color.LightGray.copy(alpha = 0.3f)
-    )
 }

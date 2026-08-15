@@ -85,12 +85,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             if (otpCode == "000000" || otpCode == "123456") {
                 val demoUser = mockUsers.find { it.mobile == sanitizedMobile }
                 if (demoUser != null) {
-                    _user.value = demoUser
-                    val demoToken = "demo_token_${demoUser.id}"
+                    val status = if (demoUser.role == "admin") "active" else "pending"
+                    val finalUser = demoUser.copy(accountStatus = status)
+                    _user.value = finalUser
+                    val demoToken = "demo_token_${finalUser.id}"
                     _token.value = demoToken
-                    sessionManager.saveUser(demoUser)
+                    sessionManager.saveUser(finalUser)
                     sessionManager.saveToken(demoToken)
-                    onVerifySuccess(demoUser.role)
+                    onVerifySuccess(finalUser.role)
                 } else {
                     _error.value = "Account not found. Please register."
                     onVerifySuccess("none")
@@ -152,7 +154,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                         id = loginRes.userId ?: UUID.randomUUID().toString(),
                         mobile = sanitizedMobile,
                         fullName = fullName,
-                        role = if (role == "merchant") "buyer" else role
+                        role = if (role == "merchant") "buyer" else role,
+                        accountStatus = "pending"
                     )
                     
                     _user.value = registeredUser
@@ -170,7 +173,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     mobile = sanitizedMobile,
                     fullName = fullName,
                     role = if (role == "merchant") "buyer" else role,
-                    village = village, district = district, state = state
+                    village = village, district = district, state = state,
+                    accountStatus = "pending"
                 )
                 _user.value = newUser
                 val mockToken = "mock_token_${newUser.id}"

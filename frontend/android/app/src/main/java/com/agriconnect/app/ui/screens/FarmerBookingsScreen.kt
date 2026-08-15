@@ -17,10 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.agriconnect.app.ui.components.AgriCard
-import com.agriconnect.app.ui.components.AgriSectionTitle
-import com.agriconnect.app.ui.components.EmptyStateCard
-import com.agriconnect.app.ui.theme.Emerald600
+import com.agriconnect.app.ui.components.*
+import com.agriconnect.app.ui.theme.*
 import com.agriconnect.app.ui.viewmodel.AuthViewModel
 import com.agriconnect.app.ui.viewmodel.FarmerViewModel
 
@@ -30,7 +28,8 @@ fun FarmerBookingsScreen(
     onBack: () -> Unit,
     onBookingClick: (String) -> Unit,
     authViewModel: AuthViewModel = viewModel(),
-    farmerViewModel: FarmerViewModel = viewModel()
+    farmerViewModel: FarmerViewModel = viewModel(),
+    onMenuClick: () -> Unit = {}
 ) {
     val token by authViewModel.token
     val user by authViewModel.user
@@ -39,9 +38,9 @@ fun FarmerBookingsScreen(
 
     var activeTab by remember { mutableStateOf("all") }
     val tabs = listOf(
-        TabItem("all", "All Inquiries"),
-        TabItem("active", "Active"),
-        TabItem("completed", "Archived")
+        TabItem("all", "All"),
+        TabItem("active", "Pending"),
+        TabItem("completed", "Completed")
     )
 
     LaunchedEffect(token, user) {
@@ -51,17 +50,12 @@ fun FarmerBookingsScreen(
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = AgriBackground,
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier.statusBarsPadding(),
-                title = { Text("Marketplace Inquiries", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = Color.White) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Emerald600)
+            AgriTopAppBar(
+                title = "Marketplace Inquiries",
+                onMenuClick = onMenuClick,
+                onBackClick = onBack
             )
         }
     ) { padding ->
@@ -71,31 +65,29 @@ fun FarmerBookingsScreen(
                 .padding(padding)
         ) {
             // Tabs
-            ScrollableTabRow(
-                selectedTabIndex = tabs.indexOfFirst { it.id == activeTab },
-                containerColor = Color.White,
-                edgePadding = 24.dp,
-                divider = {},
-                indicator = {}
+            Surface(
+                color = AgriPrimary,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                tabs.forEach { tab ->
-                    Tab(
-                        selected = activeTab == tab.id,
-                        onClick = { activeTab = tab.id },
-                        modifier = Modifier.padding(vertical = 12.dp)
-                    ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    tabs.forEach { tab ->
+                        val isSelected = activeTab == tab.id
                         Surface(
-                            color = if (activeTab == tab.id) MaterialTheme.colorScheme.primary else Color.White,
+                            onClick = { activeTab = tab.id },
+                            color = if (isSelected) White else Color.Transparent,
                             shape = RoundedCornerShape(12.dp),
-                            border = if (activeTab == tab.id) null else BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+                            modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = tab.label.uppercase(),
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Black,
-                                color = if (activeTab == tab.id) Color.White else Color.Gray,
-                                letterSpacing = 0.5.sp
+                                text = tab.label,
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = if (isSelected) AgriPrimary else White.copy(alpha = 0.7f),
+                                fontWeight = FontWeight.Black
                             )
                         }
                     }
@@ -104,15 +96,18 @@ fun FarmerBookingsScreen(
 
             if (loading && bookings.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    CircularProgressIndicator(color = AgriPrimary)
                 }
             } else if (bookings.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
-                    EmptyStateCard(message = "No active inquiries found. We'll notify you as soon as a buyer expresses interest in your supply node.")
+                    EmptyStateCard(message = "No active inquiries found.")
                 }
             } else {
                 val filteredBookings = when (activeTab) {
-                    "active" -> bookings.filter { (it["status"] as? String)?.lowercase() == "confirmed" }
+                    "active" -> bookings.filter { 
+                        val s = (it["status"] as? String)?.lowercase() ?: ""
+                        s !in listOf("completed", "cancelled", "rejected")
+                    }
                     "completed" -> bookings.filter { (it["status"] as? String)?.lowercase() == "completed" }
                     else -> bookings
                 }
@@ -133,6 +128,7 @@ fun FarmerBookingsScreen(
                             onClick = { onBookingClick(id) }
                         )
                     }
+                    item { Spacer(modifier = Modifier.height(80.dp)) }
                 }
             }
         }
@@ -143,33 +139,41 @@ fun FarmerBookingsScreen(
 fun InquiryCard(crop: String, buyer: String, status: String, date: String, location: String, onClick: () -> Unit) {
     AgriCard(onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
+            val statusColor = when(status.lowercase()) {
+                "completed" -> Success
+                "confirmed" -> AgriPrimary
+                "enquiry_sent", "farmer_responded", "counter_offer", "merchant_responded", "accepted", "pending" -> Warning
+                "rejected", "cancelled" -> Error
+                else -> Gray500
+            }
+            val displayStatus = status.replace("_", " ").uppercase()
             Surface(
-                color = if (status.lowercase() == "confirmed") Color(0xFFECFDF5) else Color(0xFFF3F4F6),
+                color = statusColor.copy(alpha = 0.1f),
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
-                    text = status.uppercase(),
+                    text = displayStatus,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Black,
-                    color = if (status.lowercase() == "confirmed") Emerald600 else Color.Gray
+                    color = statusColor
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
-            Text(text = date, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+            Text(text = date, style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Bold)
         }
 
         Spacer(modifier = Modifier.height(12.dp))
         
-        Text(text = crop, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black)
-        Text(text = "INTEREST FROM: $buyer", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        Text(text = crop, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = Gray900)
+        Text(text = "INTEREST FROM: $buyer", style = MaterialTheme.typography.bodySmall, color = Gray500, fontWeight = FontWeight.Bold)
         
         Spacer(modifier = Modifier.height(16.dp))
         
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.LocationOn, null, modifier = Modifier.size(14.dp), tint = Color.Gray)
+            Icon(Icons.Default.LocationOn, null, modifier = Modifier.size(14.dp), tint = Gray400)
             Spacer(modifier = Modifier.width(4.dp))
-            Text(text = location, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+            Text(text = location, style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Bold)
         }
     }
 }

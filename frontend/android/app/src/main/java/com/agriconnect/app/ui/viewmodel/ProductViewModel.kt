@@ -9,6 +9,9 @@ import com.agriconnect.data.model.Product
 import com.agriconnect.data.model.ProductCreateRequest
 import kotlinx.coroutines.launch
 
+import com.agriconnect.data.model.ProductUpdateRequest
+import retrofit2.Response
+
 class ProductViewModel : ViewModel() {
     private val _products = mutableStateOf<List<Product>>(emptyList())
     val products: State<List<Product>> = _products
@@ -89,6 +92,39 @@ class ProductViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 _error.value = "Fulfillment network error."
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun updateProductStatus(token: String, userId: String, productId: String, status: String, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                // We'll use the update profile endpoint or similar if there's no specific status endpoint
+                // Actually there's a publish endpoint in backend/farmer.py
+                val response = if (status == "active") {
+                    RetrofitClient.instance.publishProduct("Bearer $token", productId, userId)
+                } else if (status == "removed") {
+                    RetrofitClient.instance.deleteProduct("Bearer $token", productId, userId)
+                } else {
+                    // For other statuses, use updateProduct
+                    val current = _currentProduct.value
+                    if (current != null) {
+                        val request = ProductUpdateRequest(status = status)
+                        RetrofitClient.instance.updateProduct("Bearer $token", productId, userId, request)
+                    } else {
+                        null
+                    }
+                }
+                
+                if (response?.isSuccessful == true) {
+                    fetchProductDetail(productId)
+                    onSuccess()
+                }
+            } catch (e: Exception) {
+                _error.value = "Status update failed."
             } finally {
                 _loading.value = false
             }

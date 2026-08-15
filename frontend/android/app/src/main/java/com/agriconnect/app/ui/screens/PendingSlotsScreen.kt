@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.agriconnect.app.ui.components.AgriTopAppBar
 import com.agriconnect.app.ui.theme.Emerald600
 
 data class PendingSlot(
@@ -28,28 +29,28 @@ data class PendingSlot(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PendingSlotsScreen() {
+fun PendingSlotsScreen(
+    onMenuClick: () -> Unit = {},
+    onBack: () -> Unit = {}
+) {
     val pendingList = listOf(
         PendingSlot("1024", "Ravi Kumar", "Cotton", "800 Kg"),
         PendingSlot("1025", "Suresh", "Maize", "2 Tons")
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF9FAFB))
-    ) {
-        TopAppBar(
-            title = { Text("Pending Slots", fontWeight = FontWeight.Bold) },
-            navigationIcon = {
-                IconButton(onClick = { }) {
-                    Icon(Icons.Default.ArrowBack, null)
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
-        )
-
+    Scaffold(
+        topBar = {
+            AgriTopAppBar(
+                title = "Pending Slots",
+                showLogo = false,
+                onMenuClick = onMenuClick,
+                onBackClick = onBack
+            )
+        },
+        containerColor = Color(0xFFF9FAFB)
+    ) { padding ->
         LazyColumn(
+            modifier = Modifier.padding(padding),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {

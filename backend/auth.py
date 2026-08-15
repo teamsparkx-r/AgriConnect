@@ -196,17 +196,34 @@ class AuthService:
                 return False, "Email already registered", None
         
         # Create new user
+        status = AccountStatus.PENDING if role != UserRole.ADMIN else AccountStatus.ACTIVE
         user = User(
             mobile_number=mobile_number,
             email=email,
             password_hash=AuthService.hash_password(password),
             full_name=full_name,
             role=role,
-            account_status=AccountStatus.ACTIVE,
+            account_status=status,
             mobile_verified=verified
         )
         
         db.add(user)
+        db.flush() # Flush to get user.id
+
+        # Notify Admin about new registration
+        if role != UserRole.ADMIN:
+            from models import Notification
+            admin_id = "2687eded-053d-4cbc-8a06-18be9ad5888b" # From app.py seed
+            notif_type = "new_farmer_registration" if role == UserRole.FARMER else "new_merchant_registration"
+            new_notif = Notification(
+                user_id=admin_id,
+                title=f"New {role.value.capitalize()} Registration",
+                message=f"{full_name} has registered and is waiting for approval.",
+                notification_type=notif_type,
+                related_id=user.id
+            )
+            db.add(new_notif)
+
         db.commit()
         db.refresh(user)
         

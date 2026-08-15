@@ -17,7 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.agriconnect.app.ui.components.*
-import com.agriconnect.app.ui.theme.Emerald600
+import com.agriconnect.app.ui.theme.*
 import com.agriconnect.app.ui.viewmodel.ProductViewModel
 import com.agriconnect.data.model.Product
 import androidx.compose.material.icons.outlined.ErrorOutline
@@ -30,10 +30,13 @@ fun MyProductsScreen(
     viewModel: ProductViewModel,
     onAddProduct: () -> Unit,
     onEditProduct: (String) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onMenuClick: () -> Unit = {}
 ) {
     val products by viewModel.products
     val loading by viewModel.loading
+    var activeTab by remember { mutableStateOf("All") }
+    val tabs = listOf("All", "Active", "Sold", "Draft")
 
     LaunchedEffect(token, userId) {
         if (token.isNotEmpty()) {
@@ -42,87 +45,93 @@ fun MyProductsScreen(
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = AgriBackground,
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier.statusBarsPadding(),
-                title = {
-                    Text(
-                        "Inventory Registry",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Emerald600
-                )
+            AgriTopAppBar(
+                title = "My Stock",
+                showLogo = false,
+                onBackClick = onBack,
+                onMenuClick = onMenuClick
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddProduct,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White,
-                shape = RoundedCornerShape(16.dp)
+                containerColor = AgriPrimary,
+                contentColor = White,
+                shape = RoundedCornerShape(18.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Product", modifier = Modifier.size(28.dp))
             }
         }
     ) { padding ->
-        val error by viewModel.error
-        
-        if (loading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-            }
-        } else if (error != null) {
-            Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Outlined.ErrorOutline, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(48.dp))
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = error!!, color = Color.Gray, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-                    Spacer(modifier = Modifier.height(24.dp))
-                    AgriButton(text = "RETRY", onClick = { viewModel.fetchFarmerProducts(token, userId) })
-                }
-            }
-        } else if (products.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = null,
-                        modifier = Modifier.size(64.dp),
-                        tint = Color.LightGray
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "No active supply nodes found.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Gray
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    TextButton(onClick = onAddProduct) {
-                        Text("INITIALIZE YOUR FIRST SUPPLY", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            // Filter Tabs
+            Surface(
+                color = AgriPrimary,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    tabs.forEach { tab ->
+                        val isSelected = activeTab == tab
+                        Surface(
+                            onClick = { activeTab = tab },
+                            color = if (isSelected) White else Color.Transparent,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = tab,
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = if (isSelected) AgriPrimary else White.copy(alpha = 0.7f),
+                                fontWeight = FontWeight.Black
+                            )
+                        }
                     }
                 }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentPadding = PaddingValues(24.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(products) { product ->
-                    RecentProductItem(product = product, onClick = { onEditProduct(product.id) })
+
+            val error by viewModel.error
+            
+            if (loading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = AgriPrimary)
                 }
-                item { Spacer(modifier = Modifier.height(80.dp)) }
+            } else if (error != null) {
+                Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.Outlined.ErrorOutline, null, tint = Error, modifier = Modifier.size(48.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(text = error!!, color = Gray600, textAlign = androidx.compose.ui.text.style.TextAlign.Center, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(24.dp))
+                        AgriButton(text = "RETRY", onClick = { viewModel.fetchFarmerProducts(token, userId) })
+                    }
+                }
+            } else if (products.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    EmptyStateCard(message = "No crops yet. Add your first crop to start selling.")
+                }
+            } else {
+                val filteredProducts = remember(activeTab, products) {
+                    if (activeTab == "All") products
+                    else products.filter { it.status?.lowercase() == activeTab.lowercase() }
+                }
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(filteredProducts) { product ->
+                        RecentProductItem(product = product, onClick = { onEditProduct(product.id) })
+                    }
+                    item { Spacer(modifier = Modifier.height(80.dp)) }
+                }
             }
         }
     }

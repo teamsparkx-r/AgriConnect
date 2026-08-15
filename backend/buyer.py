@@ -50,6 +50,9 @@ class ProductResponse(BaseModel):
 
 class BookingRequest(BaseModel):
     product_id: str
+    quantity: float
+    price: float
+    message: Optional[str] = None
     terms_accepted: bool
 
 class BookingResponse(BaseModel):
@@ -68,6 +71,11 @@ class ReportRequest(BaseModel):
     booking_id: str
     reason: str
     description: Optional[str]
+
+class CounterOfferRequest(BaseModel):
+    quantity: float
+    price: float
+    message: Optional[str] = None
 
 # ==================== ENDPOINTS ====================
 
@@ -117,7 +125,8 @@ def register_buyer(request: BuyerRegisterRequest, db: Session = Depends(get_db))
                 "id": user.id,
                 "role": user.role.value,
                 "mobile": user.mobile_number,
-                "full_name": user.full_name
+                "full_name": user.full_name,
+                "account_status": user.account_status.value
             }
         }
     except Exception as e:
@@ -150,7 +159,8 @@ def verify_otp(request: OTPRequest, db: Session = Depends(get_db)):
             "id": user.id,
             "role": user.role.value,
             "mobile": user.mobile_number,
-            "full_name": user.full_name
+            "full_name": user.full_name,
+            "account_status": user.account_status.value
         },
         "user_id": user.id,
         "role": user.role.value
@@ -183,7 +193,8 @@ def login_buyer(request: BuyerLoginRequest, db: Session = Depends(get_db)):
             "id": user.id,
             "role": user.role.value,
             "mobile": user.mobile_number,
-            "full_name": user.full_name
+            "full_name": user.full_name,
+            "account_status": user.account_status.value
         },
         "user_id": user.id,
         "buyer_id": buyer.id if buyer else None,
@@ -375,6 +386,10 @@ def get_product_details(product_id: str, db: Session = Depends(get_db)):
 def create_booking(request: BookingRequest, user_id: str, db: Session = Depends(get_db)):
     """Stage 4: Book crop (Anonymously mediated by AgriConnect)"""
     try:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user or user.account_status != AccountStatus.ACTIVE:
+            raise HTTPException(status_code=403, detail="Account not approved for purchase enquiries.")
+
         product = db.query(Product).filter(Product.id == request.product_id).first()
 
         if not product:
@@ -402,28 +417,40 @@ def create_booking(request: BookingRequest, user_id: str, db: Session = Depends(
             buyer_id=buyer.id,
             farmer_id=product.farmer_id,
             product_id=product.id,
-            status=BookingStatus.CONFIRMED,
+            status=BookingStatus.ENQUIRY_SENT,
+            requested_quantity=request.quantity,
+            negotiated_price=request.price,
             terms_accepted=True
         )
 
-        # Update product status to indicate it's reserved
-        # product.status = ProductStatus.SOLD # Or a new status like 'RESERVED'
-
         db.add(booking)
-        db.commit()
-        db.refresh(booking)
+        db.flush() # Get booking.id
+
+        # Create initial negotiation entry
+        from models import NegotiationHistory
+        negotiation = NegotiationHistory(
+            booking_id=booking.id,
+            sender_id=user_id,
+            receiver_id=product.farmer.user_id,
+            quantity=request.quantity,
+            price=request.price,
+            message=request.message,
+            status=BookingStatus.ENQUIRY_SENT
+        )
+        db.add(negotiation)
 
         # Create notification for farmer (Anonymous)
         notification = Notification(
             user_id=product.farmer.user_id,
-            title="Crop Reserved",
-            message=f"Your {product.name} listing has been booked by a verified merchant (ID: MERCH-{buyer.id[:6].upper()}). AgriConnect will mediate the verification.",
-            notification_type="booking_confirmed",
-            related_id=booking.id
+            title="New Purchase Enquiry",
+            message=f"A merchant is interested in your {product.name}. Requested: {request.quantity} {product.unit} @ ₹{request.price}/{product.unit}",
+            notification_type="new_enquiry",
+            related_id=booking.booking_id
         )
         db.add(notification)
         db.commit()
-        
+        db.refresh(booking)
+
         return {
             "success": True,
             "message": "Crop successfully booked! AgriConnect will now mediate the exchange.",
@@ -493,6 +520,8 @@ def get_booking_details(booking_id: str, user_id: str, db: Session = Depends(get
             "quantity": booking.product.quantity,
             "unit": booking.product.unit,
             "expected_price": booking.product.expected_price,
+            "requested_quantity": booking.requested_quantity,
+            "negotiated_price": booking.negotiated_price,
             "farmer_id": booking.farmer.id,
             "farmer_name": booking.farmer.user.full_name,
             "farmer_mobile": booking.farmer.user.mobile_number,
@@ -506,6 +535,126 @@ def get_booking_details(booking_id: str, user_id: str, db: Session = Depends(get
             "completed_at": booking.completed_at.isoformat() if booking.completed_at else None
         }
     }
+
+@router.post("/bookings/{booking_id}/accept")
+def merchant_accept_offer(booking_id: str, user_id: str, db: Session = Depends(get_db)):
+    """Merchant accepts the current offer from Farmer"""
+    booking = db.query(Booking).filter(Booking.booking_id == booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    buyer = db.query(Buyer).filter(Buyer.user_id == user_id).first()
+    if booking.buyer_id != buyer.id:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    booking.status = BookingStatus.CONFIRMED
+    booking.updated_at = datetime.utcnow()
+
+    # Create history entry
+    from models import NegotiationHistory
+    negotiation = NegotiationHistory(
+        booking_id=booking.id,
+        sender_id=user_id,
+        receiver_id=booking.farmer.user_id,
+        quantity=booking.requested_quantity,
+        price=booking.negotiated_price,
+        status=BookingStatus.ACCEPTED
+    )
+    db.add(negotiation)
+
+    # Notify farmer
+    new_notif = Notification(
+        user_id=booking.farmer.user_id,
+        title="Deal Confirmed!",
+        message=f"Merchant has accepted your counter offer for {booking.product.name}. Order is now CONFIRMED.",
+        notification_type="order_confirmed",
+        related_id=booking.booking_id
+    )
+    db.add(new_notif)
+    db.commit()
+
+    return {"success": True, "message": "Offer accepted and deal confirmed."}
+
+@router.post("/bookings/{booking_id}/reject")
+def merchant_reject_offer(booking_id: str, user_id: str, db: Session = Depends(get_db)):
+    """Merchant rejects the current offer from Farmer"""
+    booking = db.query(Booking).filter(Booking.booking_id == booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    buyer = db.query(Buyer).filter(Buyer.user_id == user_id).first()
+    if booking.buyer_id != buyer.id:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    booking.status = BookingStatus.REJECTED
+    booking.updated_at = datetime.utcnow()
+
+    # Record history
+    from models import NegotiationHistory
+    negotiation = NegotiationHistory(
+        booking_id=booking.id,
+        sender_id=user_id,
+        receiver_id=booking.farmer.user_id,
+        quantity=booking.requested_quantity,
+        price=booking.negotiated_price,
+        status=BookingStatus.REJECTED
+    )
+    db.add(negotiation)
+
+    # Notify farmer
+    new_notif = Notification(
+        user_id=booking.farmer.user_id,
+        title="Negotiation Ended",
+        message=f"Merchant has rejected the terms for {booking.product.name}.",
+        notification_type="negotiation_rejected",
+        related_id=booking.booking_id
+    )
+    db.add(new_notif)
+    db.commit()
+
+    return {"success": True, "message": "Negotiation rejected."}
+
+@router.post("/bookings/{booking_id}/counter")
+def merchant_counter_offer(booking_id: str, user_id: str, request: CounterOfferRequest, db: Session = Depends(get_db)):
+    """Merchant sends a counter offer back to Farmer"""
+    booking = db.query(Booking).filter(Booking.booking_id == booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    buyer = db.query(Buyer).filter(Buyer.user_id == user_id).first()
+    if booking.buyer_id != buyer.id:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    booking.status = BookingStatus.MERCHANT_RESPONDED
+    booking.requested_quantity = request.quantity
+    booking.negotiated_price = request.price
+    booking.updated_at = datetime.utcnow()
+
+    # Record history
+    from models import NegotiationHistory
+    negotiation = NegotiationHistory(
+        booking_id=booking.id,
+        sender_id=user_id,
+        receiver_id=booking.farmer.user_id,
+        quantity=request.quantity,
+        price=request.price,
+        message=request.message,
+        status=BookingStatus.MERCHANT_RESPONDED
+    )
+    db.add(negotiation)
+
+    # Notify farmer
+    new_notif = Notification(
+        user_id=booking.farmer.user_id,
+        title="Merchant Responded",
+        message=f"Merchant has sent a counter offer for {booking.product.name}: {request.quantity} {booking.product.unit} @ ₹{request.price}/{booking.product.unit}",
+        notification_type="merchant_responded",
+        related_id=booking.booking_id
+    )
+    db.add(new_notif)
+    db.commit()
+
+    return {"success": True, "message": "Counter offer sent successfully."}
 
 @router.post("/bookings/{booking_id}/complete")
 def mark_booking_completed(booking_id: str, user_id: str, db: Session = Depends(get_db)):
@@ -661,6 +810,7 @@ def get_notifications(user_id: str, db: Session = Depends(get_db)):
                 "title": n.title,
                 "message": n.message,
                 "notification_type": n.notification_type,
+                "related_id": n.related_id,
                 "is_read": n.is_read,
                 "created_at": n.created_at.isoformat()
             }

@@ -25,6 +25,15 @@ class AdminViewModel : ViewModel() {
     private val _dashboardData = mutableStateOf<AdminDashboardData?>(null)
     val dashboardData: State<AdminDashboardData?> = _dashboardData
 
+    private val _users = mutableStateOf<List<Map<String, Any>>>(emptyList())
+    val users: State<List<Map<String, Any>>> = _users
+
+    private val _userDetail = mutableStateOf<Map<String, Any>?>(null)
+    val userDetail: State<Map<String, Any>?> = _userDetail
+
+    private val _notifications = mutableStateOf<List<Map<String, Any>>>(emptyList())
+    val notifications: State<List<Map<String, Any>>> = _notifications
+
     private val _loading = mutableStateOf(false)
     val loading: State<Boolean> = _loading
 
@@ -36,9 +45,6 @@ class AdminViewModel : ViewModel() {
             _loading.value = true
             _error.value = null
             try {
-                // Since I don't have AdminDashboardResponse in AgriConnectApi yet, 
-                // I'll need to add it or use a generic Map for now if I want to avoid errors.
-                // Actually, it's better to add it to AgriConnectApi.
                 val response = RetrofitClient.instance.getAdminDashboard("Bearer $token")
                 if (response.isSuccessful) {
                     val body = response.body()
@@ -64,6 +70,99 @@ class AdminViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 _error.value = "Network failure in administration link."
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun fetchUsers(token: String, role: String? = null) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            try {
+                val response = RetrofitClient.instance.getAdminUsers("Bearer $token", role = role)
+                if (response.isSuccessful) {
+                    val body = response.body()
+                    if (body != null && body["success"] == true) {
+                        _users.value = (body["users"] as? List<Map<String, Any>>) ?: emptyList()
+                    }
+                }
+            } catch (e: Exception) {
+                _error.value = "Failed to fetch user directory."
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun fetchUserDetail(token: String, userId: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            try {
+                val response = RetrofitClient.instance.getAdminUserDetail("Bearer $token", userId)
+                if (response.isSuccessful) {
+                    val body = response.body()
+                    if (body != null && body["success"] == true) {
+                        _userDetail.value = body["user"] as? Map<String, Any>
+                    }
+                }
+            } catch (e: Exception) {
+                _error.value = "Failed to fetch user details."
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun fetchNotifications(token: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val response = RetrofitClient.instance.getAdminNotifications("Bearer $token")
+                if (response.isSuccessful) {
+                    val body = response.body()
+                    if (body != null && body["success"] == true) {
+                        _notifications.value = (body["notifications"] as? List<Map<String, Any>>) ?: emptyList()
+                    }
+                }
+            } catch (e: Exception) {
+                // error handling
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun approveUser(token: String, userId: String, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val response = RetrofitClient.instance.approveUser("Bearer $token", userId)
+                if (response.isSuccessful) {
+                    onSuccess()
+                    fetchUserDetail(token, userId)
+                }
+            } catch (e: Exception) {
+                // handle error
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun rejectUser(token: String, userId: String, reason: String? = null, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val response = RetrofitClient.instance.rejectUser("Bearer $token", userId, reason)
+                if (response.isSuccessful) {
+                    onSuccess()
+                    fetchUserDetail(token, userId)
+                }
+            } catch (e: Exception) {
+                // handle error
             } finally {
                 _loading.value = false
             }

@@ -46,6 +46,35 @@ interface AgriConnectApi {
         @Body product: ProductCreateRequest
     ): Response<ProductCreateResponse>
 
+    @GET("api/farmer/products/{product_id}")
+    suspend fun getFarmerProductDetail(
+        @Header("Authorization") token: String,
+        @Path("product_id") productId: String,
+        @Query("user_id") userId: String
+    ): Response<ProductDetailResponse>
+
+    @PUT("api/farmer/products/{product_id}")
+    suspend fun updateProduct(
+        @Header("Authorization") token: String,
+        @Path("product_id") productId: String,
+        @Query("user_id") userId: String,
+        @Body request: ProductUpdateRequest
+    ): Response<Map<String, Any>>
+
+    @POST("api/farmer/products/{product_id}/publish")
+    suspend fun publishProduct(
+        @Header("Authorization") token: String,
+        @Path("product_id") productId: String,
+        @Query("user_id") userId: String
+    ): Response<Map<String, Any>>
+
+    @DELETE("api/farmer/products/{product_id}")
+    suspend fun deleteProduct(
+        @Header("Authorization") token: String,
+        @Path("product_id") productId: String,
+        @Query("user_id") userId: String
+    ): Response<Map<String, Any>>
+
     @GET("api/farmer/bookings")
     suspend fun getFarmerBookings(
         @Header("Authorization") token: String,
@@ -67,6 +96,12 @@ interface AgriConnectApi {
         @Body updates: ProfileUpdateRequest
     ): Response<Map<String, Any>>
 
+    @GET("api/farmer/notifications/{user_id}")
+    suspend fun getNotifications(
+        @Header("Authorization") token: String,
+        @Path("user_id") userId: String
+    ): Response<Map<String, Any>>
+
     // Buyer/Discovery Endpoints
     @GET("api/buyer/dashboard/{user_id}")
     suspend fun getBuyerDashboard(
@@ -84,6 +119,13 @@ interface AgriConnectApi {
     @GET("api/buyer/bookings")
     suspend fun getBuyerBookings(
         @Header("Authorization") token: String,
+        @Query("user_id") userId: String
+    ): Response<Map<String, Any>>
+
+    @GET("api/buyer/bookings/{booking_id}")
+    suspend fun getBuyerBookingDetail(
+        @Header("Authorization") token: String,
+        @Path("booking_id") bookingId: String,
         @Query("user_id") userId: String
     ): Response<Map<String, Any>>
 
@@ -107,6 +149,12 @@ interface AgriConnectApi {
         @Body updates: ProfileUpdateRequest
     ): Response<Map<String, Any>>
 
+    @GET("api/buyer/notifications/{user_id}")
+    suspend fun getBuyerNotifications(
+        @Header("Authorization") token: String,
+        @Path("user_id") userId: String
+    ): Response<Map<String, Any>>
+
     // Saved Products
     @POST("api/buyer/saved/{product_id}")
     suspend fun saveProduct(
@@ -127,13 +175,105 @@ interface AgriConnectApi {
     suspend fun getAdminDashboard(
         @Header("Authorization") token: String
     ): Response<Map<String, Any>>
+
+    @POST("api/admin/users/{user_id}/approve")
+    suspend fun approveUser(
+        @Header("Authorization") token: String,
+        @Path("user_id") userId: String
+    ): Response<Map<String, Any>>
+
+    @POST("api/admin/users/{user_id}/reject")
+    suspend fun rejectUser(
+        @Header("Authorization") token: String,
+        @Path("user_id") userId: String,
+        @Query("reason") reason: String? = null
+    ): Response<Map<String, Any>>
+
+    @GET("api/admin/users")
+    suspend fun getAdminUsers(
+        @Header("Authorization") token: String,
+        @Query("role") role: String? = null,
+        @Query("status") status: String? = null
+    ): Response<Map<String, Any>>
+
+    @GET("api/admin/users/{user_id}")
+    suspend fun getAdminUserDetail(
+        @Header("Authorization") token: String,
+        @Path("user_id") userId: String
+    ): Response<Map<String, Any>>
+
+    @GET("api/admin/products")
+    suspend fun getAdminProducts(
+        @Header("Authorization") token: String,
+        @Query("status") status: String? = null
+    ): Response<Map<String, Any>>
+
+    @GET("api/admin/bookings")
+    suspend fun getAdminBookings(
+        @Header("Authorization") token: String
+    ): Response<Map<String, Any>>
+
+    @GET("api/admin/reports")
+    suspend fun getAdminReports(
+        @Header("Authorization") token: String,
+        @Query("status") status: String? = null
+    ): Response<Map<String, Any>>
+
+    @GET("api/admin/notifications")
+    suspend fun getAdminNotifications(
+        @Header("Authorization") token: String
+    ): Response<Map<String, Any>>
     
-    // Bookings
+    // Bookings & Negotiation
     @POST("api/buyer/booking")
     suspend fun createBooking(
         @Header("Authorization") token: String,
         @Query("user_id") userId: String,
         @Body request: BookingCreateRequest
+    ): Response<Map<String, Any>>
+
+    @POST("api/farmer/bookings/{booking_id}/counter")
+    suspend fun farmerCounterOffer(
+        @Header("Authorization") token: String,
+        @Path("booking_id") bookingId: String,
+        @Query("user_id") userId: String,
+        @Body request: CounterOfferRequest
+    ): Response<Map<String, Any>>
+
+    @POST("api/buyer/bookings/{booking_id}/counter")
+    suspend fun merchantCounterOffer(
+        @Header("Authorization") token: String,
+        @Path("booking_id") bookingId: String,
+        @Query("user_id") userId: String,
+        @Body request: CounterOfferRequest
+    ): Response<Map<String, Any>>
+
+    @POST("api/farmer/bookings/{booking_id}/accept")
+    suspend fun farmerAcceptOffer(
+        @Header("Authorization") token: String,
+        @Path("booking_id") bookingId: String,
+        @Query("user_id") userId: String
+    ): Response<Map<String, Any>>
+
+    @POST("api/farmer/bookings/{booking_id}/reject")
+    suspend fun farmerRejectOffer(
+        @Header("Authorization") token: String,
+        @Path("booking_id") bookingId: String,
+        @Query("user_id") userId: String
+    ): Response<Map<String, Any>>
+
+    @POST("api/buyer/bookings/{booking_id}/accept")
+    suspend fun merchantAcceptOffer(
+        @Header("Authorization") token: String,
+        @Path("booking_id") bookingId: String,
+        @Query("user_id") userId: String
+    ): Response<Map<String, Any>>
+
+    @POST("api/buyer/bookings/{booking_id}/reject")
+    suspend fun merchantRejectOffer(
+        @Header("Authorization") token: String,
+        @Path("booking_id") bookingId: String,
+        @Query("user_id") userId: String
     ): Response<Map<String, Any>>
 
     // Platform Stats
@@ -165,6 +305,9 @@ data class BuyerRegisterRequest(
 
 data class BookingCreateRequest(
     @SerializedName("product_id") val productId: String,
+    val quantity: Float,
+    val price: Float,
+    val message: String? = null,
     @SerializedName("terms_accepted") val termsAccepted: Boolean = true
 )
 
@@ -212,6 +355,7 @@ data class FarmerNotification(
     val title: String,
     val message: String,
     val type: String,
+    @SerializedName("related_id") val relatedId: String? = null,
     @SerializedName("created_at") val createdAt: String
 )
 

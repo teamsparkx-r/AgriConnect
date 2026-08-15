@@ -1,5 +1,6 @@
 package com.agriconnect.app.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -22,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.agriconnect.app.ui.components.*
-import com.agriconnect.app.ui.theme.Emerald600
+import com.agriconnect.app.ui.theme.*
 import com.agriconnect.app.ui.viewmodel.FarmerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,12 +33,14 @@ fun FarmerDashboardScreen(
     userId: String,
     userName: String,
     viewModel: FarmerViewModel,
+    userStatus: String = "active",
     onBookSlotClick: () -> Unit,
     onMyBookingsClick: () -> Unit,
     onMyProductsClick: () -> Unit,
     onProductClick: (String) -> Unit,
     onNotificationsClick: () -> Unit = {},
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onMenuClick: () -> Unit = {}
 ) {
     val dashboardData by viewModel.dashboardData
     val loading by viewModel.loading
@@ -49,37 +52,18 @@ fun FarmerDashboardScreen(
     }
 
     Scaffold(
-        containerColor = Color(0xFFF9FAFB),
+        containerColor = AgriBackground,
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier.statusBarsPadding(),
-                title = { 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Agriculture, null, tint = Color.White, modifier = Modifier.size(24.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "AgriConnect", 
-                            style = MaterialTheme.typography.titleLarge, 
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = (-1).sp,
-                            color = Color.White
-                        ) 
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onNotificationsClick) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = null, tint = Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Emerald600
-                )
+            AgriTopAppBar(
+                onMenuClick = onMenuClick,
+                onProfileClick = onProfileClick,
+                onNotificationsClick = onNotificationsClick
             )
         }
     ) { padding ->
         if (loading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Emerald600)
+                CircularProgressIndicator(color = AgriPrimary)
             }
         } else {
             Column(
@@ -87,168 +71,167 @@ fun FarmerDashboardScreen(
                     .fillMaxSize()
                     .padding(padding)
                     .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp)
             ) {
-                // Welcome Section
-                Surface(
-                    color = Color.White,
-                    tonalElevation = 2.dp,
-                    shadowElevation = 1.dp,
-                    shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
-                ) {
-                    Column(modifier = Modifier.padding(24.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Pending Approval Banner
+                if (userStatus == "pending") {
+                    Surface(
+                        color = Warning.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(16.dp),
+                        border = BorderStroke(1.dp, Warning.copy(alpha = 0.5f)),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+                    ) {
+                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Info, null, tint = Warning)
+                            Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Text(
-                                    text = "Welcome back,",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.Gray,
-                                    fontWeight = FontWeight.Black
-                                )
-                                Text(
-                                    text = "${userName.split(" ").firstOrNull() ?: "Farmer"}! 👋",
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    color = Color.Black,
-                                    fontWeight = FontWeight.Black
-                                )
-                            }
-                        }
-                        
-                        Spacer(modifier = Modifier.height(28.dp))
-                        
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically, 
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Surface(
-                                color = Emerald600.copy(alpha = 0.05f),
-                                shape = RoundedCornerShape(20.dp),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Outlined.WbSunny, null, tint = Color(0xFFF59E0B), modifier = Modifier.size(20.dp))
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Column {
-                                        Text("28°C", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black)
-                                        Text("WARANGAL", style = MaterialTheme.typography.labelSmall, color = Color.Gray, fontWeight = FontWeight.Black)
-                                    }
-                                }
-                            }
-                            
-                            Button(
-                                onClick = onBookSlotClick,
-                                modifier = Modifier.weight(1f).height(56.dp),
-                                shape = RoundedCornerShape(20.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = Color.White)
-                            ) {
-                                Text("Add Produce", fontWeight = FontWeight.Black)
+                                Text("Verification Pending", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Black, color = Gray900)
+                                Text("Your account is awaiting Admin approval. You can view listings but cannot list new crops until approved.", style = MaterialTheme.typography.bodySmall, color = Gray600)
                             }
                         }
                     }
                 }
-
-                Column(modifier = Modifier.padding(24.dp)) {
-                    // Error Display
-                    val error by viewModel.error
-                    if (error != null) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.errorContainer,
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                            shape = RoundedCornerShape(16.dp)
-                        ) {
-                            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Outlined.ErrorOutline, null, tint = MaterialTheme.colorScheme.error)
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Column {
-                                    Text(text = error!!, color = MaterialTheme.colorScheme.onErrorContainer, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Black)
-                                    Text(text = "Target: https://agriconnect-backend-2jig.onrender.com/", color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black)
-                                    TextButton(onClick = { viewModel.fetchDashboard(token, userId) }) {
-                                        Text("RETRY SYNC", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Black)
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    AgriSectionTitle(title = "Network Metrics", subtitle = "OPERATIONAL INTELLIGENCE")
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        val stats = dashboardData?.stats
-                        item { 
-                            DashboardStatCard(
-                                label = "Listings", 
-                                value = stats?.totalProducts?.toString() ?: "0", 
-                                icon = Icons.Outlined.Inventory2, 
-                                bgColor = Color(0xFFEBF5FF), 
-                                iconColor = Color(0xFF3B82F6),
-                                onClick = onMyProductsClick
-                            ) 
-                        }
-                        item { 
-                            DashboardStatCard(
-                                label = "Active", 
-                                value = stats?.activeProducts?.toString() ?: "0", 
-                                icon = Icons.Outlined.PlayCircle, 
-                                bgColor = Color(0xFFECFDF5), 
-                                iconColor = Emerald600,
-                                onClick = onMyProductsClick
-                            ) 
-                        }
-                        item { 
-                            DashboardStatCard(
-                                label = "Deals", 
-                                value = stats?.totalBookings?.toString() ?: "0", 
-                                icon = Icons.Outlined.Assignment, 
-                                bgColor = Color(0xFFF5F3FF), 
-                                iconColor = Color(0xFF8B5CF6),
-                                onClick = onMyBookingsClick
-                            ) 
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    AgriSectionTitle(
-                        title = "Recent Crops", 
-                        subtitle = "MANAGEMENT",
-                        actionText = "See All", 
-                        onActionClick = onMyProductsClick
+                
+                // Greeting
+                Column {
+                    Text(
+                        text = "Welcome back,",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Gray500,
+                        fontWeight = FontWeight.Medium
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "${userName.split(" ").firstOrNull() ?: "Demo"}! 👋",
+                        style = MaterialTheme.typography.displayMedium,
+                        color = Gray900,
+                        fontWeight = FontWeight.Black
+                    )
+                    Text(
+                        text = "Here's what's happening on your farm today.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Gray400,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Weather & CTA Row
+                Row(
+                    verticalAlignment = Alignment.CenterVertically, 
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // Weather Card
+                    Surface(
+                        color = White,
+                        shape = RoundedCornerShape(24.dp),
+                        modifier = Modifier.weight(1f),
+                        shadowElevation = 0.5.dp,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Gray100.copy(alpha = 0.5f))
+                    ) {
+                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Outlined.WbSunny, null, tint = Warning, modifier = Modifier.size(24.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text("28°C", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black)
+                                Text("Warangal, TS", style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Black)
+                                Text("Sunny", style = MaterialTheme.typography.labelSmall, color = AgriPrimary, fontWeight = FontWeight.Black)
+                            }
+                            Spacer(modifier = Modifier.weight(1f))
+                            Icon(Icons.Default.ChevronRight, null, tint = Gray300, modifier = Modifier.size(16.dp))
+                        }
+                    }
+                    
+                    // Floating Primary CTA
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    FloatingActionButton(
+                        onClick = {
+                            if (userStatus == "pending") {
+                                android.widget.Toast.makeText(context, "Account verification pending. Listing restricted.", android.widget.Toast.LENGTH_SHORT).show()
+                            } else {
+                                onBookSlotClick()
+                            }
+                        },
+                        containerColor = AgriPrimary,
+                        contentColor = White,
+                        shape = RoundedCornerShape(18.dp),
+                        modifier = Modifier.height(70.dp).width(120.dp),
+                        elevation = FloatingActionButtonDefaults.elevation(4.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 12.dp)) {
+                            Icon(Icons.Default.Add, null, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Add Produce", style = MaterialTheme.typography.labelLarge, color = White, fontWeight = FontWeight.Black)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Metrics Section
+                AgriSectionTitle(title = "Network Metrics", subtitle = "OPERATIONAL INTELLIGENCE")
+                Spacer(modifier = Modifier.height(8.dp))
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    val stats = dashboardData?.stats
+                    item { 
+                        DashboardStatCard(
+                            label = "Listings", 
+                            value = stats?.totalProducts?.toString() ?: "4", 
+                            icon = Icons.Outlined.Inventory2, 
+                            bgColor = AgriSecondary, 
+                            iconColor = AgriPrimary,
+                            onClick = onMyProductsClick
+                        ) 
+                    }
+                    item { 
+                        DashboardStatCard(
+                            label = "Active", 
+                            value = stats?.activeProducts?.toString() ?: "4", 
+                            icon = Icons.Outlined.PlayCircle, 
+                            bgColor = AgriSecondary, 
+                            iconColor = Success,
+                            onClick = onMyProductsClick
+                        ) 
+                    }
+                    item { 
+                        DashboardStatCard(
+                            label = "Deals", 
+                            value = stats?.totalBookings?.toString() ?: "1", 
+                            icon = Icons.Outlined.Assignment, 
+                            bgColor = AgriSecondary, 
+                            iconColor = Info,
+                            onClick = onMyBookingsClick
+                        ) 
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Management Section
+                AgriSectionTitle(
+                    title = "Recent Crops", 
+                    subtitle = "MANAGEMENT",
+                    actionText = "See All", 
+                    onActionClick = onMyProductsClick
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                if (dashboardData?.recentProducts?.isEmpty() == true) {
+                    EmptyStateCard(message = "No active listings. Start selling by adding your crops.")
+                } else {
                     dashboardData?.recentProducts?.take(3)?.forEach { product ->
                         RecentProductItem(product, onClick = { onProductClick(product.id) })
                         Spacer(modifier = Modifier.height(12.dp))
                     }
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    AgriSectionTitle(
-                        title = "Recent Inquiries", 
-                        subtitle = "SOURCE REQUESTS",
-                        actionText = "View All", 
-                        onActionClick = onMyBookingsClick
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    if (dashboardData?.recentBookings?.isEmpty() == true) {
-                        EmptyStateCard(message = "No active inquiries yet. We'll notify you when a buyer is interested in your crops.")
-                    } else {
-                        dashboardData?.recentBookings?.take(3)?.forEach { booking ->
-                            RecentInquiryItem(
-                                title = booking["product_name"] as? String ?: "Unknown",
-                                buyer = booking["buyer_name"] as? String ?: "Merchant",
-                                onCallClick = { /* Call logic */ }
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(40.dp))
                 }
+
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }

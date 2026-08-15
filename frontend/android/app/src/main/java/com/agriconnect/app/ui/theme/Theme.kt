@@ -11,36 +11,31 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val LightColorScheme = lightColorScheme(
-    primary = Emerald600,
+    primary = AgriPrimary,
     onPrimary = White,
-    primaryContainer = Emerald100,
-    onPrimaryContainer = Emerald900,
+    primaryContainer = AgriSecondary,
+    onPrimaryContainer = AgriPrimaryDark,
     
-    secondary = Emerald500,
+    secondary = AgriPrimaryDark,
     onSecondary = White,
-    secondaryContainer = Emerald50,
-    onSecondaryContainer = Emerald800,
+    secondaryContainer = AgriSecondary,
+    onSecondaryContainer = AgriPrimaryDark,
     
-    tertiary = Info,
-    onTertiary = White,
-    
-    background = Gray50,
+    background = AgriBackground,
     onBackground = Gray900,
     
     surface = White,
     onSurface = Gray900,
-    surfaceVariant = Gray100,
+    surfaceVariant = AgriSecondary,
     onSurfaceVariant = Gray600,
     
-    outline = Gray300,
-    
+    outline = Gray200,
     error = Error,
-    onError = White,
+    onError = White
 )
 
 @Composable
 fun AgriConnectTheme(
-    // Enforce light mode as per objective
     darkTheme: Boolean = false,
     content: @Composable () -> Unit
 ) {
@@ -49,18 +44,19 @@ fun AgriConnectTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = Color.Transparent.toArgb()
-            window.navigationBarColor = Color.Transparent.toArgb()
+            window.statusBarColor = AgriBackground.toArgb()
+            window.navigationBarColor = AgriPrimary.toArgb()
             
             val controller = WindowCompat.getInsetsController(window, view)
             controller.isAppearanceLightStatusBars = true
-            controller.isAppearanceLightNavigationBars = true
+            controller.isAppearanceLightNavigationBars = false // Dark nav bar needs light icons
         }
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = Shapes,
         content = content
     )
 }

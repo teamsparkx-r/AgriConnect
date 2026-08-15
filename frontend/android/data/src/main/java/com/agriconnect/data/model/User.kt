@@ -8,6 +8,7 @@ data class User(
     val email: String? = null,
     @SerializedName("full_name") val fullName: String,
     val role: String,
+    @SerializedName("account_status") val accountStatus: String? = "active",
     
     // Additional fields for Farmer/Merchant
     val village: String? = null,

@@ -18,28 +18,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.agriconnect.app.ui.components.AgriTopAppBar
 import com.agriconnect.app.ui.theme.Emerald600
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LiveVerificationScreen(onCallFinished: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
-        TopAppBar(
-            title = { Text("Live Verification", fontWeight = FontWeight.Bold, fontSize = 18.sp) },
-            navigationIcon = {
-                IconButton(onClick = { /* Back */ }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
-        )
-
+fun LiveVerificationScreen(
+    onMenuClick: () -> Unit = {},
+    onBack: () -> Unit = {},
+    onCallFinished: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            AgriTopAppBar(
+                title = "Live Verification",
+                showLogo = false,
+                onMenuClick = onMenuClick,
+                onBackClick = onBack
+            )
+        },
+        containerColor = Color.White
+    ) { padding ->
         Column(
             modifier = Modifier
+                .padding(padding)
                 .padding(24.dp)
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally

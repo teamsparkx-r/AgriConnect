@@ -77,4 +77,55 @@ class FarmerViewModel : ViewModel() {
             }
         }
     }
+
+    fun rejectOffer(token: String, bookingId: String, userId: String, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val response = RetrofitClient.instance.farmerRejectOffer("Bearer $token", bookingId, userId)
+                if (response.isSuccessful) {
+                    onSuccess()
+                    fetchBookingDetail(token, bookingId, userId)
+                }
+            } catch (e: Exception) {
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun acceptOffer(token: String, bookingId: String, userId: String, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val response = RetrofitClient.instance.farmerAcceptOffer("Bearer $token", bookingId, userId)
+                if (response.isSuccessful) {
+                    onSuccess()
+                    fetchBookingDetail(token, bookingId, userId)
+                }
+            } catch (e: Exception) {
+                // handle error
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun counterOffer(token: String, bookingId: String, userId: String, quantity: Float, price: Float, message: String?, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val request = com.agriconnect.data.model.CounterOfferRequest(quantity, price, message)
+                val response = RetrofitClient.instance.farmerCounterOffer("Bearer $token", bookingId, userId, request)
+                if (response.isSuccessful) {
+                    onSuccess()
+                    fetchBookingDetail(token, bookingId, userId)
+                }
+            } catch (e: Exception) {
+                // handle error
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
 }

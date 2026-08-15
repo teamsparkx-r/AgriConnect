@@ -2,18 +2,14 @@ package com.agriconnect.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Primary - Natural Green
-val Emerald900 = Color(0xFF064E3B)
-val Emerald800 = Color(0xFF065F46)
-val Emerald700 = Color(0xFF047857)
+// AgriConnect Unified Color System
+val AgriPrimary = Color(0xFF079E72)
 val Emerald600 = Color(0xFF059669)
-val Emerald500 = Color(0xFF10B981)
+val AgriPrimaryDark = Color(0xFF087A5B)
+val AgriSecondary = Color(0xFFF1FDF9)
+val AgriBackground = Color(0xFFFFFFFF)
 
-// Secondary - Soft Green
-val Emerald100 = Color(0xFFD1FAE5)
-val Emerald50 = Color(0xFFECFDF5)
-
-// Neutral Colors
+// Neutral Palette
 val White = Color(0xFFFFFFFF)
 val Gray50 = Color(0xFFF9FAFB)
 val Gray100 = Color(0xFFF3F4F6)
@@ -26,8 +22,8 @@ val Gray700 = Color(0xFF374151)
 val Gray800 = Color(0xFF1F2937)
 val Gray900 = Color(0xFF111827)
 
-// Status Colors
-val Success = Color(0xFF10B981)
-val Error = Color(0xFFEF4444)
+// Semantic Colors
+val Success = Color(0xFF16A34A)
 val Warning = Color(0xFFF59E0B)
+val Error = Color(0xFFDC2626)
 val Info = Color(0xFF3B82F6)
