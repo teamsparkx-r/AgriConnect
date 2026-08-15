@@ -475,11 +475,11 @@ def get_farmer_bookings(user_id: str, status: Optional[str] = None, db: Session 
         "bookings": [
             {
                 "booking_id": b.booking_id,
-                "product_name": b.product.name,
-                "buyer_id_alias": f"MERCH-{b.buyer_id[:6].upper()}",
-                "buyer_district": b.buyer.district,
-                "status": b.status.value,
-                "created_at": b.created_at.isoformat()
+                "product_name": b.product.name if b.product else "Unknown Product",
+                "buyer_id_alias": f"MERCH-{b.buyer_id[:6].upper()}" if b.buyer_id else "UNKNOWN",
+                "buyer_district": b.buyer.district if b.buyer else "Unknown",
+                "status": b.status.value if hasattr(b.status, 'value') else str(b.status),
+                "created_at": b.created_at.isoformat() if b.created_at else ""
             }
             for b in bookings
         ],

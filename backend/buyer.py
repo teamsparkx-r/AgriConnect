@@ -451,6 +451,8 @@ def create_booking(request: BookingRequest, user_id: str, db: Session = Depends(
         db.commit()
         db.refresh(booking)
 
+        print(f"ENQUIRY CREATED: Booking {booking.booking_id} for Farmer {product.farmer.user_id}")
+
         return {
             "success": True,
             "message": "Crop successfully booked! AgriConnect will now mediate the exchange.",
