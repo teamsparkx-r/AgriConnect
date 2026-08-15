@@ -1,5 +1,6 @@
 package com.agriconnect.app.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,7 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -23,9 +24,18 @@ import com.agriconnect.app.ui.theme.*
 fun SettingsScreen(
     onMenuClick: (() -> Unit)? = null,
     onBack: () -> Unit,
-    onNavigateToLegal: () -> Unit = {}
+    onNavigateToLegal: () -> Unit = {},
+    translationViewModel: com.agriconnect.app.ui.viewmodel.TranslationViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     val context = LocalContext.current
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    val currentLang by translationViewModel.currentLanguage
+    
+    val languages = listOf(
+        "en" to "English",
+        "te" to "Telugu"
+    )
+
     Scaffold(
         containerColor = AgriBackground,
         topBar = {
@@ -45,9 +55,12 @@ fun SettingsScreen(
                 .padding(24.dp)
         ) {
             SettingsGroup(title = "PREFERENCES") {
-                ProfileListItem(icon = Icons.Outlined.Language, label = "Language", subtitle = "English", onClick = { 
-                    android.widget.Toast.makeText(context, "Language selection coming soon", android.widget.Toast.LENGTH_SHORT).show()
-                })
+                ProfileListItem(
+                    icon = Icons.Outlined.Language, 
+                    label = "Language", 
+                    subtitle = if (currentLang == "en") "English" else "Telugu", 
+                    onClick = { showLanguageDialog = true }
+                )
                 Divider(modifier = Modifier.padding(horizontal = 24.dp), color = Gray100, thickness = 0.5.dp)
                 ProfileListItem(icon = Icons.Outlined.Palette, label = "Theme", subtitle = "Light Mode", onClick = { 
                     android.widget.Toast.makeText(context, "Theme selection coming soon", android.widget.Toast.LENGTH_SHORT).show()
@@ -56,6 +69,40 @@ fun SettingsScreen(
                 ProfileListItem(icon = Icons.Outlined.Notifications, label = "Notifications", onClick = { 
                     android.widget.Toast.makeText(context, "Notification settings coming soon", android.widget.Toast.LENGTH_SHORT).show()
                 })
+            }
+
+            if (showLanguageDialog) {
+                AlertDialog(
+                    onDismissRequest = { showLanguageDialog = false },
+                    title = { AgriText("Select Language", fontWeight = FontWeight.Black) },
+                    text = {
+                        Column {
+                            languages.forEach { (code, name) ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { 
+                                            translationViewModel.setLanguage(code)
+                                            showLanguageDialog = false
+                                        }
+                                        .padding(vertical = 12.dp),
+                                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                                ) {
+                                    RadioButton(selected = currentLang == code, onClick = null)
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    AgriText(name, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showLanguageDialog = false }) {
+                            AgriText("CANCEL", fontWeight = FontWeight.Black)
+                        }
+                    },
+                    containerColor = White,
+                    shape = RoundedCornerShape(24.dp)
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -98,7 +145,7 @@ fun SettingsScreen(
 @Composable
 fun SettingsGroup(title: String, content: @Composable ColumnScope.() -> Unit) {
     Column {
-        Text(
+        AgriText(
             text = title,
             style = MaterialTheme.typography.labelSmall,
             color = Gray400,

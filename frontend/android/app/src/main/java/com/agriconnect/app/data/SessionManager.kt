@@ -34,4 +34,12 @@ class SessionManager(context: Context) {
     fun logout() {
         prefs.edit().remove("user_data").remove("auth_token").apply()
     }
+
+    fun saveLanguage(languageCode: String) {
+        prefs.edit().putString("app_language", languageCode).apply()
+    }
+
+    fun getLanguage(): String {
+        return prefs.getString("app_language", "en") ?: "en"
+    }
 }

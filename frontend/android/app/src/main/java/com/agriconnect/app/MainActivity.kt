@@ -14,6 +14,8 @@ import com.agriconnect.app.ui.theme.AgriConnectTheme
 import com.agriconnect.app.ui.navigation.AppNavigation
 import com.agriconnect.app.ui.screens.MainScreen
 import com.agriconnect.app.ui.viewmodel.AuthViewModel
+import com.agriconnect.app.ui.viewmodel.TranslationViewModel
+import com.agriconnect.app.ui.components.LocalTranslationViewModel
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
@@ -29,11 +31,14 @@ class MainActivity : ComponentActivity() {
             AgriConnectTheme {
                 // Disable system font scaling to keep UI consistent
                 val density = LocalDensity.current
+                val translationViewModel: TranslationViewModel = viewModel()
+                
                 CompositionLocalProvider(
                     LocalDensity provides Density(
                         density = density.density,
                         fontScale = 1f
-                    )
+                    ),
+                    LocalTranslationViewModel provides translationViewModel
                 ) {
                     val navController = rememberNavController()
                     val authViewModel: AuthViewModel = viewModel()

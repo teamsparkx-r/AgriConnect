@@ -29,6 +29,10 @@ import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.runtime.staticCompositionLocalOf
+import com.agriconnect.app.ui.viewmodel.TranslationViewModel
+
+val LocalTranslationViewModel = staticCompositionLocalOf<TranslationViewModel?> { null }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +58,7 @@ fun AgriTopAppBar(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                 }
-                Text(
+                AgriText(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Black,
@@ -139,7 +143,7 @@ fun AgriButton(
                 strokeWidth = 2.dp
             )
         } else {
-            Text(
+            AgriText(
                 text = text,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Black,
@@ -235,7 +239,7 @@ fun AgriSectionTitle(
 ) {
     Column(modifier = modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         if (subtitle != null) {
-            Text(
+            AgriText(
                 text = subtitle.uppercase(),
                 style = MaterialTheme.typography.labelSmall,
                 color = Gray500,
@@ -249,7 +253,7 @@ fun AgriSectionTitle(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            AgriText(
                 text = title,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Black,
@@ -257,7 +261,7 @@ fun AgriSectionTitle(
                 letterSpacing = (-0.5).sp
             )
             if (actionText != null && onActionClick != null) {
-                Text(
+                AgriText(
                     text = actionText,
                     style = MaterialTheme.typography.labelLarge,
                     color = AgriPrimary,
@@ -362,14 +366,14 @@ fun ProfileListItem(
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(
+            AgriText(
                 text = label, 
                 style = MaterialTheme.typography.bodyLarge, 
                 color = contentColor,
                 fontWeight = FontWeight.Black
             )
             if (subtitle != null) {
-                Text(
+                AgriText(
                     text = subtitle, 
                     style = MaterialTheme.typography.labelSmall, 
                     color = Gray500
@@ -385,4 +389,46 @@ fun ProfileListItem(
             )
         }
     }
+}
+
+@Composable
+fun AgriText(
+    text: String,
+    style: androidx.compose.ui.text.TextStyle = LocalTextStyle.current,
+    color: Color = Color.Unspecified,
+    fontWeight: FontWeight? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: androidx.compose.ui.unit.TextUnit = androidx.compose.ui.unit.TextUnit.Unspecified,
+    letterSpacing: androidx.compose.ui.unit.TextUnit = androidx.compose.ui.unit.TextUnit.Unspecified,
+    maxLines: Int = Int.MAX_VALUE,
+    overflow: androidx.compose.ui.text.style.TextOverflow = androidx.compose.ui.text.style.TextOverflow.Clip,
+    modifier: Modifier = Modifier,
+    translationViewModel: com.agriconnect.app.ui.viewmodel.TranslationViewModel? = null
+) {
+    val vm = translationViewModel ?: LocalTranslationViewModel.current
+    
+    var translatedText by remember(text, vm?.currentLanguage?.value) { 
+        mutableStateOf(text) 
+    }
+
+    LaunchedEffect(text, vm?.currentLanguage?.value) {
+        if (vm != null && text.isNotEmpty()) {
+            vm.translate(text) { result ->
+                translatedText = result
+            }
+        }
+    }
+
+    Text(
+        text = translatedText,
+        style = style,
+        color = color,
+        fontWeight = fontWeight,
+        textAlign = textAlign,
+        lineHeight = lineHeight,
+        letterSpacing = letterSpacing,
+        maxLines = maxLines,
+        overflow = overflow,
+        modifier = modifier
+    )
 }

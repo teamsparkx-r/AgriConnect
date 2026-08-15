@@ -94,20 +94,20 @@ fun MerchantPortalScreen(
                                     Icon(Icons.Default.Info, null, tint = Warning)
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column {
-                                        Text("Verification Pending", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Black, color = Gray900)
-                                        Text("Your account is awaiting Admin approval. You can browse crops but cannot send enquiries until approved.", style = MaterialTheme.typography.bodySmall, color = Gray600)
+                                        AgriText("Verification Pending", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Black, color = Gray900)
+                                        AgriText("Your account is awaiting Admin approval. You can browse crops but cannot send enquiries until approved.", style = MaterialTheme.typography.bodySmall, color = Gray600)
                                     }
                                 }
                             }
                         }
 
-                        Text(
+                        AgriText(
                             text = "Market Overview",
                             style = MaterialTheme.typography.bodyMedium,
                             color = Gray500,
                             fontWeight = FontWeight.Medium
                         )
-                        Text(
+                        AgriText(
                             text = "Hello, Merchant! 👋",
                             style = MaterialTheme.typography.displaySmall,
                             color = Gray900,

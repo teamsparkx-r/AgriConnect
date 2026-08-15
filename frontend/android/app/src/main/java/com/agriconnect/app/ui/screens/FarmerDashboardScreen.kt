@@ -89,8 +89,8 @@ fun FarmerDashboardScreen(
                             Icon(Icons.Default.Info, null, tint = Warning)
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Text("Verification Pending", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Black, color = Gray900)
-                                Text("Your account is awaiting Admin approval. You can view listings but cannot list new crops until approved.", style = MaterialTheme.typography.bodySmall, color = Gray600)
+                                AgriText("Verification Pending", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Black, color = Gray900)
+                                AgriText("Your account is awaiting Admin approval. You can view listings but cannot list new crops until approved.", style = MaterialTheme.typography.bodySmall, color = Gray600)
                             }
                         }
                     }
@@ -98,19 +98,19 @@ fun FarmerDashboardScreen(
                 
                 // Greeting
                 Column {
-                    Text(
+                    AgriText(
                         text = "Welcome back,",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Gray500,
                         fontWeight = FontWeight.Medium
                     )
-                    Text(
+                    AgriText(
                         text = "${userName.split(" ").firstOrNull() ?: "Demo"}! 👋",
                         style = MaterialTheme.typography.displayMedium,
                         color = Gray900,
                         fontWeight = FontWeight.Black
                     )
-                    Text(
+                    AgriText(
                         text = "Here's what's happening on your farm today.",
                         style = MaterialTheme.typography.bodySmall,
                         color = Gray400,
