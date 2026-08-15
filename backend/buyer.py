@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, desc
 from models import (
     Buyer, User, Product, Booking, UserRole, ProductStatus, BookingStatus,
-    Report, ReportReason, Notification, SavedProduct, Farmer
+    Report, ReportReason, Notification, SavedProduct, Farmer, AccountStatus
 )
 from database import get_db
 from auth import AuthService
