@@ -182,9 +182,10 @@ class AuthService:
         full_name: str,
         role: UserRole,
         email: Optional[str] = None,
-        verified: bool = False
+        verified: bool = False,
+        commit: bool = True
     ) -> Tuple[bool, str, Optional[User]]:
-        """Register a new user"""
+        """Register a new user. Default commit=True for backward compatibility."""
         try:
             # Check if user already exists
             existing_user = db.query(User).filter(User.mobile_number == mobile_number).first()
@@ -213,29 +214,31 @@ class AuthService:
 
             # Notify Admin about new registration
             if role != UserRole.ADMIN:
-                from models import Notification
-                # Find an active admin to notify
-                admin = db.query(User).filter(User.role == UserRole.ADMIN).first()
-                if admin:
-                    notif_type = "new_farmer_registration" if role == UserRole.FARMER else "new_merchant_registration"
-                    new_notif = Notification(
-                        user_id=admin.id,
-                        title=f"New {role.value.capitalize()} Registration",
-                        message=f"{full_name} has registered and is waiting for approval.",
-                        notification_type=notif_type,
-                        related_id=user.id
-                    )
-                    db.add(new_notif)
-                else:
-                    # Log that no admin was found to notify
-                    print(f"Warning: No admin found to notify about new registration of {full_name}")
+                try:
+                    from models import Notification
+                    # Find an active admin to notify
+                    admin = db.query(User).filter(User.role == UserRole.ADMIN).first()
+                    if admin:
+                        notif_type = "new_farmer_registration" if role == UserRole.FARMER else "new_merchant_registration"
+                        new_notif = Notification(
+                            user_id=admin.id,
+                            title=f"New {role.value.capitalize()} Registration",
+                            message=f"{full_name} has registered and is waiting for approval.",
+                            notification_type=notif_type,
+                            related_id=user.id
+                        )
+                        db.add(new_notif)
+                except Exception as ne:
+                    print(f"Warning: Failed to create admin notification: {ne}")
 
-            db.commit()
-            db.refresh(user)
+            if commit:
+                db.commit()
+                db.refresh(user)
 
             return True, "User registered successfully", user
         except Exception as e:
-            db.rollback()
+            if commit:
+                db.rollback()
             print(f"CRITICAL ERROR in register_user: {str(e)}")
             import traceback
             traceback.print_exc()

@@ -91,10 +91,12 @@ def register_buyer(request: BuyerRegisterRequest, db: Session = Depends(get_db))
             full_name=request.full_name,
             role=UserRole.BUYER,
             email=request.email,
-            verified=True
+            verified=True,
+            commit=False # Don't commit yet
         )
         
         if not success:
+            db.rollback()
             raise HTTPException(status_code=400, detail=message)
         
         # Fill location fields for buyer profile
@@ -107,7 +109,7 @@ def register_buyer(request: BuyerRegisterRequest, db: Session = Depends(get_db))
             # Normalize and validate buyer_type
             b_type = request.buyer_type.lower() if request.buyer_type else "individual"
             # Map "merchant" (common from frontend) to "trader" if not explicitly in enum
-            if b_type == "merchant" and "merchant" not in BuyerType.__members__.values():
+            if b_type == "merchant" and "merchant" not in [e.value for e in BuyerType]:
                 b_type = "trader"
 
             # Final fallback to individual if still invalid
@@ -134,7 +136,8 @@ def register_buyer(request: BuyerRegisterRequest, db: Session = Depends(get_db))
             preferred_language=lang
         )
         db.add(buyer)
-        db.commit()
+        db.commit() # Now commit User and Buyer together
+        db.refresh(user)
         
         # Generate tokens directly
         access_token, _ = AuthService.create_access_token(user.id, user.role.value)

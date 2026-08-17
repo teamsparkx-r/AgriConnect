@@ -84,10 +84,12 @@ def register_farmer(request: FarmerRegisterRequest, db: Session = Depends(get_db
             full_name=request.full_name,
             role=UserRole.FARMER,
             email=request.email,
-            verified=True
+            verified=True,
+            commit=False # Don't commit yet, we need to create the farmer profile too
         )
         
         if not success:
+            db.rollback()
             raise HTTPException(status_code=400, detail=message)
         
         # Ensure preferred_language is a valid enum value
@@ -111,7 +113,8 @@ def register_farmer(request: FarmerRegisterRequest, db: Session = Depends(get_db
             preferred_language=lang
         )
         db.add(farmer)
-        db.commit()
+        db.commit() # Now commit both User and Farmer in one go
+        db.refresh(user)
         
         # Generate tokens directly
         access_token, _ = AuthService.create_access_token(user.id, user.role.value)
