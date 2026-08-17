@@ -156,6 +156,9 @@ def register_buyer(request: BuyerRegisterRequest, db: Session = Depends(get_db))
                 "account_status": user.account_status
             }
         }
+    except HTTPException as e:
+        db.rollback()
+        raise e
     except Exception as e:
         db.rollback()
         import traceback
@@ -494,11 +497,17 @@ def create_booking(request: BookingRequest, user_id: str, db: Session = Depends(
                 "created_at": booking.created_at.isoformat()
             }
         }
+    except HTTPException as e:
+        db.rollback()
+        raise e
     except Exception as e:
         db.rollback()
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
+    except HTTPException as e:
+        db.rollback()
+        raise e
     except Exception as e:
         db.rollback()
         import traceback
