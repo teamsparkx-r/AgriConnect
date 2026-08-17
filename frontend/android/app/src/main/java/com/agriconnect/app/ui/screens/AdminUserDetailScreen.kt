@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.agriconnect.app.ui.components.AgriTopAppBar
+import com.agriconnect.app.ui.components.AgriText
 import com.agriconnect.app.ui.theme.*
 
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -86,7 +87,7 @@ fun AdminUserDetailScreen(
                             color = AgriSecondary
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                Text(
+                                AgriText(
                                     text = userName.firstOrNull()?.toString() ?: "?",
                                     style = MaterialTheme.typography.displayMedium,
                                     color = AgriPrimary,
@@ -95,13 +96,13 @@ fun AdminUserDetailScreen(
                             }
                         }
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(
+                        AgriText(
                             text = userName,
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Black,
                             color = Gray900
                         )
-                        Text(
+                        AgriText(
                             text = "UID: $userId",
                             style = MaterialTheme.typography.labelSmall,
                             color = Gray400,
@@ -124,7 +125,7 @@ fun AdminUserDetailScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 // Supply Parameters Section (For Farmers) or Business Info (For Merchants)
-                Text(
+                AgriText(
                     text = "SUPPLY PARAMETERS",
                     style = MaterialTheme.typography.labelSmall,
                     color = Gray400,
@@ -161,9 +162,14 @@ fun AdminUserDetailScreen(
                 // Actions
                 if (status == "pending") {
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        val context = androidx.compose.ui.platform.LocalContext.current
                         AgriButton(
                             text = "APPROVE",
-                            onClick = { viewModel.approveUser(token, userId) { } },
+                            onClick = { 
+                                viewModel.approveUser(token, userId) { 
+                                    android.widget.Toast.makeText(context, "Node verified and activated.", android.widget.Toast.LENGTH_SHORT).show()
+                                } 
+                            },
                             containerColor = Success,
                             contentColor = White,
                             shape = RoundedCornerShape(18.dp),
@@ -171,7 +177,11 @@ fun AdminUserDetailScreen(
                         )
                         AgriButton(
                             text = "REJECT",
-                            onClick = { viewModel.rejectUser(token, userId) { } },
+                            onClick = { 
+                                viewModel.rejectUser(token, userId) { 
+                                    android.widget.Toast.makeText(context, "Node access restricted.", android.widget.Toast.LENGTH_SHORT).show()
+                                } 
+                            },
                             containerColor = Error.copy(alpha = 0.1f),
                             contentColor = Error,
                             shape = RoundedCornerShape(18.dp),
@@ -197,16 +207,16 @@ fun AdminUserDetailScreen(
 @Composable
 fun DetailRow(label: String, value: String) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, color = Gray500, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
-        Text(value, color = Gray900, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Black)
+        AgriText(label, color = Gray500, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+        AgriText(value, color = Gray900, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Black)
     }
 }
 
 @Composable
 fun UserStatItem(label: String, value: String, color: Color) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Bold)
-        Text(value, style = MaterialTheme.typography.titleMedium, color = color, fontWeight = FontWeight.Black)
+        AgriText(label, style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Bold)
+        AgriText(value, style = MaterialTheme.typography.titleMedium, color = color, fontWeight = FontWeight.Black)
     }
 }
 
@@ -222,12 +232,12 @@ fun ReportCard(title: String, desc: String, date: String) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Warning, null, tint = Error, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Black, color = Gray900)
+                AgriText(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Black, color = Gray900)
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text(desc, style = MaterialTheme.typography.bodySmall, color = Gray600)
+            AgriText(desc, style = MaterialTheme.typography.bodySmall, color = Gray600)
             Spacer(modifier = Modifier.height(12.dp))
-            Text(date, style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Bold)
+            AgriText(date, style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -248,6 +258,6 @@ fun AgriButton(
         shape = shape,
         elevation = ButtonDefaults.buttonElevation(0.dp)
     ) {
-        Text(text, fontWeight = FontWeight.Black)
+        AgriText(text, fontWeight = FontWeight.Black)
     }
 }

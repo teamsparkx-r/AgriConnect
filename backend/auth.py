@@ -185,49 +185,61 @@ class AuthService:
         verified: bool = False
     ) -> Tuple[bool, str, Optional[User]]:
         """Register a new user"""
-        # Check if user already exists
-        existing_user = db.query(User).filter(User.mobile_number == mobile_number).first()
-        if existing_user:
-            return False, "Mobile number already registered", None
-        
-        if email:
-            existing_email = db.query(User).filter(User.email == email).first()
-            if existing_email:
-                return False, "Email already registered", None
-        
-        # Create new user
-        status = AccountStatus.PENDING if role != UserRole.ADMIN else AccountStatus.ACTIVE
-        user = User(
-            mobile_number=mobile_number,
-            email=email,
-            password_hash=AuthService.hash_password(password),
-            full_name=full_name,
-            role=role,
-            account_status=status,
-            mobile_verified=verified
-        )
-        
-        db.add(user)
-        db.flush() # Flush to get user.id
+        try:
+            # Check if user already exists
+            existing_user = db.query(User).filter(User.mobile_number == mobile_number).first()
+            if existing_user:
+                return False, "Mobile number already registered", None
 
-        # Notify Admin about new registration
-        if role != UserRole.ADMIN:
-            from models import Notification
-            admin_id = "2687eded-053d-4cbc-8a06-18be9ad5888b" # From app.py seed
-            notif_type = "new_farmer_registration" if role == UserRole.FARMER else "new_merchant_registration"
-            new_notif = Notification(
-                user_id=admin_id,
-                title=f"New {role.value.capitalize()} Registration",
-                message=f"{full_name} has registered and is waiting for approval.",
-                notification_type=notif_type,
-                related_id=user.id
+            if email:
+                existing_email = db.query(User).filter(User.email == email).first()
+                if existing_email:
+                    return False, "Email already registered", None
+
+            # Create new user
+            status = AccountStatus.PENDING if role != UserRole.ADMIN else AccountStatus.ACTIVE
+            user = User(
+                mobile_number=mobile_number,
+                email=email,
+                password_hash=AuthService.hash_password(password),
+                full_name=full_name,
+                role=role,
+                account_status=status,
+                mobile_verified=verified
             )
-            db.add(new_notif)
 
-        db.commit()
-        db.refresh(user)
-        
-        return True, "User registered successfully", user
+            db.add(user)
+            db.flush() # Flush to get user.id
+
+            # Notify Admin about new registration
+            if role != UserRole.ADMIN:
+                from models import Notification
+                # Find an active admin to notify
+                admin = db.query(User).filter(User.role == UserRole.ADMIN).first()
+                if admin:
+                    notif_type = "new_farmer_registration" if role == UserRole.FARMER else "new_merchant_registration"
+                    new_notif = Notification(
+                        user_id=admin.id,
+                        title=f"New {role.value.capitalize()} Registration",
+                        message=f"{full_name} has registered and is waiting for approval.",
+                        notification_type=notif_type,
+                        related_id=user.id
+                    )
+                    db.add(new_notif)
+                else:
+                    # Log that no admin was found to notify
+                    print(f"Warning: No admin found to notify about new registration of {full_name}")
+
+            db.commit()
+            db.refresh(user)
+
+            return True, "User registered successfully", user
+        except Exception as e:
+            db.rollback()
+            print(f"CRITICAL ERROR in register_user: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return False, f"Internal registry error: {str(e)}", None
     
     @staticmethod
     def authenticate_user(

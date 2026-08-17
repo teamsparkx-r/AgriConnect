@@ -57,13 +57,13 @@ fun RecentProductItem(product: Product, onClick: (() -> Unit)? = null) {
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                AgriText(
                     text = product.name ?: "Unknown Crop",
                     style = MaterialTheme.typography.titleMedium,
                     color = Gray900,
                     fontWeight = FontWeight.Black
                 )
-                Text(
+                AgriText(
                     text = "${product.quantity ?: 0f} ${product.unit ?: "units"} • ₹${product.expectedPrice?.toInt() ?: 0}/${product.unit ?: "unit"}",
                     style = MaterialTheme.typography.bodySmall,
                     color = Gray500,
@@ -76,7 +76,7 @@ fun RecentProductItem(product: Product, onClick: (() -> Unit)? = null) {
                 color = statusColor.copy(alpha = 0.1f),
                 shape = RoundedCornerShape(10.dp)
             ) {
-                Text(
+                AgriText(
                     text = status.uppercase(),
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     style = MaterialTheme.typography.labelSmall,
@@ -103,8 +103,8 @@ fun RecentInquiryItem(title: String, buyer: String, status: String = "Pending", 
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleMedium, color = Gray900, fontWeight = FontWeight.Black)
-                Text("BUYER: $buyer", style = MaterialTheme.typography.labelSmall, color = Gray500, fontWeight = FontWeight.Black)
+                AgriText(title, style = MaterialTheme.typography.titleMedium, color = Gray900, fontWeight = FontWeight.Black)
+                AgriText("BUYER: $buyer", style = MaterialTheme.typography.labelSmall, color = Gray500, fontWeight = FontWeight.Black)
             }
             Button(
                 onClick = onCallClick,
@@ -115,7 +115,7 @@ fun RecentInquiryItem(title: String, buyer: String, status: String = "Pending", 
             ) {
                 Icon(Icons.Default.Call, null, modifier = Modifier.size(14.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("CALL", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black)
+                AgriText("CALL", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black)
             }
         }
     }
@@ -166,7 +166,7 @@ fun SlotCard(product: Product, onClick: () -> Unit) {
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp)
                 ) {
-                    Text(
+                    AgriText(
                         text = "VISUAL NODE VERIFIED",
                         style = MaterialTheme.typography.labelSmall,
                         color = White,
@@ -195,13 +195,13 @@ fun SlotCard(product: Product, onClick: () -> Unit) {
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text(
+                        AgriText(
                             text = "FARMER-${product.farmerIdAlias ?: product.farmerId?.takeLast(4) ?: "NODE"}",
                             style = MaterialTheme.typography.titleMedium,
                             color = Gray900,
                             fontWeight = FontWeight.Black
                         )
-                        Text(
+                        AgriText(
                             text = "${product.village ?: "Remote"}, ${product.district ?: ""}",
                             style = MaterialTheme.typography.bodySmall,
                             color = Gray500,
@@ -215,7 +215,7 @@ fun SlotCard(product: Product, onClick: () -> Unit) {
                         color = statusColor.copy(alpha = 0.1f),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text(
+                        AgriText(
                             text = status.uppercase(),
                             color = statusColor,
                             style = MaterialTheme.typography.labelSmall,
@@ -232,12 +232,12 @@ fun SlotCard(product: Product, onClick: () -> Unit) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-                        Text("CROP", style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Black)
-                        Text(product.name ?: "Unknown", style = MaterialTheme.typography.titleLarge, color = Gray900, fontWeight = FontWeight.Black)
+                        AgriText("CROP", style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Black)
+                        AgriText(product.name ?: "Unknown", style = MaterialTheme.typography.titleLarge, color = Gray900, fontWeight = FontWeight.Black)
                     }
                     Column(horizontalAlignment = Alignment.End) {
-                        Text("EXPECTED PRICE", style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Black)
-                        Text("₹${product.expectedPrice?.toInt() ?: "N/A"}", style = MaterialTheme.typography.titleLarge, color = AgriPrimary, fontWeight = FontWeight.Black)
+                        AgriText("EXPECTED PRICE", style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Black)
+                        AgriText("₹${product.expectedPrice?.toInt() ?: "N/A"}", style = MaterialTheme.typography.titleLarge, color = AgriPrimary, fontWeight = FontWeight.Black)
                     }
                 }
                 
@@ -304,7 +304,7 @@ fun MerchantProductCard(product: Product, onClick: () -> Unit, modifier: Modifie
                         .align(Alignment.BottomStart)
                         .padding(8.dp)
                 ) {
-                    Text(
+                    AgriText(
                         text = "₹${product.expectedPrice?.toInt() ?: "N/A"}/${product.unit ?: "kg"}",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Black,
@@ -315,7 +315,7 @@ fun MerchantProductCard(product: Product, onClick: () -> Unit, modifier: Modifie
             }
 
             Column(modifier = Modifier.padding(12.dp)) {
-                Text(
+                AgriText(
                     text = product.name ?: "Unknown",
                     style = MaterialTheme.typography.titleSmall,
                     color = Gray900,
@@ -325,7 +325,7 @@ fun MerchantProductCard(product: Product, onClick: () -> Unit, modifier: Modifie
                 )
                 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
+                    AgriText(
                         text = "${product.quantity ?: 0f} ${product.unit ?: "units"}",
                         style = MaterialTheme.typography.labelSmall,
                         color = Gray500,
@@ -341,9 +341,9 @@ fun MerchantProductCard(product: Product, onClick: () -> Unit, modifier: Modifie
                     
                     if (grade != null) {
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("•", color = Gray300)
+                        AgriText("•", color = Gray300)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(
+                        AgriText(
                             text = grade as String,
                             style = MaterialTheme.typography.labelSmall,
                             color = Warning,
@@ -357,7 +357,7 @@ fun MerchantProductCard(product: Product, onClick: () -> Unit, modifier: Modifie
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.LocationOn, null, tint = Gray400, modifier = Modifier.size(10.dp))
                     Spacer(modifier = Modifier.width(2.dp))
-                    Text(
+                    AgriText(
                         text = "${product.village ?: product.district ?: "Verified"}",
                         style = MaterialTheme.typography.labelSmall,
                         color = Gray400,
@@ -383,7 +383,7 @@ fun MerchantProductCard(product: Product, onClick: () -> Unit, modifier: Modifie
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Text(
+                        AgriText(
                             "VIEW NODE", 
                             style = MaterialTheme.typography.labelLarge, 
                             fontWeight = FontWeight.Black,

@@ -29,6 +29,7 @@ class BuyerType(str, enum.Enum):
     EXPORTER = "exporter"
     INSTITUTIONAL = "institutional"
     INDIVIDUAL = "individual"
+    MERCHANT = "merchant"
     OTHER = "other"
 
 class Language(str, enum.Enum):

@@ -121,9 +121,9 @@ fun AddProductScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.VerifiedUser, null, tint = Warning, modifier = Modifier.size(80.dp))
                     Spacer(modifier = Modifier.height(24.dp))
-                    Text("Verification Required", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black)
+                    AgriText("Verification Required", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black)
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text(
+                    AgriText(
                         "Your account is currently awaiting Admin approval. You will be notified once your profile is verified and you can start listing your crops.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Gray600,
@@ -171,7 +171,7 @@ fun AddProductScreen(
 
                     if (error != null) {
                         Surface(color = Error.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
-                            Text(text = error!!, color = Error, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black, modifier = Modifier.padding(12.dp))
+                            AgriText(text = error!!, color = Error, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black, modifier = Modifier.padding(12.dp))
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                     }
@@ -215,7 +215,7 @@ fun AddProductScreen(
                     )
                     
                     if (step == 1 && (name.isEmpty() || category.isEmpty() || quantity.isEmpty() || price.isEmpty())) {
-                        Text(
+                        AgriText(
                             text = "* Please fill all required fields to continue",
                             style = MaterialTheme.typography.labelSmall,
                             color = Gray400,
@@ -224,7 +224,7 @@ fun AddProductScreen(
                     }
                     
                     if (step == 2 && capturedImages.isEmpty()) {
-                        Text(
+                        AgriText(
                             text = "Tip: Adding photos helps you sell faster!",
                             style = MaterialTheme.typography.labelSmall,
                             color = AgriPrimary,
@@ -247,11 +247,11 @@ fun StepItem(number: Int, label: String, isActive: Boolean) {
             color = if (isActive) AgriPrimary else Gray100
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Text(text = number.toString(), style = MaterialTheme.typography.labelSmall, color = if (isActive) White else Gray400, fontWeight = FontWeight.Black)
+                AgriText(text = number.toString(), style = MaterialTheme.typography.labelSmall, color = if (isActive) White else Gray400, fontWeight = FontWeight.Black)
             }
         }
         Spacer(modifier = Modifier.height(4.dp))
-        Text(text = label, style = MaterialTheme.typography.labelSmall, color = if (isActive) AgriPrimary else Gray400, fontWeight = FontWeight.Bold)
+        AgriText(text = label, style = MaterialTheme.typography.labelSmall, color = if (isActive) AgriPrimary else Gray400, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -263,7 +263,7 @@ fun StepCropInfo(name: String, onName: (String) -> Unit, cat: String, onCat: (St
     AgriTextField(value = name, onValueChange = onName, label = "Crop Name", placeholder = "e.g. Sona Masuri Rice")
     Spacer(modifier = Modifier.height(16.dp))
     
-    Text("Category", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Black)
+    AgriText("Category", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Black)
     Spacer(modifier = Modifier.height(8.dp))
     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         items(categories) { categoryItem ->
@@ -274,7 +274,7 @@ fun StepCropInfo(name: String, onName: (String) -> Unit, cat: String, onCat: (St
                 shape = RoundedCornerShape(12.dp),
                 border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, Gray200)
             ) {
-                Text(
+                AgriText(
                     text = categoryItem, 
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     color = if (isSelected) White else AgriPrimary,
@@ -286,7 +286,7 @@ fun StepCropInfo(name: String, onName: (String) -> Unit, cat: String, onCat: (St
     }
     
     Spacer(modifier = Modifier.height(16.dp))
-    Text("Grade", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Black)
+    AgriText("Grade", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Black)
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         listOf("A Grade", "B Grade").forEach { g ->
             val isSel = grade == g
@@ -296,7 +296,7 @@ fun StepCropInfo(name: String, onName: (String) -> Unit, cat: String, onCat: (St
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.weight(1f)
             ) {
-                Text(text = g, modifier = Modifier.padding(12.dp), textAlign = androidx.compose.ui.text.style.TextAlign.Center, color = if (isSel) White else AgriPrimary, fontWeight = FontWeight.Black)
+                AgriText(text = g, modifier = Modifier.padding(12.dp), textAlign = androidx.compose.ui.text.style.TextAlign.Center, color = if (isSel) White else AgriPrimary, fontWeight = FontWeight.Black)
             }
         }
     }
@@ -313,7 +313,7 @@ fun StepCropInfo(name: String, onName: (String) -> Unit, cat: String, onCat: (St
 @Composable
 fun StepImages(images: List<Uri>, context: android.content.Context, perm: androidx.activity.result.ActivityResultLauncher<String>, cam: androidx.activity.result.ActivityResultLauncher<Uri>, onUri: (Uri) -> Unit) {
     AgriSectionTitle(title = "Add Crop Photos")
-    Text("Take direct photos of the produce for verification.", style = MaterialTheme.typography.bodyMedium)
+    AgriText("Take direct photos of the produce for verification.", style = MaterialTheme.typography.bodyMedium)
     Spacer(modifier = Modifier.height(20.dp))
     
     LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -336,7 +336,7 @@ fun StepImages(images: List<Uri>, context: android.content.Context, perm: androi
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                     Icon(Icons.Outlined.CameraAlt, null, tint = AgriPrimary)
-                    Text("Take Photo", style = MaterialTheme.typography.labelSmall, color = AgriPrimary, fontWeight = FontWeight.Black)
+                    AgriText("Take Photo", style = MaterialTheme.typography.labelSmall, color = AgriPrimary, fontWeight = FontWeight.Black)
                 }
             }
         }
@@ -371,7 +371,7 @@ fun StepReview(name: String, cat: String, grade: String, qty: String, unit: Stri
 @Composable
 fun ReviewRow(label: String, value: String) {
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, color = Gray400, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-        Text(value, color = Gray900, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Black)
+        AgriText(label, color = Gray400, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+        AgriText(value, color = Gray900, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Black)
     }
 }

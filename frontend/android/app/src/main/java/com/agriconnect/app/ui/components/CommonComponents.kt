@@ -10,7 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,7 +29,6 @@ import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.staticCompositionLocalOf
 import com.agriconnect.app.ui.viewmodel.TranslationViewModel
 
 val LocalTranslationViewModel = staticCompositionLocalOf<TranslationViewModel?> { null }
@@ -174,8 +173,8 @@ fun AgriTextField(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            label = { Text(label, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold) },
-            placeholder = { Text(placeholder, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium) },
+            label = { AgriText(label, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold) },
+            placeholder = { AgriText(placeholder, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium) },
             modifier = Modifier.fillMaxWidth(),
             leadingIcon = leadingIcon?.let { { Icon(it, contentDescription = null, modifier = Modifier.size(20.dp)) } },
             trailingIcon = trailingIcon,
@@ -198,7 +197,7 @@ fun AgriTextField(
             )
         )
         if (isError && errorMessage != null) {
-            Text(
+            AgriText(
                 text = errorMessage,
                 color = Error,
                 style = MaterialTheme.typography.labelSmall,
@@ -292,7 +291,7 @@ fun EmptyStateCard(message: String) {
                 modifier = Modifier.size(56.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
+            AgriText(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
                 color = Gray600,
@@ -333,8 +332,8 @@ fun DashboardStatCard(
                 Icon(icon, null, tint = iconColor, modifier = Modifier.size(24.dp))
             }
             Spacer(modifier = Modifier.height(20.dp))
-            Text(label, style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Bold)
-            Text(value, style = MaterialTheme.typography.headlineSmall, color = Gray900, fontWeight = FontWeight.Black)
+            AgriText(label, style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Bold)
+            AgriText(value, style = MaterialTheme.typography.headlineSmall, color = Gray900, fontWeight = FontWeight.Black)
         }
     }
 }
@@ -400,6 +399,7 @@ fun AgriText(
     textAlign: TextAlign? = null,
     lineHeight: androidx.compose.ui.unit.TextUnit = androidx.compose.ui.unit.TextUnit.Unspecified,
     letterSpacing: androidx.compose.ui.unit.TextUnit = androidx.compose.ui.unit.TextUnit.Unspecified,
+    fontSize: androidx.compose.ui.unit.TextUnit = androidx.compose.ui.unit.TextUnit.Unspecified,
     maxLines: Int = Int.MAX_VALUE,
     overflow: androidx.compose.ui.text.style.TextOverflow = androidx.compose.ui.text.style.TextOverflow.Clip,
     modifier: Modifier = Modifier,
@@ -411,8 +411,8 @@ fun AgriText(
         mutableStateOf(text) 
     }
 
-    LaunchedEffect(text, vm?.currentLanguage?.value) {
-        if (vm != null && text.isNotEmpty()) {
+    LaunchedEffect(text, vm?.currentLanguage?.value, vm?.isModelDownloading?.value) {
+        if (vm != null && text.isNotEmpty() && vm.isModelDownloading.value == false) {
             vm.translate(text) { result ->
                 translatedText = result
             }
@@ -427,6 +427,7 @@ fun AgriText(
         textAlign = textAlign,
         lineHeight = lineHeight,
         letterSpacing = letterSpacing,
+        fontSize = fontSize,
         maxLines = maxLines,
         overflow = overflow,
         modifier = modifier

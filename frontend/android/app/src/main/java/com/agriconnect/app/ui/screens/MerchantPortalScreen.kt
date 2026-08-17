@@ -27,6 +27,7 @@ import com.agriconnect.app.ui.components.*
 import com.agriconnect.app.ui.theme.*
 import com.agriconnect.app.ui.viewmodel.ProductViewModel
 import com.agriconnect.app.ui.viewmodel.MerchantViewModel
+import com.agriconnect.app.ui.viewmodel.AuthViewModel
 import com.agriconnect.data.model.Product
 import androidx.lifecycle.viewmodel.compose.viewModel
 
@@ -37,6 +38,7 @@ fun MerchantPortalScreen(
     userId: String,
     productViewModel: ProductViewModel,
     merchantViewModel: MerchantViewModel = viewModel(),
+    authViewModel: AuthViewModel? = null,
     userStatus: String = "active",
     onProductClick: (String) -> Unit,
     onExploreClick: () -> Unit,
@@ -57,6 +59,12 @@ fun MerchantPortalScreen(
             productViewModel.fetchDiscoveryProducts(token)
             merchantViewModel.fetchDashboard(token, userId)
             merchantViewModel.fetchNotifications(token, userId)
+        }
+    }
+
+    LaunchedEffect(dashboardData) {
+        dashboardData?.accountStatus?.let { status ->
+            authViewModel?.updateUserStatus(status)
         }
     }
 

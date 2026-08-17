@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 
 // AgriConnect Unified Color System
 val AgriPrimary = Color(0xFF079E72)
-val Emerald600 = Color(0xFF059669)
+val Emerald600 = AgriPrimary // Alias for legacy support
 val AgriPrimaryDark = Color(0xFF087A5B)
 val AgriSecondary = Color(0xFFF1FDF9)
 val AgriBackground = Color(0xFFFFFFFF)

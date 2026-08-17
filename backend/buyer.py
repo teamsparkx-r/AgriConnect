@@ -101,13 +101,37 @@ def register_buyer(request: BuyerRegisterRequest, db: Session = Depends(get_db))
         state = request.state or request.location or "Unknown"
         district = request.district or request.location or "Unknown"
 
+        # Ensure buyer_type is a valid enum value
+        try:
+            from models import BuyerType
+            # Normalize and validate buyer_type
+            b_type = request.buyer_type.lower() if request.buyer_type else "individual"
+            # Map "merchant" (common from frontend) to "trader" if not explicitly in enum
+            if b_type == "merchant" and "merchant" not in BuyerType.__members__.values():
+                b_type = "trader"
+
+            # Final fallback to individual if still invalid
+            if b_type not in [e.value for e in BuyerType]:
+                b_type = "individual"
+        except Exception:
+            b_type = "individual"
+
+        # Ensure preferred_language is a valid enum value
+        try:
+            from models import Language
+            lang = request.preferred_language.lower() if request.preferred_language else "english"
+            if lang not in [e.value for e in Language]:
+                lang = "english"
+        except Exception:
+            lang = "english"
+
         # Create buyer profile
         buyer = Buyer(
             user_id=user.id,
-            buyer_type=request.buyer_type,
+            buyer_type=b_type,
             state=state,
             district=district,
-            preferred_language=request.preferred_language
+            preferred_language=lang
         )
         db.add(buyer)
         db.commit()
@@ -131,7 +155,9 @@ def register_buyer(request: BuyerRegisterRequest, db: Session = Depends(get_db))
         }
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
 @router.post("/verify-otp")
 def verify_otp(request: OTPRequest, db: Session = Depends(get_db)):
@@ -204,8 +230,9 @@ def login_buyer(request: BuyerLoginRequest, db: Session = Depends(get_db)):
 @router.get("/dashboard/{user_id}")
 def get_merchant_dashboard(user_id: str, db: Session = Depends(get_db)):
     """Get merchant dashboard summary and activities"""
+    user = db.query(User).filter(User.id == user_id).first()
     buyer = db.query(Buyer).filter(Buyer.user_id == user_id).first()
-    if not buyer:
+    if not buyer or not user:
         raise HTTPException(status_code=404, detail="Buyer not found")
 
     total_bookings = db.query(Booking).filter(Booking.buyer_id == buyer.id).count()
@@ -231,6 +258,7 @@ def get_merchant_dashboard(user_id: str, db: Session = Depends(get_db)):
 
     return {
         "success": True,
+        "account_status": user.account_status.value,
         "summary": {
             "total_bookings": total_bookings,
             "active_bookings": active_bookings,
@@ -465,10 +493,14 @@ def create_booking(request: BookingRequest, user_id: str, db: Session = Depends(
         }
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
 @router.get("/bookings")
 def get_buyer_bookings(user_id: str, db: Session = Depends(get_db)):

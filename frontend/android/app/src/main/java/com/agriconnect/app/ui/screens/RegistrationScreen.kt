@@ -17,7 +17,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.agriconnect.app.ui.components.AgriButton
 import com.agriconnect.app.ui.components.AgriTextField
-import com.agriconnect.app.ui.theme.Emerald600
+import com.agriconnect.app.ui.components.AgriText
+import com.agriconnect.app.ui.theme.AgriPrimary
 import com.agriconnect.app.ui.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -57,14 +58,14 @@ fun RegistrationScreen(
             CenterAlignedTopAppBar(
                 modifier = Modifier.statusBarsPadding(),
                 title = { 
-                    Text(
+                    AgriText(
                         text = if (role == "farmer") "Farmer Registration" else "Merchant Registration",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Black,
                         color = Color.White
                     ) 
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Emerald600)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = AgriPrimary)
             )
         }
     ) { padding ->
@@ -76,7 +77,7 @@ fun RegistrationScreen(
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
+            AgriText(
                 text = "JOIN THE DIRECT SOURCING NETWORK",
                 style = MaterialTheme.typography.labelMedium,
                 color = Color.Gray,
@@ -111,7 +112,7 @@ fun RegistrationScreen(
                 
                 Spacer(modifier = Modifier.height(32.dp))
                 
-                Text(
+                AgriText(
                     text = "MERCHANT PREFERENCES",
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Black,
@@ -121,13 +122,13 @@ fun RegistrationScreen(
                 )
                 
                 Spacer(modifier = Modifier.height(24.dp))
-                Text("Preferred Buying Locations", style = MaterialTheme.typography.titleSmall, modifier = Modifier.align(Alignment.Start), fontWeight = FontWeight.Black)
+                AgriText("Preferred Buying Locations", style = MaterialTheme.typography.titleSmall, modifier = Modifier.align(Alignment.Start), fontWeight = FontWeight.Black)
                 FlowRow(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     locations.forEach { loc ->
                         FilterChip(
                             selected = preferredLocations.contains(loc),
                             onClick = { if (preferredLocations.contains(loc)) preferredLocations.remove(loc) else preferredLocations.add(loc) },
-                            label = { Text(loc, fontWeight = FontWeight.Black) },
+                            label = { AgriText(loc, fontWeight = FontWeight.Black) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                                 selectedLabelColor = MaterialTheme.colorScheme.primary
@@ -137,13 +138,13 @@ fun RegistrationScreen(
                 }
                 
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Preferred Crops", style = MaterialTheme.typography.titleSmall, modifier = Modifier.align(Alignment.Start), fontWeight = FontWeight.Black)
+                AgriText("Preferred Crops", style = MaterialTheme.typography.titleSmall, modifier = Modifier.align(Alignment.Start), fontWeight = FontWeight.Black)
                 FlowRow(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     crops.forEach { crop ->
                         FilterChip(
                             selected = preferredCrops.contains(crop),
                             onClick = { if (preferredCrops.contains(crop)) preferredCrops.remove(crop) else preferredCrops.add(crop) },
-                            label = { Text(crop, fontWeight = FontWeight.Black) },
+                            label = { AgriText(crop, fontWeight = FontWeight.Black) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                                 selectedLabelColor = MaterialTheme.colorScheme.primary
@@ -155,7 +156,7 @@ fun RegistrationScreen(
 
             if (error != null) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
+                AgriText(
                     text = error!!,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.labelSmall,

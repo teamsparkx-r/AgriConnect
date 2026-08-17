@@ -194,6 +194,15 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         sessionManager.logout()
     }
 
+    fun updateUserStatus(status: String) {
+        val current = _user.value
+        if (current != null && current.accountStatus != status) {
+            val updated = current.copy(accountStatus = status)
+            _user.value = updated
+            sessionManager.saveUser(updated)
+        }
+    }
+
     fun updateProfile(updatesMap: Map<String, String>, onResult: (Boolean) -> Unit) {
         val currentUser = _user.value ?: return
         val currentToken = _token.value ?: return

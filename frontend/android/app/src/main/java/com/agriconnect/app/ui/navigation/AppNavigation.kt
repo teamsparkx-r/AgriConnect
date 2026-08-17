@@ -3,6 +3,7 @@ package com.agriconnect.app.ui.navigation
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -205,12 +206,13 @@ fun AppNavigation(
 
         // Farmer Screens
         composable(Screen.FarmerDashboard.route) {
-            val user = authViewModel.user.value
+            val user by authViewModel.user
             FarmerDashboardScreen(
                 token = authViewModel.token.value ?: "",
                 userId = user?.id ?: "",
                 userName = user?.fullName ?: "Farmer",
                 viewModel = farmerViewModel,
+                authViewModel = authViewModel,
                 userStatus = user?.accountStatus ?: "active",
                 onBookSlotClick = { navController.navigate(Screen.AddProduct.route) },
                 onMyBookingsClick = { navController.navigate(Screen.FarmerBookings.route) },
@@ -340,12 +342,13 @@ fun AppNavigation(
 
         // Merchant Screens
         composable(Screen.MerchantPortal.route) {
-            val user = authViewModel.user.value
+            val user by authViewModel.user
             MerchantPortalScreen(
                 token = authViewModel.token.value ?: "",
                 userId = user?.id ?: "",
                 productViewModel = productViewModel,
                 merchantViewModel = merchantViewModel,
+                authViewModel = authViewModel,
                 userStatus = user?.accountStatus ?: "active",
                 onProductClick = { id -> navController.navigate(Screen.ProductDetail.createRoute(id)) },
                 onExploreClick = { navController.navigate(Screen.Explore.route) },

@@ -353,6 +353,7 @@ data class PlatformStatsResponse(
 
 data class FarmerDashboardResponse(
     val success: Boolean,
+    @SerializedName("account_status") val accountStatus: String? = "active",
     val stats: FarmerStats,
     @SerializedName("recent_products") val recentProducts: List<Product>,
     @SerializedName("recent_bookings") val recentBookings: List<Map<String, Any>>,
@@ -402,6 +403,7 @@ data class BuyerProductsResponse(
 
 data class MerchantDashboardResponse(
     val success: Boolean,
+    @SerializedName("account_status") val accountStatus: String? = "active",
     val summary: MerchantSummary,
     @SerializedName("recent_bookings") val recentBookings: List<Map<String, Any>>,
     val messages: List<Map<String, Any>>

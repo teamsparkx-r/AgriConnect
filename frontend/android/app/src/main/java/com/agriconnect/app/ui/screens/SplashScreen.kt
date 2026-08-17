@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 
+import com.agriconnect.app.ui.components.AgriText
+
 @Composable
 fun SplashScreen(onSplashFinished: () -> Unit) {
     LaunchedEffect(key1 = true) {
@@ -41,14 +43,14 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
                 tint = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(24.dp))
-            Text(
+            AgriText(
                 text = "AgriConnect",
                 style = MaterialTheme.typography.displayMedium,
                 fontWeight = FontWeight.Black,
                 color = Color.Black
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
+            AgriText(
                 text = "DIRECT FARMER & MERCHANT MARKETPLACE",
                 style = MaterialTheme.typography.labelMedium,
                 color = Color.Gray,

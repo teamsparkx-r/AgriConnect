@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.agriconnect.app.ui.components.*
 import com.agriconnect.app.ui.theme.*
 import com.agriconnect.app.ui.viewmodel.FarmerViewModel
+import com.agriconnect.app.ui.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,6 +34,7 @@ fun FarmerDashboardScreen(
     userId: String,
     userName: String,
     viewModel: FarmerViewModel,
+    authViewModel: AuthViewModel? = null,
     userStatus: String = "active",
     onBookSlotClick: () -> Unit,
     onMyBookingsClick: () -> Unit,
@@ -49,6 +51,12 @@ fun FarmerDashboardScreen(
     LaunchedEffect(token, userId) {
         if (token.isNotEmpty()) {
             viewModel.fetchDashboard(token, userId)
+        }
+    }
+
+    LaunchedEffect(dashboardData) {
+        dashboardData?.accountStatus?.let { status ->
+            authViewModel?.updateUserStatus(status)
         }
     }
 
@@ -138,9 +146,9 @@ fun FarmerDashboardScreen(
                             Icon(Icons.Outlined.WbSunny, null, tint = Warning, modifier = Modifier.size(24.dp))
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Text("28°C", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black)
-                                Text("Warangal, TS", style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Black)
-                                Text("Sunny", style = MaterialTheme.typography.labelSmall, color = AgriPrimary, fontWeight = FontWeight.Black)
+                                AgriText("28°C", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black)
+                                AgriText("Warangal, TS", style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Black)
+                                AgriText("Sunny", style = MaterialTheme.typography.labelSmall, color = AgriPrimary, fontWeight = FontWeight.Black)
                             }
                             Spacer(modifier = Modifier.weight(1f))
                             Icon(Icons.Default.ChevronRight, null, tint = Gray300, modifier = Modifier.size(16.dp))
@@ -166,7 +174,7 @@ fun FarmerDashboardScreen(
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 12.dp)) {
                             Icon(Icons.Default.Add, null, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Add Produce", style = MaterialTheme.typography.labelLarge, color = White, fontWeight = FontWeight.Black)
+                            AgriText("Add Produce", style = MaterialTheme.typography.labelLarge, color = White, fontWeight = FontWeight.Black)
                         }
                     }
                 }

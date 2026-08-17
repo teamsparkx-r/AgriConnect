@@ -90,6 +90,15 @@ def register_farmer(request: FarmerRegisterRequest, db: Session = Depends(get_db
         if not success:
             raise HTTPException(status_code=400, detail=message)
         
+        # Ensure preferred_language is a valid enum value
+        try:
+            from models import Language
+            lang = request.preferred_language.lower() if request.preferred_language else "english"
+            if lang not in [e.value for e in Language]:
+                lang = "english"
+        except Exception:
+            lang = "english"
+
         # Create farmer profile
         farmer = Farmer(
             user_id=user.id,
@@ -99,7 +108,7 @@ def register_farmer(request: FarmerRegisterRequest, db: Session = Depends(get_db
             farm_address=request.farm_address,
             latitude=request.latitude,
             longitude=request.longitude,
-            preferred_language=request.preferred_language
+            preferred_language=lang
         )
         db.add(farmer)
         db.commit()
@@ -123,7 +132,9 @@ def register_farmer(request: FarmerRegisterRequest, db: Session = Depends(get_db
         }
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
 @router.post("/verify-otp")
 def verify_otp(request: OTPRequest, db: Session = Depends(get_db)):
@@ -183,9 +194,10 @@ def login_farmer(request: FarmerLoginRequest, db: Session = Depends(get_db)):
 @router.get("/dashboard")
 def get_farmer_dashboard(user_id: str, db: Session = Depends(get_db)):
     """Get farmer dashboard with statistics"""
+    user = db.query(User).filter(User.id == user_id).first()
     farmer = db.query(Farmer).filter(Farmer.user_id == user_id).first()
     
-    if not farmer:
+    if not farmer or not user:
         raise HTTPException(status_code=404, detail="Farmer not found")
     
     # Get statistics
@@ -213,6 +225,7 @@ def get_farmer_dashboard(user_id: str, db: Session = Depends(get_db)):
 
     return {
         "success": True,
+        "account_status": user.account_status.value,
         "stats": {
             "total_products": total_products,
             "active_products": active_products,
@@ -304,7 +317,9 @@ def create_product(request: ProductCreateRequest, user_id: str, db: Session = De
         }
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
 @router.get("/products")
 def get_farmer_products(user_id: str, db: Session = Depends(get_db)):

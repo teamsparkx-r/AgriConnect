@@ -49,6 +49,7 @@ class TranslationViewModel(application: Application) : AndroidViewModel(applicat
         
         if (targetLanguageCode == "en") {
             translator = null
+            _isModelDownloading.value = false
             return
         }
 
@@ -58,17 +59,18 @@ class TranslationViewModel(application: Application) : AndroidViewModel(applicat
             .build()
         
         translator = Translation.getClient(options)
+        _isModelDownloading.value = true
         
         viewModelScope.launch {
-            _isModelDownloading.value = true
             val conditions = DownloadConditions.Builder()
-                .requireWifi()
-                .build()
+                .build() // Removed requireWifi() to allow download on mobile data
             
             try {
+                android.util.Log.d("Translation", "Starting model download for $targetLanguageCode")
                 translator?.downloadModelIfNeeded(conditions)?.await()
+                android.util.Log.d("Translation", "Model download successful for $targetLanguageCode")
             } catch (e: Exception) {
-                // Handle error
+                android.util.Log.e("Translation", "Model download failed for $targetLanguageCode", e)
             } finally {
                 _isModelDownloading.value = false
             }

@@ -16,9 +16,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.agriconnect.app.ui.components.AgriButton
 import com.agriconnect.app.ui.components.AgriTextField
+import com.agriconnect.app.ui.components.AgriText
 import com.agriconnect.app.ui.viewmodel.AuthViewModel
 import androidx.compose.foundation.text.KeyboardOptions
-import com.agriconnect.app.ui.theme.Emerald600
+import com.agriconnect.app.ui.theme.AgriPrimary
 
 @Composable
 fun LoginScreen(
@@ -37,9 +38,9 @@ fun LoginScreen(
             .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Green Header
+        // Unified Header
         Surface(
-            color = Emerald600,
+            color = AgriPrimary,
             modifier = Modifier.fillMaxWidth().statusBarsPadding(),
             shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
         ) {
@@ -54,14 +55,14 @@ fun LoginScreen(
                     modifier = Modifier.size(64.dp)
                 )
                 Spacer(modifier = Modifier.height(24.dp))
-                Text(
+                AgriText(
                     text = "Welcome to AgriConnect",
                     style = MaterialTheme.typography.headlineMedium,
                     color = Color.White,
                     fontWeight = FontWeight.Black
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
+                AgriText(
                     text = "DIRECT FARMER & MERCHANT MARKETPLACE",
                     style = MaterialTheme.typography.labelMedium,
                     color = Color.White.copy(alpha = 0.8f),
@@ -83,7 +84,7 @@ fun LoginScreen(
                 value = mobileNumber,
                 onValueChange = { if (it.length <= 10) mobileNumber = it },
                 label = "10-Digit Mobile Number",
-                prefix = { Text("+91 ", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Black) },
+                prefix = { AgriText("+91 ", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Black) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 isError = error != null,
                 errorMessage = error
@@ -105,18 +106,18 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             TextButton(onClick = onSignupClick) {
-                Text(
+                AgriText(
                     text = "INITIALIZE NEW REGISTRY ACCOUNT",
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Black,
-                    color = Emerald600,
+                    color = AgriPrimary,
                     letterSpacing = 0.5.sp
                 )
             }
 
             Spacer(modifier = Modifier.weight(1f))
             
-            Text(
+            AgriText(
                 text = "AgriConnect Node Identity Protection System",
                 style = MaterialTheme.typography.labelSmall,
                 color = Color.LightGray,

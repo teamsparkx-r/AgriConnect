@@ -9,14 +9,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +24,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.agriconnect.app.ui.navigation.Screen
 import com.agriconnect.app.ui.theme.*
 import com.agriconnect.app.ui.viewmodel.AuthViewModel
+import com.agriconnect.app.ui.components.AgriText
 
 @Composable
 fun MainScreen(
@@ -344,25 +342,25 @@ fun DrawerTemplate(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Emerald600)
+                    .background(AgriPrimary)
                     .padding(top = 48.dp, bottom = 24.dp, start = 24.dp, end = 24.dp)
             ) {
                 Column {
                     Icon(Icons.Default.Eco, null, tint = White, modifier = Modifier.size(40.dp))
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("AgriConnect", color = White, fontWeight = FontWeight.Black, fontSize = 20.sp)
-                    Text(roleLabel, color = White.copy(alpha = 0.7f), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    AgriText("AgriConnect", color = White, fontWeight = FontWeight.Black, fontSize = 20.sp)
+                    AgriText(roleLabel, color = White.copy(alpha = 0.7f), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     
                     Spacer(modifier = Modifier.height(24.dp))
                     
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Surface(modifier = Modifier.size(40.dp), shape = CircleShape, color = White.copy(alpha = 0.2f)) {
                             Box(contentAlignment = Alignment.Center) {
-                                Text(userName.takeIf { it.isNotEmpty() }?.first()?.toString() ?: "U", color = White, fontWeight = FontWeight.Black)
+                                AgriText(userName.takeIf { it.isNotEmpty() }?.first()?.toString() ?: "U", color = White, fontWeight = FontWeight.Black)
                             }
                         }
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text(userName, color = White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        AgriText(userName, color = White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     }
                 }
             }
@@ -375,7 +373,7 @@ fun DrawerTemplate(
                 content()
                 
                 Spacer(modifier = Modifier.height(40.dp))
-                Text(
+                AgriText(
                     "Version 1.0.4-Build.2023",
                     modifier = Modifier.padding(start = 12.dp),
                     style = MaterialTheme.typography.labelSmall,
@@ -390,7 +388,7 @@ fun DrawerTemplate(
 
 @Composable
 fun DrawerSection(label: String) {
-    Text(
+    AgriText(
         text = label,
         modifier = Modifier.padding(start = 12.dp, top = 8.dp, bottom = 8.dp),
         style = MaterialTheme.typography.labelSmall,
@@ -408,15 +406,15 @@ fun DrawerItem(
     onClick: () -> Unit
 ) {
     NavigationDrawerItem(
-        label = { Text(label, fontWeight = if (selected) FontWeight.Black else FontWeight.Bold) },
+        label = { AgriText(label, fontWeight = if (selected) FontWeight.Black else FontWeight.Bold) },
         selected = selected,
         onClick = onClick,
         icon = { Icon(icon, null) },
         shape = RoundedCornerShape(12.dp),
         colors = NavigationDrawerItemDefaults.colors(
-            selectedContainerColor = Emerald600.copy(alpha = 0.1f),
-            selectedIconColor = Emerald600,
-            selectedTextColor = Emerald600,
+            selectedContainerColor = AgriPrimary.copy(alpha = 0.1f),
+            selectedIconColor = AgriPrimary,
+            selectedTextColor = AgriPrimary,
             unselectedContainerColor = Color.Transparent,
             unselectedIconColor = Gray500,
             unselectedTextColor = Gray700
@@ -433,7 +431,7 @@ fun AppBottomNav(
     onAddClick: () -> Unit
 ) {
     Surface(
-        color = Emerald600,
+        color = AgriPrimary,
         tonalElevation = 0.dp,
         shadowElevation = 16.dp,
         shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
@@ -567,7 +565,7 @@ fun RowScope.NavButton(
             ) 
         },
         label = { 
-            Text(
+            AgriText(
                 text = label, 
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = if (active) FontWeight.Black else FontWeight.Bold
