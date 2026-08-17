@@ -68,11 +68,18 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     val backendUser = loginResponse.user
                     
                     if (backendUser != null) {
-                        _user.value = backendUser
+                        val rawRole = backendUser.role
+                        val finalRole = rawRole.lowercase().trim()
+                        android.util.Log.d("AgriConnect", "VerifyOtp backend user role: '$rawRole' -> '$finalRole'")
+                        val updatedUser = backendUser.copy(role = finalRole)
+                        
+                        _user.value = updatedUser
                         _token.value = loginResponse.accessToken
-                        sessionManager.saveUser(backendUser)
+                        sessionManager.saveUser(updatedUser)
                         sessionManager.saveToken(loginResponse.accessToken)
-                        onVerifySuccess(backendUser.role)
+                        
+                        android.util.Log.d("AgriConnect", "Login successful. Assigned Role: '$finalRole'")
+                        onVerifySuccess(finalRole)
                         _loading.value = false
                         return@launch
                     }

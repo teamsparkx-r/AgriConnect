@@ -18,24 +18,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.agriconnect.app.ui.components.ProfileListItem
+import com.agriconnect.app.ui.components.*
 import com.agriconnect.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HelpSupportScreen(onBack: () -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    
     Scaffold(
         containerColor = AgriBackground,
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier.statusBarsPadding(),
-                title = { Text("Help & Support", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = White) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = White)
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = AgriPrimary)
+            AgriTopAppBar(
+                title = "Help & Support",
+                showLogo = false,
+                onBackClick = onBack
             )
         }
     ) { padding ->
@@ -58,9 +55,9 @@ fun HelpSupportScreen(onBack: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("How can we help you?", style = MaterialTheme.typography.titleLarge, color = White, fontWeight = FontWeight.Black)
+                        AgriText("How can we help you?", style = MaterialTheme.typography.titleLarge, color = White, fontWeight = FontWeight.Black)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text("We're here to support you.", style = MaterialTheme.typography.bodyMedium, color = White.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)
+                        AgriText("We're here to support you.", style = MaterialTheme.typography.bodyMedium, color = White.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)
                     }
                     Box(
                         modifier = Modifier
@@ -83,15 +80,25 @@ fun HelpSupportScreen(onBack: () -> Unit) {
                 border = androidx.compose.foundation.BorderStroke(1.dp, Gray100.copy(alpha = 0.5f))
             ) {
                 Column {
-                    ProfileListItem(icon = Icons.Outlined.QuestionAnswer, label = "FAQs", subtitle = "Find answers to common questions", onClick = { })
+                    ProfileListItem(icon = Icons.Outlined.QuestionAnswer, label = "FAQs", subtitle = "Find answers to common questions", onClick = { 
+                        android.widget.Toast.makeText(context, "Redirecting to FAQ portal...", android.widget.Toast.LENGTH_SHORT).show()
+                    })
                     Divider(modifier = Modifier.padding(horizontal = 24.dp), color = Gray100, thickness = 0.5.dp)
-                    ProfileListItem(icon = Icons.Outlined.Chat, label = "Contact Support", subtitle = "Chat or call our support team", onClick = { })
+                    ProfileListItem(icon = Icons.Outlined.Chat, label = "Contact Support", subtitle = "Chat or call our support team", onClick = { 
+                        android.widget.Toast.makeText(context, "Opening support chat...", android.widget.Toast.LENGTH_SHORT).show()
+                    })
                     Divider(modifier = Modifier.padding(horizontal = 24.dp), color = Gray100, thickness = 0.5.dp)
-                    ProfileListItem(icon = Icons.Outlined.ReportProblem, label = "Report an Issue", subtitle = "Report a bug or issue", onClick = { })
+                    ProfileListItem(icon = Icons.Outlined.ReportProblem, label = "Report an Issue", subtitle = "Report a bug or issue", onClick = { 
+                        android.widget.Toast.makeText(context, "Loading report form...", android.widget.Toast.LENGTH_SHORT).show()
+                    })
                     Divider(modifier = Modifier.padding(horizontal = 24.dp), color = Gray100, thickness = 0.5.dp)
-                    ProfileListItem(icon = Icons.Outlined.MenuBook, label = "App Guide", subtitle = "Learn how to use AgriConnect", onClick = { })
+                    ProfileListItem(icon = Icons.Outlined.MenuBook, label = "App Guide", subtitle = "Learn how to use AgriConnect", onClick = { 
+                        android.widget.Toast.makeText(context, "Opening app documentation...", android.widget.Toast.LENGTH_SHORT).show()
+                    })
                 }
             }
+            
+            AgriFooter()
             
             Spacer(modifier = Modifier.height(40.dp))
         }

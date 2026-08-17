@@ -64,39 +64,22 @@ fun ProductDetailScreen(
     val scrollState = rememberScrollState()
 
     Scaffold(
-        containerColor = Color(0xFFF9FAFB),
+        containerColor = AgriBackground,
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier.statusBarsPadding(),
-                title = { Text("Product Details", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = Color.White) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { 
-                        if (token == null || user == null) onLoginRequired() 
-                        else merchantViewModel.toggleSaveProduct(token!!, user!!.id, productId)
-                    }) {
-                        Icon(
-                            if (isSaved) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            contentDescription = "Save",
-                            tint = if (isSaved) MaterialTheme.colorScheme.error else Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Emerald600)
+            AgriTopAppBar(
+                title = "Supply Node",
+                showLogo = false,
+                onBackClick = onBack
             )
         }
     ) { padding ->
         if (loading && product == null) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                CircularProgressIndicator(color = AgriPrimary)
             }
         } else if (product == null) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text("Product not found or unavailable.")
+                AgriText("Product not found or unavailable.")
             }
         } else {
             Column(
@@ -105,14 +88,14 @@ fun ProductDetailScreen(
                     .padding(padding)
                     .verticalScroll(scrollState)
             ) {
-                // Image Section
+                // Image Section with Save Action
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(300.dp)
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .background(Gray50)
                 ) {
-                    if (product.images != null && product.images!!.startsWith("http")) {
+                    if (product.images != null && (product.images!!.startsWith("http") || product.images!!.startsWith("content"))) {
                         AsyncImage(
                             model = product.images,
                             contentDescription = null,
@@ -129,8 +112,32 @@ fun ProductDetailScreen(
                                     else -> Icons.Default.Inventory
                                 },
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                tint = AgriPrimary.copy(alpha = 0.1f),
                                 modifier = Modifier.size(120.dp)
+                            )
+                        }
+                    }
+                    
+                    // Floating Save Button
+                    Surface(
+                        onClick = { 
+                            if (token == null || user == null) onLoginRequired() 
+                            else merchantViewModel.toggleSaveProduct(token!!, user!!.id, productId)
+                        },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(16.dp)
+                            .size(48.dp),
+                        shape = CircleShape,
+                        color = White.copy(alpha = 0.9f),
+                        shadowElevation = 4.dp
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = if (isSaved) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = "Save",
+                                tint = if (isSaved) Error else Gray400,
+                                modifier = Modifier.size(24.dp)
                             )
                         }
                     }
@@ -141,34 +148,34 @@ fun ProductDetailScreen(
                         Surface(
                             modifier = Modifier.size(48.dp),
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                            color = AgriSecondary
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                                Icon(Icons.Default.Person, contentDescription = null, tint = AgriPrimary)
                             }
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
-                            Text(
+                            AgriText(
                                 text = "FARMER-${product.farmerIdAlias ?: product.farmerId?.takeLast(4) ?: "NODE"}",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Black,
-                                color = Color.Black
+                                color = Gray900
                             )
-                            Text(
+                            AgriText(
                                 text = "${product.district ?: "Verified"} Source", 
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Color.Gray
+                                color = Gray400
                             )
                         }
                         Spacer(modifier = Modifier.weight(1f))
                         Surface(
-                            color = Color(0xFFECFDF5), 
+                            color = Success.copy(alpha = 0.1f), 
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text(
+                            AgriText(
                                 text = "VERIFIED", 
-                                color = Color(0xFF059669), 
+                                color = Success, 
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Black,
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
@@ -178,32 +185,32 @@ fun ProductDetailScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Text(
+                    AgriText(
                         text = product.name ?: "Unknown Crop", 
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Black,
-                        color = Color.Black
+                        color = Gray900
                     )
-                    Text(
+                    AgriText(
                         text = product.category?.uppercase() ?: "GENERAL", 
                         style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = AgriPrimary,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 1.sp
                     )
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    Text(
+                    AgriText(
                         text = product.description ?: "High-quality agricultural supply direct from the source. Mediated and verified by AgriConnect.",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Color.DarkGray,
+                        color = Gray700,
                         lineHeight = 24.sp
                     )
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    AgriSectionTitle(title = "Supply Parameters")
+                    AgriSectionTitle(title = "Supply Parameters", subtitle = "NODE DATA")
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -215,23 +222,23 @@ fun ProductDetailScreen(
 
                     // Booking Card
                     AgriCard {
-                        Text(
+                        AgriText(
                             text = "ESTIMATED MARKET RATE", 
                             style = MaterialTheme.typography.labelSmall,
-                            color = Color.Gray, 
+                            color = Gray400, 
                             fontWeight = FontWeight.Black
                         )
                         Row(verticalAlignment = Alignment.Bottom) {
-                            Text(
+                            AgriText(
                                 text = "₹${product.expectedPrice ?: "N/A"}", 
                                 style = MaterialTheme.typography.displaySmall,
                                 fontWeight = FontWeight.Black,
-                                color = Color.Black
+                                color = Gray900
                             )
-                            Text(
+                            AgriText(
                                 text = "/${product.unit ?: "unit"}",
                                 style = MaterialTheme.typography.titleMedium,
-                                color = Color.Gray, 
+                                color = Gray400, 
                                 modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
                             )
                         }
@@ -267,14 +274,16 @@ fun ProductDetailScreen(
                                         Icon(Icons.Default.Info, null, tint = Warning, modifier = Modifier.size(32.dp))
                                         Spacer(modifier = Modifier.width(16.dp))
                                         Column {
-                                            Text("ENQUIRY SENT", color = Warning, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black)
-                                            Text("Awaiting farmer response", color = Warning.copy(alpha = 0.8f), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                                            AgriText("ENQUIRY SENT", color = Warning, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black)
+                                            AgriText("Awaiting farmer response", color = Warning.copy(alpha = 0.8f), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                                         }
                                     }
                                 }
                             }
                         }
                     }
+                    
+                    AgriFooter()
                     
                     Spacer(modifier = Modifier.height(40.dp))
                 }
@@ -285,10 +294,10 @@ fun ProductDetailScreen(
     if (showEnquiryDialog && product != null) {
         AlertDialog(
             onDismissRequest = { showEnquiryDialog = false },
-            title = { Text("Send Purchase Enquiry", fontWeight = FontWeight.Black) },
+            title = { AgriText("Send Purchase Enquiry", fontWeight = FontWeight.Black) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("Negotiate quantity and price directly with the farmer.", style = MaterialTheme.typography.bodySmall, color = Gray600)
+                    AgriText("Negotiate quantity and price directly with the farmer.", style = MaterialTheme.typography.bodySmall, color = Gray600)
                     
                     AgriTextField(
                         value = requestedQty,
@@ -347,7 +356,7 @@ fun ProductDetailScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showEnquiryDialog = false }) {
-                    Text("CANCEL", color = Gray500, fontWeight = FontWeight.Black)
+                    AgriText("CANCEL", color = Gray50, fontWeight = FontWeight.Black)
                 }
             },
             containerColor = White,
@@ -361,28 +370,28 @@ fun SpecBox(modifier: Modifier, icon: ImageVector, label: String, value: String)
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(20.dp),
-        color = Color.White,
-        border = BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.2f))
+        color = White,
+        border = BorderStroke(1.dp, Gray100.copy(alpha = 0.5f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Icon(
                 imageVector = icon, 
                 contentDescription = null, 
-                tint = MaterialTheme.colorScheme.primary, 
+                tint = AgriPrimary, 
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.height(12.dp))
-            Text(
+            AgriText(
                 text = label, 
                 style = MaterialTheme.typography.labelSmall,
-                color = Color.Gray,
+                color = Gray400,
                 fontWeight = FontWeight.Bold
             )
-            Text(
+            AgriText(
                 text = value, 
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Black,
-                color = Color.Black
+                color = Gray900
             )
         }
     }

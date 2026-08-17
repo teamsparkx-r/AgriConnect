@@ -131,6 +131,8 @@ fun AdminDashboardScreen(
                     BookingItem("Maize", "Mahesh Babu", "completed", "2026-05-18")
                 }
 
+                AgriFooter()
+
                 Spacer(modifier = Modifier.height(100.dp))
             }
         }

@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.agriconnect.data.api.RetrofitClient
 import com.agriconnect.data.api.MerchantDashboardResponse
 import com.agriconnect.data.api.BookingCreateRequest
+import com.agriconnect.data.model.Product
 import kotlinx.coroutines.launch
 
 class MerchantViewModel : ViewModel() {
@@ -30,6 +31,9 @@ class MerchantViewModel : ViewModel() {
 
     private val _notifications = mutableStateOf<List<Map<String, Any>>>(emptyList())
     val notifications: State<List<Map<String, Any>>> = _notifications
+
+    private val _savedProductsList = mutableStateOf<List<Product>>(emptyList())
+    val savedProductsList: State<List<Product>> = _savedProductsList
 
     val hasUnread = mutableStateOf(false)
 
@@ -99,6 +103,24 @@ class MerchantViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 // error handling
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun fetchSavedProducts(token: String, userId: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val response = RetrofitClient.instance.getSavedProducts("Bearer $token", userId)
+                if (response.isSuccessful) {
+                    val list = response.body()?.products ?: emptyList()
+                    _savedProductsList.value = list
+                    _savedProducts.value = list.map { it.id }
+                }
+            } catch (e: Exception) {
+                // handle error
             } finally {
                 _loading.value = false
             }
@@ -199,9 +221,12 @@ class MerchantViewModel : ViewModel() {
                 if (_savedProducts.value.contains(productId)) {
                     RetrofitClient.instance.removeSavedProduct("Bearer $token", productId, userId)
                     _savedProducts.value = _savedProducts.value.filter { it != productId }
+                    _savedProductsList.value = _savedProductsList.value.filter { it.id != productId }
                 } else {
                     RetrofitClient.instance.saveProduct("Bearer $token", productId, userId)
                     _savedProducts.value = _savedProducts.value + productId
+                    // Ideally fetch again or add placeholder
+                    fetchSavedProducts(token, userId)
                 }
             } catch (e: Exception) {
                 // fail silently for fav toggle

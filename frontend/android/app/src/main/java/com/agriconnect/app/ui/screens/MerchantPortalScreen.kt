@@ -204,6 +204,8 @@ fun MerchantPortalScreen(
                     }
                 }
 
+                item { AgriFooter() }
+
                 item { Spacer(modifier = Modifier.height(80.dp)) }
             }
         }

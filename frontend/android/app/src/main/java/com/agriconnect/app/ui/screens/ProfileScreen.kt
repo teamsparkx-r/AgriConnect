@@ -31,8 +31,12 @@ fun ProfileScreen(
     authViewModel: AuthViewModel = viewModel(),
     onLogout: () -> Unit = {},
     onMyFarmClick: () -> Unit = {},
+    onMyOrdersClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
-    onHelpClick: () -> Unit = {}
+    onHelpClick: () -> Unit = {},
+    onBankDetailsClick: () -> Unit = {},
+    onSecurityAuditClick: () -> Unit = {},
+    onAboutClick: () -> Unit = {}
 ) {
     val user by authViewModel.user
     val scrollState = rememberScrollState()
@@ -72,7 +76,7 @@ fun ProfileScreen(
                         color = AgriSecondary
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text(
+                            AgriText(
                                 text = user?.fullName?.firstOrNull()?.toString()?.uppercase() ?: "D",
                                 style = MaterialTheme.typography.displaySmall,
                                 color = AgriPrimary,
@@ -82,7 +86,7 @@ fun ProfileScreen(
                     }
                     Spacer(modifier = Modifier.width(20.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
+                        AgriText(
                             text = user?.fullName ?: (if (role == "admin") "Administrator" else "Demo User"), 
                             style = MaterialTheme.typography.titleLarge, 
                             color = Gray900,
@@ -91,7 +95,7 @@ fun ProfileScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.CheckCircle, null, tint = Success, modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(
+                            AgriText(
                                 text = when(role) {
                                     "admin" -> "Verified Admin"
                                     "farmer" -> "Verified Farmer"
@@ -102,7 +106,7 @@ fun ProfileScreen(
                                 fontWeight = FontWeight.Bold
                             )
                         }
-                        Text(
+                        AgriText(
                             text = user?.mobile ?: "+91 98765 43210", 
                             style = MaterialTheme.typography.bodySmall, 
                             color = Gray400,
@@ -115,7 +119,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Account Group
-            Text(
+            AgriText(
                 text = "ACCOUNT",
                 style = MaterialTheme.typography.labelSmall,
                 color = Gray400,
@@ -133,13 +137,15 @@ fun ProfileScreen(
                     if (role == "admin") {
                         ProfileListItem(icon = Icons.Outlined.Dashboard, label = "Admin Console", onClick = { })
                         Divider(modifier = Modifier.padding(horizontal = 24.dp), thickness = 0.5.dp, color = Gray100)
-                        ProfileListItem(icon = Icons.Outlined.Security, label = "Security Audit", onClick = { })
+                        ProfileListItem(icon = Icons.Outlined.Security, label = "Security Audit", onClick = onSecurityAuditClick)
                     } else if (role == "farmer") {
                         ProfileListItem(icon = Icons.Outlined.Agriculture, label = "My Farm", onClick = onMyFarmClick)
                         Divider(modifier = Modifier.padding(horizontal = 24.dp), thickness = 0.5.dp, color = Gray100)
-                        ProfileListItem(icon = Icons.Outlined.AccountBalance, label = "Bank Details", onClick = { })
+                        ProfileListItem(icon = Icons.Outlined.AccountBalance, label = "Bank Details", onClick = onBankDetailsClick)
                     } else {
-                        ProfileListItem(icon = Icons.Outlined.ShoppingBag, label = "My Orders", onClick = { })
+                        ProfileListItem(icon = Icons.Outlined.ShoppingBag, label = "My Orders", onClick = onMyOrdersClick)
+                        Divider(modifier = Modifier.padding(horizontal = 24.dp), thickness = 0.5.dp, color = Gray100)
+                        ProfileListItem(icon = Icons.Outlined.AccountBalance, label = "Payment Methods", onClick = onBankDetailsClick)
                     }
                     Divider(modifier = Modifier.padding(horizontal = 24.dp), thickness = 0.5.dp, color = Gray100)
                     ProfileListItem(icon = Icons.Outlined.Settings, label = "Settings", onClick = onSettingsClick)
@@ -149,7 +155,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Support Group
-            Text(
+            AgriText(
                 text = "SUPPORT",
                 style = MaterialTheme.typography.labelSmall,
                 color = Gray400,
@@ -166,7 +172,7 @@ fun ProfileScreen(
                 Column {
                     ProfileListItem(icon = Icons.Outlined.HelpOutline, label = "Help & Support", onClick = onHelpClick)
                     Divider(modifier = Modifier.padding(horizontal = 24.dp), thickness = 0.5.dp, color = Gray100)
-                    ProfileListItem(icon = Icons.Outlined.Info, label = "About AgriConnect", onClick = { })
+                    ProfileListItem(icon = Icons.Outlined.Info, label = "About AgriConnect", onClick = onAboutClick)
                 }
             }
 
@@ -180,6 +186,8 @@ fun ProfileScreen(
                 contentColor = Error,
                 shape = RoundedCornerShape(18.dp)
             )
+            
+            AgriFooter()
             
             Spacer(modifier = Modifier.height(80.dp))
         }

@@ -433,3 +433,58 @@ fun AgriText(
         modifier = modifier
     )
 }
+
+@Composable
+fun AgriFooter() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Divider(
+            modifier = Modifier
+                .fillMaxWidth(0.2f)
+                .padding(bottom = 16.dp),
+            color = Gray200,
+            thickness = 2.dp
+        )
+        
+        AgriText(
+            text = "AgriConnect",
+            style = MaterialTheme.typography.labelLarge,
+            color = Gray900,
+            fontWeight = FontWeight.Black
+        )
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        AgriText(
+            text = "MADE BY ZENWE TECHNOLOGIES 2026",
+            style = MaterialTheme.typography.labelSmall,
+            color = Gray400,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 1.sp
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Icon(
+                Icons.Default.Eco, 
+                null, 
+                tint = AgriPrimary.copy(alpha = 0.5f), 
+                modifier = Modifier.size(16.dp)
+            )
+            AgriText(
+                text = "0% MEDIATOR PROMISE",
+                style = MaterialTheme.typography.labelSmall,
+                color = AgriPrimary.copy(alpha = 0.8f),
+                fontWeight = FontWeight.Black
+            )
+        }
+    }
+}

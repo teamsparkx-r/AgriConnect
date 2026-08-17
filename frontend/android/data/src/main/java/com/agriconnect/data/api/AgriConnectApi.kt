@@ -182,6 +182,12 @@ interface AgriConnectApi {
         @Query("user_id") userId: String
     ): Response<Map<String, Any>>
 
+    @GET("api/buyer/saved")
+    suspend fun getSavedProducts(
+        @Header("Authorization") token: String,
+        @Query("user_id") userId: String
+    ): Response<SavedProductsResponse>
+
     // Admin Endpoints
     @GET("api/admin/dashboard")
     suspend fun getAdminDashboard(
@@ -414,4 +420,9 @@ data class MerchantSummary(
     @SerializedName("active_bookings") val activeBookings: Int,
     @SerializedName("completed_bookings") val completedBookings: Int,
     @SerializedName("amount_spent") val amountSpent: Double
+)
+
+data class SavedProductsResponse(
+    val success: Boolean,
+    val products: List<Product>
 )

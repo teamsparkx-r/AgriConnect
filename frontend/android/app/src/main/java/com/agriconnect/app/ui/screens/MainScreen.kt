@@ -32,7 +32,8 @@ fun MainScreen(
     authViewModel: AuthViewModel,
     content: @Composable (PaddingValues, () -> Unit) -> Unit
 ) {
-    val user by authViewModel.user
+    val userState by authViewModel.user
+    val user = userState // Use a local variable to ensure consistency during recomposition
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -60,14 +61,20 @@ fun MainScreen(
     }
 
     if (user != null) {
-        val userRole = user?.role?.lowercase() ?: "guest"
+        val userRole = user.role.lowercase().trim()
+        
+        // Debugging: verify role in logs
+        LaunchedEffect(userRole) {
+            android.util.Log.d("AgriConnect", "Active Shell Role: '$userRole' for user: ${user.fullName}")
+        }
+
         ModalNavigationDrawer(
             drawerState = drawerState,
             drawerContent = {
-                when (userRole) {
-                    "admin" -> AdminDrawerContent(currentRoute, onNavigate, user?.fullName ?: "Admin")
-                    "farmer" -> FarmerDrawerContent(currentRoute, onNavigate, user?.fullName ?: "Farmer")
-                    else -> MerchantDrawerContent(currentRoute, onNavigate, user?.fullName ?: "Merchant")
+                when {
+                    userRole == "admin" -> AdminDrawerContent(currentRoute, onNavigate, user.fullName)
+                    userRole == "farmer" -> FarmerDrawerContent(currentRoute, onNavigate, user.fullName)
+                    else -> MerchantDrawerContent(currentRoute, onNavigate, user.fullName)
                 }
             }
         ) {
@@ -444,8 +451,8 @@ fun AppBottomNav(
             modifier = Modifier.height(84.dp),
             windowInsets = WindowInsets(0)
         ) {
-            when (role) {
-                "admin" -> {
+            when {
+                role == "admin" -> {
                     NavButton(
                         active = currentRoute == Screen.AdminDashboard.route,
                         icon = if (currentRoute == Screen.AdminDashboard.route) Icons.Filled.Dashboard else Icons.Outlined.Dashboard,
@@ -471,7 +478,7 @@ fun AppBottomNav(
                         onClick = onAddClick // Use onAddClick for More as requested
                     )
                 }
-                "farmer" -> {
+                role == "farmer" -> {
                     NavButton(
                         active = currentRoute == Screen.FarmerDashboard.route,
                         icon = if (currentRoute == Screen.FarmerDashboard.route) Icons.Filled.GridView else Icons.Outlined.GridView,
@@ -511,7 +518,8 @@ fun AppBottomNav(
                         onClick = { onNavigate(Screen.FarmerSettings.route) }
                     )
                 }
-                else -> { // Merchant / Default
+                else -> { // Merchant / Buyer / Default
+                    val isMerchant = role == "merchant" || role == "buyer" || role == "guest"
                     NavButton(
                         active = currentRoute == Screen.MerchantPortal.route,
                         icon = if (currentRoute == Screen.MerchantPortal.route) Icons.Filled.Home else Icons.Outlined.Home,

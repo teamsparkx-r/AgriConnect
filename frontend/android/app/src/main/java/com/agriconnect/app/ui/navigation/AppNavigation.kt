@@ -94,6 +94,10 @@ sealed class Screen(val route: String) {
     object AdminSettings : Screen("admin/settings")
 
     object Legal : Screen("legal")
+    object HelpSupport : Screen("help")
+    object BankDetails : Screen("bank_details")
+    object Rating : Screen("rating")
+    object SecurityAudit : Screen("security_audit")
 }
 
 @Composable
@@ -116,7 +120,7 @@ fun AppNavigation(
             SplashScreen(onSplashFinished = {
                 val user = authViewModel.user.value
                 if (user != null && authViewModel.token.value != null) {
-                    val role = user.role.lowercase()
+                    val role = user.role.lowercase().trim()
                     val route = when (role) {
                         "farmer" -> Screen.FarmerDashboard.route
                         "admin" -> Screen.AdminDashboard.route
@@ -164,13 +168,14 @@ fun AppNavigation(
                 mobile = mobile,
                 viewModel = authViewModel,
                 onVerifySuccess = { userRole ->
-                    val normalizedRole = userRole.lowercase()
+                    val normalizedRole = userRole.lowercase().trim()
                     if (normalizedRole == "none") {
                         navController.navigate(Screen.RoleSelection.createRoute(mobile))
                     } else {
-                        val route = when (normalizedRole) {
-                            "farmer" -> Screen.FarmerDashboard.route
-                            "admin" -> Screen.AdminDashboard.route
+                        android.util.Log.d("AgriConnect", "VerifyOtp success. Role: '$normalizedRole'")
+                        val route = when {
+                            normalizedRole == "admin" -> Screen.AdminDashboard.route
+                            normalizedRole == "farmer" -> Screen.FarmerDashboard.route
                             else -> Screen.MerchantPortal.route
                         }
                         navController.navigate(route) {
@@ -313,7 +318,9 @@ fun AppNavigation(
                 },
                 onMyFarmClick = { navController.navigate(Screen.MyFarm.route) },
                 onSettingsClick = { navController.navigate(Screen.FarmerSettings.route) },
-                onHelpClick = { navController.navigate(Screen.FarmerHelp.route) }
+                onHelpClick = { navController.navigate(Screen.HelpSupport.route) },
+                onBankDetailsClick = { navController.navigate(Screen.BankDetails.route) },
+                onAboutClick = { navController.navigate(Screen.Legal.route) }
             )
         }
         composable(Screen.MyFarm.route) {
@@ -322,7 +329,8 @@ fun AppNavigation(
         composable(Screen.FarmerSettings.route) {
             SettingsScreen(
                 onBack = { navController.popBackStack() },
-                onNavigateToLegal = { navController.navigate(Screen.Legal.route) }
+                onNavigateToLegal = { navController.navigate(Screen.Legal.route) },
+                onNavigateToRating = { navController.navigate(Screen.Rating.route) }
             )
         }
         composable(Screen.FarmerHelp.route) {
@@ -407,7 +415,19 @@ fun AppNavigation(
                     navController.navigate(Screen.Splash.route) {
                         popUpTo(0) { inclusive = true }
                     }
-                }
+                },
+                onMyOrdersClick = { navController.navigate(Screen.MyBookings.route) },
+                onSettingsClick = { navController.navigate(Screen.MerchantSettings.route) },
+                onHelpClick = { navController.navigate(Screen.HelpSupport.route) },
+                onBankDetailsClick = { navController.navigate(Screen.BankDetails.route) },
+                onAboutClick = { navController.navigate(Screen.Legal.route) }
+            )
+        }
+        composable(Screen.MerchantSettings.route) {
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToLegal = { navController.navigate(Screen.Legal.route) },
+                onNavigateToRating = { navController.navigate(Screen.Rating.route) }
             )
         }
         composable(Screen.MerchantNotifications.route) {
@@ -478,7 +498,10 @@ fun AppNavigation(
                         popUpTo(0) { inclusive = true }
                     }
                 },
-                onSettingsClick = { navController.navigate(Screen.AdminSettings.route) }
+                onSettingsClick = { navController.navigate(Screen.AdminSettings.route) },
+                onHelpClick = { navController.navigate(Screen.HelpSupport.route) },
+                onSecurityAuditClick = { navController.navigate(Screen.SecurityAudit.route) },
+                onAboutClick = { navController.navigate(Screen.Legal.route) }
             )
         }
         composable(
@@ -544,8 +567,21 @@ fun AppNavigation(
             SettingsScreen(
                 onMenuClick = onMenuClick,
                 onBack = { navController.popBackStack() },
-                onNavigateToLegal = { navController.navigate(Screen.Legal.route) }
+                onNavigateToLegal = { navController.navigate(Screen.Legal.route) },
+                onNavigateToRating = { navController.navigate(Screen.Rating.route) }
             )
+        }
+        composable(Screen.HelpSupport.route) {
+            HelpSupportScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Screen.BankDetails.route) {
+            BankDetailsScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Screen.Rating.route) {
+            RatingScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Screen.SecurityAudit.route) {
+            SecurityAuditScreen(onBack = { navController.popBackStack() })
         }
     }
 }

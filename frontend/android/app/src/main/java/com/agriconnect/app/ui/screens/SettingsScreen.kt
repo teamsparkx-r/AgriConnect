@@ -25,6 +25,7 @@ fun SettingsScreen(
     onMenuClick: (() -> Unit)? = null,
     onBack: () -> Unit,
     onNavigateToLegal: () -> Unit = {},
+    onNavigateToRating: () -> Unit = {},
     translationViewModel: com.agriconnect.app.ui.viewmodel.TranslationViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     val context = LocalContext.current
@@ -120,12 +121,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             SettingsGroup(title = "GENERAL") {
-                ProfileListItem(icon = Icons.Outlined.StarRate, label = "Rate AgriConnect", onClick = { 
-                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=com.agriconnect.app"))
-                    try { context.startActivity(intent) } catch (e: Exception) {
-                        context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://play.google.com/store/apps/details?id=com.agriconnect.app")))
-                    }
-                })
+                ProfileListItem(icon = Icons.Outlined.StarRate, label = "Rate AgriConnect", onClick = onNavigateToRating)
                 Divider(modifier = Modifier.padding(horizontal = 24.dp), color = Gray100, thickness = 0.5.dp)
                 ProfileListItem(icon = Icons.Outlined.Share, label = "Share App", onClick = { 
                     val sendIntent = android.content.Intent().apply {
@@ -136,6 +132,8 @@ fun SettingsScreen(
                     context.startActivity(android.content.Intent.createChooser(sendIntent, null))
                 })
             }
+            
+            AgriFooter()
             
             Spacer(modifier = Modifier.height(40.dp))
         }
