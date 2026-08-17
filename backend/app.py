@@ -72,8 +72,12 @@ def seed_db():
             )
             db.add(farmer_profile)
             db.flush()
+        else:
+            # Force status to ACTIVE for demo farmer if already exists
+            existing_farmer.account_status = "active"
+            db.flush()
 
-            # Add demo products
+        # Add demo products
             products_data = [
                 {"name": "Organic Wheat", "category": ProductCategory.GRAINS, "qty": 1000, "price": 25.0, "img": "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800"},
                 {"name": "Red Tomatoes", "category": ProductCategory.VEGETABLES, "qty": 500, "price": 18.5, "img": "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800"},
@@ -119,7 +123,9 @@ def seed_db():
                 district="Mumbai"
             )
             db.add(buyer_profile)
-            print(f"Created demo buyer")
+        else:
+            # Force status to active for demo buyer
+            existing_buyer.account_status = "active"
 
         db.commit()
         print("Database seeded successfully!")

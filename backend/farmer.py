@@ -278,7 +278,8 @@ def get_farmer_dashboard(user_id: str, db: Session = Depends(get_db)):
 def create_product(request: ProductCreateRequest, user_id: str, db: Session = Depends(get_db)):
     """Create a new product listing"""
     user = db.query(User).filter(User.id == user_id).first()
-    if not user or user.account_status != "active":
+    status = user.account_status.lower() if user and user.account_status else ""
+    if not user or status != "active":
         raise HTTPException(status_code=403, detail="Account not approved for listing crops.")
 
     farmer = db.query(Farmer).filter(Farmer.user_id == user_id).first()
