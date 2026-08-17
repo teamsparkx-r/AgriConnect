@@ -15,7 +15,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.agriconnect.app.ui.components.AgriButton
 import com.agriconnect.app.ui.components.AgriTextField
-import com.agriconnect.app.ui.theme.Emerald600
+import com.agriconnect.app.ui.components.AgriText
+import com.agriconnect.app.ui.theme.AgriPrimary
+import com.agriconnect.app.ui.theme.AgriBackground
+import com.agriconnect.app.ui.theme.White
+import com.agriconnect.app.ui.theme.Gray600
 import com.agriconnect.app.ui.viewmodel.AuthViewModel
 
 @Composable
@@ -34,12 +38,12 @@ fun VerifyOtpScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(AgriBackground),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Green Header
+        // Unified Header
         Surface(
-            color = Emerald600,
+            color = AgriPrimary,
             modifier = Modifier.fillMaxWidth().statusBarsPadding(),
             shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
         ) {
@@ -47,7 +51,7 @@ fun VerifyOtpScreen(
                 modifier = Modifier.padding(top = 40.dp, bottom = 48.dp, start = 24.dp, end = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
+                AgriText(
                     text = "Verify Security Key",
                     style = MaterialTheme.typography.displayMedium,
                     color = Color.White,
@@ -56,7 +60,7 @@ fun VerifyOtpScreen(
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
-                Text(
+                AgriText(
                     text = "Enter the 6-digit code sent to +91 $mobile",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.8f),
@@ -99,7 +103,7 @@ fun VerifyOtpScreen(
                         modifier = Modifier.padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
+                        AgriText(
                             text = "No account found in our registry.",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.error,
@@ -107,10 +111,10 @@ fun VerifyOtpScreen(
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         TextButton(onClick = { onVerifySuccess("none") }) {
-                            Text(
+                            AgriText(
                                 text = "START REGISTRATION",
                                 style = MaterialTheme.typography.labelLarge,
-                                color = Emerald600,
+                                color = AgriPrimary,
                                 fontWeight = FontWeight.Black,
                                 letterSpacing = 1.sp
                             )
@@ -126,10 +130,11 @@ fun VerifyOtpScreen(
                     text = "Verify",
                     onClick = { 
                         viewModel.verifyOtp(mobile, otpCode) { userRole ->
-                            if (userRole == "none") {
+                            val normalized = userRole.lowercase()
+                            if (normalized == "none") {
                                 showNoAccount = true
                             } else {
-                                onVerifySuccess(userRole)
+                                onVerifySuccess(normalized)
                             }
                         }
                     },
@@ -143,10 +148,10 @@ fun VerifyOtpScreen(
             TextButton(
                 onClick = { /* Resend OTP */ }
             ) {
-                Text(
+                AgriText(
                     text = "RESEND SECURITY CODE",
                     style = MaterialTheme.typography.labelLarge,
-                    color = Emerald600,
+                    color = AgriPrimary,
                     fontWeight = FontWeight.Black
                 )
             }

@@ -116,7 +116,8 @@ fun AppNavigation(
             SplashScreen(onSplashFinished = {
                 val user = authViewModel.user.value
                 if (user != null && authViewModel.token.value != null) {
-                    val route = when (user.role) {
+                    val role = user.role.lowercase()
+                    val route = when (role) {
                         "farmer" -> Screen.FarmerDashboard.route
                         "admin" -> Screen.AdminDashboard.route
                         else -> Screen.MerchantPortal.route
@@ -163,10 +164,11 @@ fun AppNavigation(
                 mobile = mobile,
                 viewModel = authViewModel,
                 onVerifySuccess = { userRole ->
-                    if (userRole == "none") {
+                    val normalizedRole = userRole.lowercase()
+                    if (normalizedRole == "none") {
                         navController.navigate(Screen.RoleSelection.createRoute(mobile))
                     } else {
-                        val route = when (userRole) {
+                        val route = when (normalizedRole) {
                             "farmer" -> Screen.FarmerDashboard.route
                             "admin" -> Screen.AdminDashboard.route
                             else -> Screen.MerchantPortal.route
