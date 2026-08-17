@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, or_, desc
+from sqlalchemy import and_, or_, desc, func
 from models import (
     Buyer, User, Product, Booking, UserRole, ProductStatus, BookingStatus,
     Report, ReportReason, Notification, SavedProduct, Farmer, AccountStatus
@@ -243,10 +243,10 @@ def get_merchant_dashboard(user_id: str, db: Session = Depends(get_db)):
 
     total_bookings = db.query(Booking).filter(Booking.buyer_id == buyer.id).count()
     active_bookings = db.query(Booking).filter(
-        and_(Booking.buyer_id == buyer.id, Booking.status != BookingStatus.COMPLETED, Booking.status != BookingStatus.CANCELLED)
+        and_(Booking.buyer_id == buyer.id, func.lower(Booking.status) != "completed", func.lower(Booking.status) != "cancelled")
     ).count()
     completed_bookings = db.query(Booking).filter(
-        and_(Booking.buyer_id == buyer.id, Booking.status == BookingStatus.COMPLETED)
+        and_(Booking.buyer_id == buyer.id, func.lower(Booking.status) == "completed")
     ).count()
 
     # Amount spent is total bookings * 100 (connection fee)
@@ -393,7 +393,9 @@ def get_product_details(product_id: str, db: Session = Depends(get_db)):
     if not product:
         raise HTTPException(status_code=404, detail="Product listing no longer available.")
     
-    if product.status != ProductStatus.ACTIVE and product.status != ProductStatus.SOLD:
+    # Normalize product status for comparison
+    p_status = product.status.lower() if product.status else ""
+    if p_status != "active" and p_status != "sold":
         raise HTTPException(status_code=400, detail="Product is not available")
     
     return {
@@ -434,8 +436,10 @@ def create_booking(request: BookingRequest, user_id: str, db: Session = Depends(
         if not product:
             raise HTTPException(status_code=404, detail="Product listing no longer available.")
 
-        if product.status != ProductStatus.ACTIVE:
-            raise HTTPException(status_code=400, detail="This crop has already been reserved or is unavailable.")
+        # Normalize product status for comparison
+        p_status = product.status.lower() if product.status else ""
+        if p_status != "active":
+            raise HTTPException(status_code=400, detail=f"This crop is currently '{p_status}' and is unavailable for booking.")
         
         # Get buyer
         buyer = db.query(Buyer).filter(Buyer.user_id == user_id).first()
@@ -722,10 +726,10 @@ def mark_booking_completed(booking_id: str, user_id: str, db: Session = Depends(
     if booking.buyer_id != buyer.id:
         raise HTTPException(status_code=403, detail="Unauthorized")
     
-    if booking.status == BookingStatus.COMPLETED:
+    if booking.status.lower() == "completed":
         raise HTTPException(status_code=400, detail="Booking already completed")
     
-    booking.status = BookingStatus.COMPLETED
+    booking.status = "completed"
     booking.completed_at = datetime.utcnow()
     
     # Update farmer completed bookings count
@@ -893,7 +897,7 @@ def get_farmer_public_profile(farmer_id: str, db: Session = Depends(get_db)):
 
     # Get active products for this farmer
     products = db.query(Product).filter(
-        and_(Product.farmer_id == farmer.id, Product.status == ProductStatus.ACTIVE)
+        and_(Product.farmer_id == farmer.id, func.lower(Product.status) == "active")
     ).all()
 
     return {

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 from models import (
     User, Farmer, Buyer, Product, Booking, Report,
     UserRole, AccountStatus, ProductStatus, BookingStatus, ReportStatus,
@@ -27,11 +27,11 @@ class ReportResolveRequest(BaseModel):
 @router.get("/dashboard")
 def get_admin_dashboard(db: Session = Depends(get_db)):
     """Get comprehensive admin dashboard statistics"""
-    total_farmers = db.query(User).filter(User.role == UserRole.FARMER).count()
-    total_merchants = db.query(User).filter(User.role == UserRole.BUYER).count()
-    active_products = db.query(Product).filter(Product.status == ProductStatus.ACTIVE).count()
+    total_farmers = db.query(User).filter(func.lower(User.role) == "farmer").count()
+    total_merchants = db.query(User).filter(func.lower(User.role) == "buyer").count()
+    active_products = db.query(Product).filter(func.lower(Product.status) == "active").count()
     total_bookings = db.query(Booking).count()
-    pending_reports = db.query(Report).filter(Report.status == ReportStatus.SUBMITTED).count()
+    pending_reports = db.query(Report).filter(func.lower(Report.status) == "submitted").count()
 
     # Revenue is total bookings * 100 (connection fee)
     total_revenue = total_bookings * 100
@@ -85,9 +85,9 @@ def list_users(
     """List and filter users"""
     query = db.query(User)
     if role:
-        query = query.filter(User.role == role)
+        query = query.filter(func.lower(User.role) == role.lower())
     if status:
-        query = query.filter(User.account_status == status)
+        query = query.filter(func.lower(User.account_status) == status.lower())
 
     users = query.order_by(desc(User.created_at)).offset(skip).limit(limit).all()
     return {
@@ -123,7 +123,7 @@ def list_products(status: Optional[ProductStatus] = None, db: Session = Depends(
     """List all products"""
     query = db.query(Product)
     if status:
-        query = query.filter(Product.status == status)
+        query = query.filter(func.lower(Product.status) == status.lower())
 
     products = query.order_by(desc(Product.created_at)).all()
     return {
@@ -147,7 +147,7 @@ def list_reports(status: Optional[ReportStatus] = None, db: Session = Depends(ge
     """List all reports"""
     query = db.query(Report)
     if status:
-        query = query.filter(Report.status == status)
+        query = query.filter(func.lower(Report.status) == status.lower())
 
     reports = query.order_by(desc(Report.created_at)).all()
     return {
@@ -193,7 +193,7 @@ def get_user_detail(user_id: str, db: Session = Depends(get_db)):
         "email": user.email
     }
 
-    if user.role == UserRole.FARMER and user.farmer:
+    if user.role.lower() == "farmer" and user.farmer:
         detail["profile"] = {
             "state": user.farmer.state,
             "district": user.farmer.district,
@@ -203,7 +203,7 @@ def get_user_detail(user_id: str, db: Session = Depends(get_db)):
             "completed_bookings": user.farmer.completed_bookings,
             "listings_count": len(user.farmer.products)
         }
-    elif user.role == "buyer" and user.buyer:
+    elif user.role.lower() == "buyer" and user.buyer:
         detail["profile"] = {
             "state": user.buyer.state,
             "district": user.buyer.district,
@@ -224,7 +224,7 @@ def approve_user(user_id: str, db: Session = Depends(get_db)):
 
     # Create notification for user
     from models import Notification
-    message = "Your AgriConnect account has been approved. You can now list and sell your crops." if user.role == "farmer" else "Your AgriConnect account has been approved. You can now send enquiries and place orders."
+    message = "Your AgriConnect account has been approved. You can now list and sell your crops." if user.role.lower() == "farmer" else "Your AgriConnect account has been approved. You can now send enquiries and place orders."
     new_notif = Notification(
         user_id=user.id,
         title="Account Approved",

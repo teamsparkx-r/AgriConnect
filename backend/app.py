@@ -87,12 +87,12 @@ def seed_db():
                 new_p = Product(
                     farmer_id=farmer_profile.id,
                     name=p["name"],
-                    category=p["category"],
+                    category=p["category"].value if hasattr(p["category"], "value") else p["category"],
                     description=f"High quality {p['name']} directly from the farm.",
                     quantity=p["qty"],
                     unit="kg",
                     expected_price=p["price"],
-                    status=ProductStatus.ACTIVE,
+                    status="active",
                     images=p["img"],
                     state="Maharashtra",
                     district="Pune",
@@ -185,13 +185,14 @@ def get_platform_stats(db: Session = Depends(get_db)):
     """Get platform statistics"""
     from models import User, Product, Booking, ProductStatus, BookingStatus
     
+    from sqlalchemy import func
     total_users = db.query(User).count()
-    total_farmers = db.query(User).filter(User.role == UserRole.FARMER).count()
-    total_buyers = db.query(User).filter(User.role == UserRole.BUYER).count()
+    total_farmers = db.query(User).filter(func.lower(User.role) == "farmer").count()
+    total_buyers = db.query(User).filter(func.lower(User.role) == "buyer").count()
     total_products = db.query(Product).count()
-    active_products = db.query(Product).filter(Product.status == ProductStatus.ACTIVE).count()
+    active_products = db.query(Product).filter(func.lower(Product.status) == "active").count()
     total_bookings = db.query(Booking).count()
-    completed_bookings = db.query(Booking).filter(Booking.status == BookingStatus.COMPLETED).count()
+    completed_bookings = db.query(Booking).filter(func.lower(Booking.status) == "completed").count()
     
     return {
         "success": True,

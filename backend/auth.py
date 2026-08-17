@@ -264,10 +264,11 @@ class AuthService:
         if not AuthService.verify_password(password, user.password_hash):
             return False, "Invalid password", None
         
-        if user.account_status == AccountStatus.SUSPENDED:
+        u_status = user.account_status.lower() if user.account_status else ""
+        if u_status == "suspended":
             return False, "Account suspended", None
         
-        if user.account_status == AccountStatus.DELETED:
+        if u_status == "deleted":
             return False, "Account deleted", None
         
         return True, "Authentication successful", user
@@ -289,10 +290,11 @@ class AuthService:
         if not success:
             return False, message, None
         
-        if user.account_status == AccountStatus.SUSPENDED:
+        u_status = user.account_status.lower() if user.account_status else ""
+        if u_status == "suspended":
             return False, "Account suspended", None
         
-        if user.account_status == AccountStatus.DELETED:
+        if u_status == "deleted":
             return False, "Account deleted", None
         
         return True, "Authentication successful", user

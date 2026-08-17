@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, desc
+from sqlalchemy import and_, desc, func
 from models import (
     Farmer, User, Product, Booking, UserRole, ProductStatus, BookingStatus,
     ProductCategory, Language, AccountStatus, Notification
@@ -209,10 +209,10 @@ def get_farmer_dashboard(user_id: str, db: Session = Depends(get_db)):
     # Get statistics
     total_products = db.query(Product).filter(Product.farmer_id == farmer.id).count()
     active_products = db.query(Product).filter(
-        and_(Product.farmer_id == farmer.id, Product.status == ProductStatus.ACTIVE)
+        and_(Product.farmer_id == farmer.id, func.lower(Product.status) == "active")
     ).count()
     harvesting_soon = db.query(Product).filter(
-        and_(Product.farmer_id == farmer.id, Product.status == ProductStatus.SOLD) # Assuming SOLD or similar is harvesting soon for now or just filter by date
+        and_(Product.farmer_id == farmer.id, func.lower(Product.status) == "sold") # Assuming SOLD or similar is harvesting soon for now or just filter by date
     ).count()
     total_bookings = db.query(Booking).filter(Booking.farmer_id == farmer.id).count()
 
@@ -491,7 +491,7 @@ def get_farmer_bookings(user_id: str, status: Optional[str] = None, db: Session 
     query = db.query(Booking).filter(Booking.farmer_id == farmer.id)
     
     if status:
-        query = query.filter(Booking.status == status)
+        query = query.filter(func.lower(Booking.status) == status.lower())
     
     bookings = query.order_by(desc(Booking.created_at)).all()
     
