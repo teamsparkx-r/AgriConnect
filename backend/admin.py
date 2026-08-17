@@ -97,8 +97,8 @@ def list_users(
                 "id": u.id,
                 "mobile": u.mobile_number,
                 "full_name": u.full_name,
-                "role": u.role.value,
-                "status": u.account_status.value,
+                "role": u.role,
+                "status": u.account_status,
                 "verified": u.mobile_verified,
                 "created_at": u.created_at
             } for u in users
@@ -114,7 +114,7 @@ def update_user_status(user_id: str, request: UserStatusUpdate, db: Session = De
 
     user.account_status = request.status
     db.commit()
-    return {"success": True, "message": f"User status updated to {request.status.value}"}
+    return {"success": True, "message": f"User status updated to {request.status}"}
 
 # ==================== PRODUCT MANAGEMENT ====================
 
@@ -133,8 +133,8 @@ def list_products(status: Optional[ProductStatus] = None, db: Session = Depends(
                 "id": p.id,
                 "name": p.name,
                 "farmer": p.farmer.user.full_name,
-                "category": p.category.value,
-                "status": p.status.value,
+                "category": p.category,
+                "status": p.status,
                 "created_at": p.created_at
             } for p in products
         ]
@@ -156,8 +156,8 @@ def list_reports(status: Optional[ReportStatus] = None, db: Session = Depends(ge
             {
                 "id": r.id,
                 "reporter": r.reporter.user.full_name,
-                "reason": r.reason.value,
-                "status": r.status.value,
+                "reason": r.reason,
+                "status": r.status,
                 "created_at": r.created_at
             } for r in reports
         ]
@@ -186,8 +186,8 @@ def get_user_detail(user_id: str, db: Session = Depends(get_db)):
         "id": user.id,
         "mobile": user.mobile_number,
         "full_name": user.full_name,
-        "role": user.role.value,
-        "status": user.account_status.value,
+        "role": user.role,
+        "status": user.account_status,
         "verified": user.mobile_verified,
         "created_at": user.created_at,
         "email": user.email
@@ -203,11 +203,11 @@ def get_user_detail(user_id: str, db: Session = Depends(get_db)):
             "completed_bookings": user.farmer.completed_bookings,
             "listings_count": len(user.farmer.products)
         }
-    elif user.role == UserRole.BUYER and user.buyer:
+    elif user.role == "buyer" and user.buyer:
         detail["profile"] = {
             "state": user.buyer.state,
             "district": user.buyer.district,
-            "type": user.buyer.buyer_type.value,
+            "type": user.buyer.buyer_type,
             "bookings_count": user.buyer.bookings_count
         }
 
@@ -220,11 +220,11 @@ def approve_user(user_id: str, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    user.account_status = AccountStatus.ACTIVE
+    user.account_status = "active"
 
     # Create notification for user
     from models import Notification
-    message = "Your AgriConnect account has been approved. You can now list and sell your crops." if user.role == UserRole.FARMER else "Your AgriConnect account has been approved. You can now send enquiries and place orders."
+    message = "Your AgriConnect account has been approved. You can now list and sell your crops." if user.role == "farmer" else "Your AgriConnect account has been approved. You can now send enquiries and place orders."
     new_notif = Notification(
         user_id=user.id,
         title="Account Approved",
@@ -247,7 +247,7 @@ def reject_user(user_id: str, reason: Optional[str] = None, db: Session = Depend
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    user.account_status = AccountStatus.REJECTED
+    user.account_status = "rejected"
 
     # Create notification for user
     from models import Notification
@@ -279,12 +279,12 @@ def get_admin_product_detail(product_id: str, db: Session = Depends(get_db)):
         "product": {
             "id": product.id,
             "name": product.name,
-            "category": product.category.value,
+            "category": product.category,
             "description": product.description,
             "quantity": product.quantity,
             "unit": product.unit,
             "price": product.expected_price,
-            "status": product.status.value,
+            "status": product.status,
             "farmer": product.farmer.user.full_name,
             "farmer_mobile": product.farmer.user.mobile_number,
             "location": f"{product.district}, {product.state}",
@@ -299,7 +299,7 @@ def admin_delete_product(product_id: str, db: Session = Depends(get_db)):
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    product.status = ProductStatus.REMOVED
+    product.status = "removed"
     db.commit()
     return {"success": True, "message": "Product removed by admin"}
 
@@ -317,7 +317,7 @@ def list_all_bookings(db: Session = Depends(get_db)):
                 "product_name": b.product.name,
                 "buyer_name": b.buyer.user.full_name,
                 "farmer_name": b.farmer.user.full_name,
-                "status": b.status.value,
+                "status": b.status,
                 "created_at": b.created_at
             } for b in bookings
         ]

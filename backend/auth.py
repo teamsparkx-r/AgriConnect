@@ -220,9 +220,10 @@ class AuthService:
                     admin = db.query(User).filter(User.role == UserRole.ADMIN).first()
                     if admin:
                         notif_type = "new_farmer_registration" if role == UserRole.FARMER else "new_merchant_registration"
+                        role_name = role.value if hasattr(role, 'value') else role
                         new_notif = Notification(
                             user_id=admin.id,
-                            title=f"New {role.value.capitalize()} Registration",
+                            title=f"New {role_name.capitalize()} Registration",
                             message=f"{full_name} has registered and is waiting for approval.",
                             notification_type=notif_type,
                             related_id=user.id

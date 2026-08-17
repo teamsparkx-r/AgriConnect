@@ -26,7 +26,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail=message)
 
     # Generate tokens directly
-    access_token, _ = AuthService.create_access_token(user.id, user.role.value)
+    access_token, _ = AuthService.create_access_token(user.id, user.role)
     refresh_token, _ = AuthService.create_refresh_token(user.id)
 
     return {
@@ -36,10 +36,10 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
         "refresh_token": refresh_token,
         "user": {
             "id": user.id,
-            "role": user.role.value,
+            "role": user.role,
             "mobile": user.mobile_number,
             "full_name": user.full_name,
-            "account_status": user.account_status.value
+            "account_status": user.account_status
         }
     }
 
@@ -55,7 +55,7 @@ def verify_otp(request: OTPVerifyRequest, db: Session = Depends(get_db)):
     if not success:
         raise HTTPException(status_code=401, detail=message)
 
-    access_token, _ = AuthService.create_access_token(user.id, user.role.value)
+    access_token, _ = AuthService.create_access_token(user.id, user.role)
     refresh_token, _ = AuthService.create_refresh_token(user.id)
 
     return {
@@ -65,9 +65,9 @@ def verify_otp(request: OTPVerifyRequest, db: Session = Depends(get_db)):
         "refresh_token": refresh_token,
         "user": {
             "id": user.id,
-            "role": user.role.value,
+            "role": user.role,
             "mobile": user.mobile_number,
             "full_name": user.full_name,
-            "account_status": user.account_status.value
+            "account_status": user.account_status
         }
     }

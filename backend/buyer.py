@@ -140,7 +140,7 @@ def register_buyer(request: BuyerRegisterRequest, db: Session = Depends(get_db))
         db.refresh(user)
         
         # Generate tokens directly
-        access_token, _ = AuthService.create_access_token(user.id, user.role.value)
+        access_token, _ = AuthService.create_access_token(user.id, user.role)
         refresh_token, _ = AuthService.create_refresh_token(user.id)
         
         return {
@@ -150,10 +150,10 @@ def register_buyer(request: BuyerRegisterRequest, db: Session = Depends(get_db))
             "refresh_token": refresh_token,
             "user": {
                 "id": user.id,
-                "role": user.role.value,
+                "role": user.role,
                 "mobile": user.mobile_number,
                 "full_name": user.full_name,
-                "account_status": user.account_status.value
+                "account_status": user.account_status
             }
         }
     except Exception as e:
@@ -176,7 +176,7 @@ def verify_otp(request: OTPRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail=message)
     
     # Generate tokens
-    access_token, access_expires = AuthService.create_access_token(user.id, user.role.value)
+    access_token, access_expires = AuthService.create_access_token(user.id, user.role)
     refresh_token, refresh_expires = AuthService.create_refresh_token(user.id)
     
     return {
@@ -186,13 +186,13 @@ def verify_otp(request: OTPRequest, db: Session = Depends(get_db)):
         "refresh_token": refresh_token,
         "user": {
             "id": user.id,
-            "role": user.role.value,
+            "role": user.role,
             "mobile": user.mobile_number,
             "full_name": user.full_name,
-            "account_status": user.account_status.value
+            "account_status": user.account_status
         },
         "user_id": user.id,
-        "role": user.role.value
+        "role": user.role
     }
 
 @router.post("/login")
@@ -208,7 +208,7 @@ def login_buyer(request: BuyerLoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail=message)
     
     # Generate tokens
-    access_token, access_expires = AuthService.create_access_token(user.id, user.role.value)
+    access_token, access_expires = AuthService.create_access_token(user.id, user.role)
     refresh_token, refresh_expires = AuthService.create_refresh_token(user.id)
     
     buyer = db.query(Buyer).filter(Buyer.user_id == user.id).first()
@@ -220,14 +220,14 @@ def login_buyer(request: BuyerLoginRequest, db: Session = Depends(get_db)):
         "refresh_token": refresh_token,
         "user": {
             "id": user.id,
-            "role": user.role.value,
+            "role": user.role,
             "mobile": user.mobile_number,
             "full_name": user.full_name,
-            "account_status": user.account_status.value
+            "account_status": user.account_status
         },
         "user_id": user.id,
         "buyer_id": buyer.id if buyer else None,
-        "role": user.role.value
+        "role": user.role
     }
 
 @router.get("/dashboard/{user_id}")
@@ -261,7 +261,7 @@ def get_merchant_dashboard(user_id: str, db: Session = Depends(get_db)):
 
     return {
         "success": True,
-        "account_status": user.account_status.value,
+        "account_status": user.account_status,
         "summary": {
             "total_bookings": total_bookings,
             "active_bookings": active_bookings,
@@ -273,7 +273,7 @@ def get_merchant_dashboard(user_id: str, db: Session = Depends(get_db)):
                 "id": f"AGR-{b.booking_id}",
                 "product": b.product.name if b.product else "Unknown Product",
                 "farmer": b.farmer.user.full_name if b.farmer and b.farmer.user else "Verified Farmer",
-                "status": b.status.value if hasattr(b.status, 'value') else str(b.status),
+                "status": b.status if isinstance(b.status, str) else str(b.status),
                 "color": "bg-green-100 text-green-700" if b.status == BookingStatus.CONFIRMED else "bg-blue-100 text-blue-700"
             } for b in recent_bookings
         ],
@@ -300,7 +300,7 @@ def get_buyer_home(
                 {
                     "id": p.id,
                     "name": p.name,
-                    "category": p.category.value,
+                    "category": p.category,
                     "quantity": p.quantity,
                     "unit": p.unit,
                     "expected_price": p.expected_price,
@@ -308,7 +308,7 @@ def get_buyer_home(
                     "district": p.district or (p.farmer.district if p.farmer else "Unknown"),
                     "state": p.state or (p.farmer.state if p.farmer else "Unknown"),
                     "images": p.images,
-                    "status": p.status.value,
+                    "status": p.status,
                     "farmer_id": p.farmer_id,
                     "farmer_id_alias": f"FARMER-{p.farmer_id[:8].upper()}",
                     "created_at": p.created_at.isoformat()
@@ -363,7 +363,7 @@ def search_products(
                 {
                     "id": p.id,
                     "name": p.name,
-                    "category": p.category.value,
+                    "category": p.category,
                     "quantity": p.quantity,
                     "unit": p.unit,
                     "expected_price": p.expected_price,
@@ -371,7 +371,7 @@ def search_products(
                     "district": p.district or (p.farmer.district if p.farmer else "Unknown"),
                     "state": p.state or (p.farmer.state if p.farmer else "Unknown"),
                     "images": p.images,
-                    "status": p.status.value,
+                    "status": p.status,
                     "farmer_id": p.farmer_id,
                     "farmer_id_alias": f"FARMER-{p.farmer_id[:8].upper()}"
                 }
@@ -398,7 +398,7 @@ def get_product_details(product_id: str, db: Session = Depends(get_db)):
         "product": {
             "id": product.id,
             "name": product.name,
-            "category": product.category.value,
+            "category": product.category,
             "description": product.description,
             "quantity": product.quantity,
             "unit": product.unit,
@@ -407,7 +407,7 @@ def get_product_details(product_id: str, db: Session = Depends(get_db)):
             "district": product.district or (product.farmer.district if product.farmer else "Unknown"),
             "state": product.state or (product.farmer.state if product.farmer else "Unknown"),
             "images": product.images,
-            "status": product.status.value,
+            "status": product.status,
             "farmer_id_alias": f"FARMER-{product.farmer_id[:8].upper()}",
             "is_anonymous": True
         }
@@ -490,7 +490,7 @@ def create_booking(request: BookingRequest, user_id: str, db: Session = Depends(
             "booking": {
                 "booking_id": booking.booking_id,
                 "product_id": product.id,
-                "status": booking.status.value,
+                "status": booking.status,
                 "created_at": booking.created_at.isoformat()
             }
         }
@@ -524,7 +524,7 @@ def get_buyer_bookings(user_id: str, db: Session = Depends(get_db)):
                 "product_name": b.product.name,
                 "farmer_name": b.farmer.user.full_name,
                 "farmer_mobile": b.farmer.user.mobile_number,
-                "status": b.status.value,
+                "status": b.status,
                 "created_at": b.created_at.isoformat(),
                 "contact_unlocked_at": b.contact_unlocked_at.isoformat() if b.contact_unlocked_at else None,
                 "completed_at": b.completed_at.isoformat() if b.completed_at else None
@@ -569,7 +569,7 @@ def get_booking_details(booking_id: str, user_id: str, db: Session = Depends(get
             "farm_address": booking.farmer.farm_address,
             "latitude": booking.farmer.latitude,
             "longitude": booking.farmer.longitude,
-            "status": booking.status.value,
+            "status": booking.status,
             "created_at": booking.created_at.isoformat(),
             "contact_unlocked_at": booking.contact_unlocked_at.isoformat() if booking.contact_unlocked_at else None,
             "completed_at": booking.completed_at.isoformat() if booking.completed_at else None
@@ -723,7 +723,7 @@ def mark_booking_completed(booking_id: str, user_id: str, db: Session = Depends(
         "success": True,
         "message": "Booking marked as completed",
         "booking_id": booking.booking_id,
-        "status": booking.status.value
+        "status": booking.status
     }
 
 @router.post("/report")
@@ -786,12 +786,12 @@ def get_buyer_profile(user_id: str, db: Session = Depends(get_db)):
             "full_name": user.full_name,
             "mobile_number": user.mobile_number,
             "email": user.email,
-            "buyer_type": buyer.buyer_type.value if buyer else None,
+            "buyer_type": buyer.buyer_type if buyer else None,
             "state": buyer.state if buyer else None,
             "district": buyer.district if buyer else None,
-            "preferred_language": buyer.preferred_language.value if buyer else None,
+            "preferred_language": buyer.preferred_language if buyer else None,
             "bookings_count": buyer.bookings_count if buyer else 0,
-            "account_status": user.account_status.value,
+            "account_status": user.account_status,
             "created_at": user.created_at.isoformat()
         }
     }
@@ -898,7 +898,7 @@ def get_farmer_public_profile(farmer_id: str, db: Session = Depends(get_db)):
                 {
                     "id": p.id,
                     "name": p.name,
-                    "category": p.category.value,
+                    "category": p.category,
                     "quantity": p.quantity,
                     "unit": p.unit,
                     "expected_price": p.expected_price,
@@ -966,7 +966,7 @@ def get_saved_products(user_id: str, db: Session = Depends(get_db)):
             {
                 "id": s.product.id,
                 "name": s.product.name,
-                "category": s.product.category.value,
+                "category": s.product.category,
                 "expected_price": s.product.expected_price,
                 "quantity": s.product.quantity,
                 "unit": s.product.unit,

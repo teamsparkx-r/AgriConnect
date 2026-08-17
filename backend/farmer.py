@@ -117,7 +117,7 @@ def register_farmer(request: FarmerRegisterRequest, db: Session = Depends(get_db
         db.refresh(user)
         
         # Generate tokens directly
-        access_token, _ = AuthService.create_access_token(user.id, user.role.value)
+        access_token, _ = AuthService.create_access_token(user.id, user.role)
         refresh_token, _ = AuthService.create_refresh_token(user.id)
         
         return {
@@ -127,10 +127,10 @@ def register_farmer(request: FarmerRegisterRequest, db: Session = Depends(get_db
             "refresh_token": refresh_token,
             "user": {
                 "id": user.id,
-                "role": user.role.value,
+                "role": user.role,
                 "mobile": user.mobile_number,
                 "full_name": user.full_name,
-                "account_status": user.account_status.value
+                "account_status": user.account_status
             }
         }
     except Exception as e:
@@ -153,7 +153,7 @@ def verify_otp(request: OTPRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail=message)
     
     # Generate tokens
-    access_token, access_expires = AuthService.create_access_token(user.id, user.role.value)
+    access_token, access_expires = AuthService.create_access_token(user.id, user.role)
     refresh_token, refresh_expires = AuthService.create_refresh_token(user.id)
     
     return {
@@ -162,7 +162,7 @@ def verify_otp(request: OTPRequest, db: Session = Depends(get_db)):
         "access_token": access_token,
         "refresh_token": refresh_token,
         "user_id": user.id,
-        "role": user.role.value
+        "role": user.role
     }
 
 @router.post("/login")
@@ -178,7 +178,7 @@ def login_farmer(request: FarmerLoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail=message)
     
     # Generate tokens
-    access_token, access_expires = AuthService.create_access_token(user.id, user.role.value)
+    access_token, access_expires = AuthService.create_access_token(user.id, user.role)
     refresh_token, refresh_expires = AuthService.create_refresh_token(user.id)
     
     farmer = db.query(Farmer).filter(Farmer.user_id == user.id).first()
@@ -190,8 +190,8 @@ def login_farmer(request: FarmerLoginRequest, db: Session = Depends(get_db)):
         "refresh_token": refresh_token,
         "user_id": user.id,
         "farmer_id": farmer.id if farmer else None,
-        "role": user.role.value,
-        "account_status": user.account_status.value
+        "role": user.role,
+        "account_status": user.account_status
     }
 
 @router.get("/dashboard")
@@ -228,7 +228,7 @@ def get_farmer_dashboard(user_id: str, db: Session = Depends(get_db)):
 
     return {
         "success": True,
-        "account_status": user.account_status.value,
+        "account_status": user.account_status,
         "stats": {
             "total_products": total_products,
             "active_products": active_products,
@@ -241,7 +241,7 @@ def get_farmer_dashboard(user_id: str, db: Session = Depends(get_db)):
             {
                 "id": p.id,
                 "name": p.name,
-                "status": p.status.value,
+                "status": p.status,
                 "quantity": p.quantity,
                 "unit": p.unit,
                 "expected_price": p.expected_price,
@@ -256,7 +256,7 @@ def get_farmer_dashboard(user_id: str, db: Session = Depends(get_db)):
                 "id": b.booking_id,
                 "product_name": b.product.name if b.product else "Unknown Product",
                 "buyer_name": b.buyer.user.full_name if b.buyer and b.buyer.user else "Anonymous Buyer",
-                "status": b.status.value if hasattr(b.status, 'value') else str(b.status),
+                "status": b.status if isinstance(b.status, str) else str(b.status),
                 "created_at": b.created_at
             } for b in recent_bookings
         ],
@@ -316,7 +316,7 @@ def create_product(request: ProductCreateRequest, user_id: str, db: Session = De
             "success": True,
             "message": "Product created successfully",
             "product_id": product.id,
-            "status": product.status.value
+            "status": product.status,
         }
     except Exception as e:
         db.rollback()
@@ -340,11 +340,11 @@ def get_farmer_products(user_id: str, db: Session = Depends(get_db)):
             {
                 "id": p.id,
                 "name": p.name,
-                "category": p.category.value,
+                "category": p.category,
                 "quantity": p.quantity,
                 "unit": p.unit,
                 "expected_price": p.expected_price,
-                "status": p.status.value,
+                "status": p.status,
                 "harvest_date": p.harvest_date.isoformat() if p.harvest_date else None,
                 "images": p.images,
                 "created_at": p.created_at.isoformat(),
@@ -372,13 +372,13 @@ def get_product_details(product_id: str, user_id: str, db: Session = Depends(get
         "product": {
             "id": product.id,
             "name": product.name,
-            "category": product.category.value,
+            "category": product.category,
             "description": product.description,
             "quantity": product.quantity,
             "unit": product.unit,
             "expected_price": product.expected_price,
             "harvest_date": product.harvest_date.isoformat() if product.harvest_date else None,
-            "status": product.status.value,
+            "status": product.status,
             "images": product.images,
             "created_at": product.created_at.isoformat(),
             "updated_at": product.updated_at.isoformat()
@@ -450,7 +450,7 @@ def publish_product(product_id: str, user_id: str, db: Session = Depends(get_db)
     return {
         "success": True,
         "message": "Product published successfully",
-        "status": product.status.value
+        "status": product.status,
     }
 
 @router.delete("/products/{product_id}")
@@ -496,7 +496,7 @@ def get_farmer_bookings(user_id: str, status: Optional[str] = None, db: Session 
                 "product_name": b.product.name if b.product else "Unknown Product",
                 "buyer_id_alias": f"MERCH-{b.buyer_id[:6].upper()}" if b.buyer_id else "UNKNOWN",
                 "buyer_district": b.buyer.district if b.buyer else "Unknown",
-                "status": b.status.value if hasattr(b.status, 'value') else str(b.status),
+                "status": b.status if isinstance(b.status, str) else str(b.status),
                 "created_at": b.created_at.isoformat() if b.created_at else ""
             }
             for b in bookings
@@ -531,9 +531,9 @@ def get_booking_details(booking_id: str, user_id: str, db: Session = Depends(get
             "requested_quantity": booking.requested_quantity,
             "negotiated_price": booking.negotiated_price,
             "buyer_id_alias": f"MERCH-{booking.buyer_id[:6].upper()}",
-            "buyer_type": booking.buyer.buyer_type.value,
+            "buyer_type": booking.buyer.buyer_type,
             "buyer_district": booking.buyer.district,
-            "status": booking.status.value,
+            "status": booking.status,
             "created_at": booking.created_at.isoformat()
         }
     }
@@ -686,7 +686,7 @@ def get_farmer_profile(user_id: str, db: Session = Depends(get_db)):
             "share_coordinates": farmer.share_coordinates if farmer else None,
             "completed_bookings": farmer.completed_bookings if farmer else 0,
             "rating": farmer.rating if farmer else 0,
-            "account_status": user.account_status.value,
+            "account_status": user.account_status,
             "created_at": user.created_at.isoformat()
         }
     }
