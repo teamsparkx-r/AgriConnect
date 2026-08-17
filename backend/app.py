@@ -58,6 +58,7 @@ def seed_db():
                 password_hash=AuthService.hash_password("Farmer123!"),
                 full_name="Demo Farmer",
                 role=UserRole.FARMER,
+                account_status=AccountStatus.ACTIVE,
                 mobile_verified=True
             )
             db.add(farmer_user)
@@ -106,6 +107,7 @@ def seed_db():
                 password_hash=AuthService.hash_password("Buyer123!"),
                 full_name="Demo Buyer",
                 role=UserRole.BUYER,
+                account_status=AccountStatus.ACTIVE,
                 mobile_verified=True
             )
             db.add(buyer_user)

@@ -421,7 +421,7 @@ def create_booking(request: BookingRequest, user_id: str, db: Session = Depends(
     """Stage 4: Book crop (Anonymously mediated by AgriConnect)"""
     try:
         user = db.query(User).filter(User.id == user_id).first()
-        if not user or user.account_status != AccountStatus.ACTIVE:
+        if not user or user.account_status != "active":
             raise HTTPException(status_code=403, detail="Account not approved for purchase enquiries.")
 
         product = db.query(Product).filter(Product.id == request.product_id).first()
