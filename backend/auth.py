@@ -204,8 +204,8 @@ class AuthService:
                 email=email,
                 password_hash=AuthService.hash_password(password),
                 full_name=full_name,
-                role=role,
-                account_status=status,
+                role=role.value if hasattr(role, 'value') else role,
+                account_status=status.value if hasattr(status, 'value') else status,
                 mobile_verified=verified
             )
 
