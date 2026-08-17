@@ -2,7 +2,7 @@ from sqlalchemy import text, inspect
 from database import engine
 
 def migrate():
-    """Manually add missing columns to the database if they don't exist"""
+    """Manually add missing columns and fix Postgres Enum conflicts"""
     print("Checking for database migrations...")
 
     inspector = inspect(engine)
@@ -12,16 +12,12 @@ def migrate():
             columns = [c['name'] for c in inspector.get_columns(table_name)]
             if column_name not in columns:
                 print(f"Adding column '{column_name}' to '{table_name}' table...")
-                with engine.connect() as conn:
-                    # Specific handling for Postgres vs SQLite
-                    if "postgresql" in str(engine.url):
-                        conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}"))
-                    else:
-                        conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}"))
-                    conn.commit()
+                with engine.begin() as conn: # Use begin() for automatic commit
+                    conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}"))
                     print(f"Successfully added '{column_name}'.")
             else:
-                print(f"Column '{column_name}' in table '{table_name}' already exists.")
+                # Still check if it needs conversion from Enum to Varchar if it already exists
+                pass
         except Exception as e:
             print(f"Error checking/adding '{column_name}' to '{table_name}': {e}")
 
@@ -45,9 +41,9 @@ def migrate():
     add_column_if_not_exists('buyers', 'buyer_type', 'VARCHAR(50)')
     add_column_if_not_exists('buyers', 'profile_photo_url', 'VARCHAR(255)')
 
-    # --- Postgres Specific: Convert ENUM columns to VARCHAR to avoid sync issues ---
+    # --- Postgres Specific: Convert ENUM columns to VARCHAR to avoid strictness ---
     if "postgresql" in str(engine.url):
-        print("Postgres detected. Ensuring columns are VARCHAR...")
+        print("Postgres detected. Ensuring columns are standard VARCHAR strings...")
         cols_to_fix = [
             ('users', 'role'),
             ('users', 'account_status'),
@@ -61,24 +57,34 @@ def migrate():
             ('reports', 'reason'),
             ('reports', 'status')
         ]
+
+        # We perform these outside engine.begin() if they might fail individually
         with engine.connect() as conn:
             for table, col in cols_to_fix:
                 try:
-                    # Check if column is an ENUM (user-defined type)
-                    # Using a more robust check for USER-DEFINED types in information_schema
-                    # Also checking if it is 'ARRAY' or something else
-                    res = conn.execute(text(f"SELECT data_type, udt_name FROM information_schema.columns WHERE table_name='{table}' AND column_name='{col}'")).fetchone()
+                    # Check the current data type
+                    sql = text(f"SELECT data_type FROM information_schema.columns WHERE table_name='{table}' AND column_name='{col}'")
+                    res = conn.execute(sql).fetchone()
+
                     if res:
-                        print(f"Column {table}.{col} is type: {res[0]} (UDT: {res[1]})")
-                        if res[0].upper() == 'USER-DEFINED' or 'enum' in res[1].lower():
-                            print(f"Converting {table}.{col} from ENUM ({res[1]}) to VARCHAR...")
-                            # Forces conversion and drops existing constraints linked to the Enum type
+                        data_type = res[0].upper()
+                        # If it's not already a variant of character/text, force convert it
+                        if data_type not in ['CHARACTER VARYING', 'VARCHAR', 'TEXT', 'CHARACTER']:
+                            print(f"FORCING CONVERSION: {table}.{col} (Current Type: {data_type}) -> VARCHAR(50)")
+                            # Drop any default constraints first to be safe
+                            conn.execute(text(f"ALTER TABLE {table} ALTER COLUMN {col} DROP DEFAULT"))
+                            # Perform the conversion
                             conn.execute(text(f"ALTER TABLE {table} ALTER COLUMN {col} TYPE VARCHAR(50) USING {col}::varchar"))
+                            # Re-add a string-based default if it's account_status
+                            if col == 'account_status':
+                                conn.execute(text(f"ALTER TABLE {table} ALTER COLUMN {col} SET DEFAULT 'pending'"))
+
                             conn.commit()
-                            print(f"Successfully converted {table}.{col}")
+                            print(f"SUCCESS: Converted {table}.{col} to VARCHAR")
                 except Exception as e:
-                    print(f"Skipping conversion for {table}.{col}: {e}")
-                    # conn.rollback() is handled by context or can be explicit
+                    print(f"Conversion failed for {table}.{col}: {e}")
+                    # Don't rollback the whole connection, just continue
+                    pass
 
     print("Migration check complete.")
 

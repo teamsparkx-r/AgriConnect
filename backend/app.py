@@ -41,8 +41,8 @@ def seed_db():
                 mobile_number=ADMIN_MOBILE,
                 password_hash=AuthService.hash_password(str(ADMIN_PASSWORD)),
                 full_name="AgriConnect Admin",
-                role=UserRole.ADMIN,
-                account_status=AccountStatus.ACTIVE
+                role="admin",
+                account_status="active"
             )
             db.add(admin_user)
             db.flush()
@@ -57,8 +57,8 @@ def seed_db():
                 mobile_number="8888888888",
                 password_hash=AuthService.hash_password("Farmer123!"),
                 full_name="Demo Farmer",
-                role=UserRole.FARMER,
-                account_status=AccountStatus.ACTIVE,
+                role="farmer",
+                account_status="active",
                 mobile_verified=True
             )
             db.add(farmer_user)
@@ -110,8 +110,8 @@ def seed_db():
                 mobile_number="7777777777",
                 password_hash=AuthService.hash_password("Buyer123!"),
                 full_name="Demo Buyer",
-                role=UserRole.BUYER,
-                account_status=AccountStatus.ACTIVE,
+                role="buyer",
+                account_status="active",
                 mobile_verified=True
             )
             db.add(buyer_user)
