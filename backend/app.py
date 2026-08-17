@@ -52,6 +52,7 @@ def seed_db():
         farmer_user_id = "5737b51e-8640-48c2-bdaa-63fbba1b70a7"
         existing_farmer = db.query(User).filter(User.id == farmer_user_id).first()
         if not existing_farmer:
+            print("Seeding demo farmer user...")
             farmer_user = User(
                 id=farmer_user_id,
                 mobile_number="8888888888",
@@ -76,12 +77,22 @@ def seed_db():
             # Force status to ACTIVE for demo farmer if already exists
             existing_farmer.account_status = "active"
             farmer_profile = db.query(Farmer).filter(Farmer.user_id == farmer_user_id).first()
+            if not farmer_profile:
+                print("Farmer profile missing for existing demo user. Creating it...")
+                farmer_profile = Farmer(
+                    user_id=existing_farmer.id,
+                    state="Maharashtra",
+                    district="Pune",
+                    village="Demo Village"
+                )
+                db.add(farmer_profile)
             db.flush()
 
         # Update/Reset demo products
         if farmer_profile:
             # Clear old products for this farmer to avoid duplicates
-            db.query(Product).filter(Product.farmer_id == farmer_profile.id).delete()
+            count_deleted = db.query(Product).filter(Product.farmer_id == farmer_profile.id).delete()
+            print(f"Deleted {count_deleted} old products for demo farmer")
             db.flush()
 
             crops_pool = [
@@ -150,8 +161,7 @@ def seed_db():
 
             print(f"Reset and Seeded 60 products for demo farmer")
             print(f"Created demo farmer and products")
-
-        # 3. Create Demo Buyer
+      # 3. Create Demo Buyer
         buyer_user_id = "c5393115-bd07-4f3e-aee3-89d3d97745b9"
         existing_buyer = db.query(User).filter(User.id == buyer_user_id).first()
         if not existing_buyer:
