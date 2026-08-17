@@ -75,9 +75,15 @@ def seed_db():
         else:
             # Force status to ACTIVE for demo farmer if already exists
             existing_farmer.account_status = "active"
+            farmer_profile = db.query(Farmer).filter(Farmer.user_id == farmer_user_id).first()
             db.flush()
 
-        # Add demo products
+        # Update/Reset demo products
+        if farmer_profile:
+            # Clear old products for this farmer to avoid duplicates
+            db.query(Product).filter(Product.farmer_id == farmer_profile.id).delete()
+            db.flush()
+
             crops_pool = [
                 ("Organic Wheat", ProductCategory.GRAINS, 25.0, "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800"),
                 ("Red Tomatoes", ProductCategory.VEGETABLES, 18.5, "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800"),
@@ -142,7 +148,7 @@ def seed_db():
                 )
                 db.add(new_p)
 
-            print(f"Seeded 60 products for demo farmer")
+            print(f"Reset and Seeded 60 products for demo farmer")
             print(f"Created demo farmer and products")
 
         # 3. Create Demo Buyer
