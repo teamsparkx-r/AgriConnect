@@ -60,10 +60,11 @@ fun MainScreen(
     }
 
     if (user != null) {
+        val userRole = user?.role?.lowercase() ?: "guest"
         ModalNavigationDrawer(
             drawerState = drawerState,
             drawerContent = {
-                when (user?.role) {
+                when (userRole) {
                     "admin" -> AdminDrawerContent(currentRoute, onNavigate, user?.fullName ?: "Admin")
                     "farmer" -> FarmerDrawerContent(currentRoute, onNavigate, user?.fullName ?: "Farmer")
                     else -> MerchantDrawerContent(currentRoute, onNavigate, user?.fullName ?: "Merchant")
@@ -76,11 +77,11 @@ fun MainScreen(
                 bottomBar = {
                     if (showBottomNav) {
                         AppBottomNav(
-                            role = user?.role ?: "guest",
+                            role = userRole,
                             currentRoute = currentRoute,
                             onNavigate = onNavigate,
                             onAddClick = {
-                                if (user?.role == "farmer") {
+                                if (userRole == "farmer") {
                                     navController.navigate(Screen.AddProduct.route)
                                 } else {
                                     scope.launch { drawerState.open() }
