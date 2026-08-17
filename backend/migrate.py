@@ -45,17 +45,37 @@ def migrate():
     add_column_if_not_exists('buyers', 'buyer_type', 'VARCHAR(50)')
     add_column_if_not_exists('buyers', 'profile_photo_url', 'VARCHAR(255)')
 
-    # --- Special handling for Postgres Enum updates ---
+    # --- Postgres Specific: Convert ENUM columns to VARCHAR to avoid sync issues ---
     if "postgresql" in str(engine.url):
-        try:
-            with engine.connect() as conn:
-                # Add 'MERCHANT' to enum if it doesn't exist
-                # Note: Postgres doesn't allow ALTER TYPE in a transaction block in older versions,
-                # but we'll try it here. Usually requires 'ALTER TYPE buyertype ADD VALUE IF NOT EXISTS 'merchant''
-                # Since buying_type column might be a VARCHAR or ENUM, we handle it carefully.
-                pass
-        except Exception as e:
-            print(f"Enum update check failed: {e}")
+        print("Postgres detected. Ensuring columns are VARCHAR...")
+        cols_to_fix = [
+            ('users', 'role'),
+            ('users', 'account_status'),
+            ('farmers', 'preferred_language'),
+            ('buyers', 'buyer_type'),
+            ('buyers', 'preferred_language'),
+            ('products', 'category'),
+            ('products', 'status'),
+            ('bookings', 'status'),
+            ('negotiation_history', 'status'),
+            ('reports', 'reason'),
+            ('reports', 'status')
+        ]
+        with engine.connect() as conn:
+            for table, col in cols_to_fix:
+                try:
+                    # Check if column is an ENUM (user-defined type)
+                    # Using a more robust check for USER-DEFINED types in information_schema
+                    res = conn.execute(text(f"SELECT data_type FROM information_schema.columns WHERE table_name='{table}' AND column_name='{col}'")).fetchone()
+                    if res and res[0].upper() == 'USER-DEFINED':
+                        print(f"Converting {table}.{col} from ENUM to VARCHAR...")
+                        # Forces conversion and drops existing constraints linked to the Enum type
+                        conn.execute(text(f"ALTER TABLE {table} ALTER COLUMN {col} TYPE VARCHAR(50) USING {col}::varchar"))
+                        conn.commit()
+                        print(f"Successfully converted {table}.{col}")
+                except Exception as e:
+                    print(f"Skipping conversion for {table}.{col}: {e}")
+                    # conn.rollback() is handled by context or can be explicit
 
     print("Migration check complete.")
 
