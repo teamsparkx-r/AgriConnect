@@ -586,7 +586,17 @@ def get_booking_details(booking_id: str, user_id: str, db: Session = Depends(get
             "status": booking.status,
             "created_at": booking.created_at.isoformat(),
             "contact_unlocked_at": booking.contact_unlocked_at.isoformat() if booking.contact_unlocked_at else None,
-            "completed_at": booking.completed_at.isoformat() if booking.completed_at else None
+            "completed_at": booking.completed_at.isoformat() if booking.completed_at else None,
+            "negotiations": [
+                {
+                    "sender_role": n.sender.role,
+                    "quantity": n.quantity,
+                    "price": n.price,
+                    "message": n.message,
+                    "status": n.status,
+                    "created_at": n.created_at.isoformat()
+                } for n in sorted(booking.negotiations, key=lambda x: x.created_at)
+            ]
         }
     }
 

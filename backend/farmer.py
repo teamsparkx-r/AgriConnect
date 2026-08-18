@@ -541,7 +541,17 @@ def get_booking_details(booking_id: str, user_id: str, db: Session = Depends(get
             "buyer_type": booking.buyer.buyer_type,
             "buyer_district": booking.buyer.district,
             "status": booking.status,
-            "created_at": booking.created_at.isoformat()
+            "created_at": booking.created_at.isoformat(),
+            "negotiations": [
+                {
+                    "sender_role": n.sender.role,
+                    "quantity": n.quantity,
+                    "price": n.price,
+                    "message": n.message,
+                    "status": n.status,
+                    "created_at": n.created_at.isoformat()
+                } for n in sorted(booking.negotiations, key=lambda x: x.created_at)
+            ]
         }
     }
 

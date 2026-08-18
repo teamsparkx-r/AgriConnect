@@ -205,6 +205,63 @@ fun FarmerBookingDetailScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
+                val negotiations = (booking["negotiations"] as? List<Map<String, Any>>) ?: emptyList()
+                if (negotiations.isNotEmpty()) {
+                    AgriSectionTitle(title = "NEGOTIATION LOG")
+                    Surface(
+                        color = White,
+                        shape = RoundedCornerShape(24.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Gray100.copy(alpha = 0.5f))
+                    ) {
+                        Column(modifier = Modifier.padding(24.dp)) {
+                            negotiations.forEachIndexed { index, neg ->
+                                val role = (neg["sender_role"] as? String) ?: "farmer"
+                                val isFarmer = role.lowercase().trim() == "farmer"
+                                
+                                Column {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        AgriText(
+                                            text = if (isFarmer) "YOU" else "MERCHANT",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = if (isFarmer) AgriPrimary else Info,
+                                            fontWeight = FontWeight.Black
+                                        )
+                                        AgriText(
+                                            text = (neg["created_at"] as? String)?.take(16)?.replace("T", " ") ?: "",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = Gray400
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    AgriText(
+                                        text = "${neg["quantity"]} $unit @ ₹${neg["price"]}/$unit",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Black,
+                                        color = Gray900
+                                    )
+                                    if (!(neg["message"] as? String).isNullOrEmpty()) {
+                                        AgriText(
+                                            text = "\"${neg["message"]}\"",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = Gray500,
+                                            modifier = Modifier.padding(top = 2.dp)
+                                        )
+                                    }
+                                    
+                                    if (index < negotiations.size - 1) {
+                                        Divider(modifier = Modifier.padding(vertical = 12.dp), color = Gray100, thickness = 0.5.dp)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(32.dp))
+                }
+
                 AgriSectionTitle(title = "FULFILLMENT STATUS")
                 Surface(
                     color = White,
