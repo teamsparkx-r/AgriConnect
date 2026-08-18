@@ -22,6 +22,91 @@ class ReportResolveRequest(BaseModel):
     status: ReportStatus
     admin_notes: Optional[str] = None
 
+@router.post("/seed-massive")
+def seed_massive_crops(db: Session = Depends(get_db)):
+    """Special endpoint to force-seed 60 crops for the demo farmer"""
+    try:
+        from models import Farmer, Product, ProductCategory, User
+        import random
+
+        farmer_user_id = "5737b51e-8640-48c2-bdaa-63fbba1b70a7"
+        farmer = db.query(Farmer).filter(Farmer.user_id == farmer_user_id).first()
+
+        if not farmer:
+            return {"success": False, "message": "Demo farmer profile not found. Run standard seed first."}
+
+        # 1. Clear existing products to prevent duplicates
+        db.query(Product).filter(Product.farmer_id == farmer.id).delete()
+        db.flush()
+
+        # 2. Define templates
+        crops_pool = [
+            ("Organic Wheat", "grains", 25.0, "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800"),
+            ("Red Tomatoes", "vegetables", 18.5, "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800"),
+            ("Basmati Rice", "grains", 65.0, "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800"),
+            ("Yellow Corn", "grains", 22.0, "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=800"),
+            ("Fresh Onions", "vegetables", 15.0, "https://images.unsplash.com/photo-1508747703725-719777637510?w=800"),
+            ("Potatoes", "vegetables", 12.0, "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=800"),
+            ("Green Chillies", "vegetables", 30.0, "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=800"),
+            ("Ginger", "spices", 120.0, "https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=800"),
+            ("Turmeric", "spices", 150.0, "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=800"),
+            ("Garlic", "vegetables", 80.0, "https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?w=800"),
+            ("Red Chilli", "spices", 180.0, "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=800"),
+            ("Soybeans", "oilseeds", 45.0, "https://images.unsplash.com/photo-1589923188900-85dae523342b?w=800"),
+            ("Mustard Seeds", "oilseeds", 55.0, "https://images.unsplash.com/photo-1599409673963-8f304a55903b?w=800"),
+            ("Cotton", "commercial_crops", 75.0, "https://images.unsplash.com/photo-1594903310503-492723326f21?w=800"),
+            ("Sugarcane", "commercial_crops", 3.5, "https://images.unsplash.com/photo-1593113617719-79883584852b?w=800"),
+            ("Alphonso Mango", "fruits", 250.0, "https://images.unsplash.com/photo-1553134839-497746777b73?w=800"),
+            ("Green Apples", "fruits", 140.0, "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=800"),
+            ("Banana", "fruits", 20.0, "https://images.unsplash.com/photo-1571771894821-ad990241fab4?w=800"),
+            ("Watermelon", "fruits", 15.0, "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800"),
+            ("Grapes", "fruits", 90.0, "https://images.unsplash.com/photo-1537640538966-79f369143f8f?w=800"),
+            ("Cabbage", "vegetables", 10.0, "https://images.unsplash.com/photo-1591461141441-38e9329007f3?w=800"),
+            ("Cauliflower", "vegetables", 25.0, "https://images.unsplash.com/photo-1568584711075-3d021a7c3ec3?w=800"),
+            ("Carrots", "vegetables", 40.0, "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=800"),
+            ("Spinach", "vegetables", 20.0, "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=800"),
+            ("Moong Dal", "pulses", 110.0, "https://images.unsplash.com/photo-1585994192703-274638314741?w=800"),
+            ("Arhar Dal", "pulses", 140.0, "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=800"),
+            ("Black Gram", "pulses", 125.0, "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=800"),
+            ("Chickpeas", "pulses", 95.0, "https://images.unsplash.com/photo-1585994192703-274638314741?w=800"),
+            ("Peanuts", "oilseeds", 85.0, "https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=800"),
+            ("Sunflower Seeds", "oilseeds", 70.0, "https://images.unsplash.com/photo-1597426102235-93722956c802?w=800"),
+            ("Cardamom", "spices", 2500.0, "https://images.unsplash.com/photo-1599409673963-8f304a55903b?w=800"),
+            ("Black Pepper", "spices", 450.0, "https://images.unsplash.com/photo-1599409673963-8f304a55903b?w=800"),
+            ("Cloves", "spices", 900.0, "https://images.unsplash.com/photo-1599409673963-8f304a55903b?w=800"),
+        ]
+
+        # 3. Generate 60
+        for i in range(60):
+            template = crops_pool[i % len(crops_pool)]
+            name, cat, base_price, img = template
+
+            variation = random.uniform(0.85, 1.15)
+            quantity = random.randint(200, 8000)
+            price = round(base_price * variation, 2)
+
+            new_p = Product(
+                farmer_id=farmer.id,
+                name=f"{name} (Lot #{i+1})",
+                category=cat,
+                description=f"Fresh supply of {name} from demo farms. Graded for premium commercial use. Secure direct sourcing node.",
+                quantity=quantity,
+                unit="kg" if cat != "fruits" else "units",
+                expected_price=price,
+                status="active",
+                images=img,
+                state=farmer.state,
+                district=farmer.district,
+                village=farmer.village
+            )
+            db.add(new_p)
+
+        db.commit()
+        return {"success": True, "message": "Successfully seeded 60 massive crop nodes."}
+    except Exception as e:
+        db.rollback()
+        return {"success": False, "message": str(e)}
+
 # ==================== DASHBOARD & STATS ====================
 
 @router.get("/dashboard")
