@@ -20,6 +20,8 @@ import com.agriconnect.app.ui.theme.*
 import com.agriconnect.data.model.Product
 
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.layout.ContentScale
 
 @Composable
@@ -35,11 +37,15 @@ fun RecentProductItem(product: Product, onClick: (() -> Unit)? = null) {
             ) {
                 if (product.images != null && (product.images!!.startsWith("http") || product.images!!.startsWith("content"))) {
                     AsyncImage(
-                        model = product.images,
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(product.images)
+                            .crossfade(true)
+                            .build(),
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
-                        error = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_gallery)
+                        placeholder = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_gallery),
+                        error = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_report_image)
                     )
                 } else {
                     Icon(
@@ -142,11 +148,15 @@ fun SlotCard(product: Product, onClick: () -> Unit) {
             ) {
                 if (product.images != null && (product.images!!.startsWith("http") || product.images!!.startsWith("content"))) {
                     AsyncImage(
-                        model = product.images,
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(product.images)
+                            .crossfade(true)
+                            .build(),
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
-                        error = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_gallery)
+                        placeholder = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_gallery),
+                        error = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_report_image)
                     )
                 } else {
                     Icon(
@@ -276,11 +286,15 @@ fun MerchantProductCard(product: Product, onClick: () -> Unit, modifier: Modifie
             ) {
                 if (product.images != null && (product.images!!.startsWith("http") || product.images!!.startsWith("content"))) {
                     AsyncImage(
-                        model = product.images,
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(product.images)
+                            .crossfade(true)
+                            .build(),
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
-                        error = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_gallery)
+                        placeholder = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_gallery),
+                        error = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_report_image)
                     )
                 } else {
                     Icon(

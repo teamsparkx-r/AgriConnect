@@ -18,6 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import androidx.compose.ui.platform.LocalContext
 import com.agriconnect.app.ui.components.*
 import com.agriconnect.app.ui.theme.*
 import com.agriconnect.app.ui.viewmodel.ProductViewModel
@@ -43,8 +45,8 @@ fun FarmerProductDetailScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Listing?", fontWeight = FontWeight.Black) },
-            text = { Text("This action cannot be undone. Your crop will be removed from the marketplace.") },
+            title = { AgriText("Delete Listing?", fontWeight = FontWeight.Black) },
+            text = { AgriText("This action cannot be undone. Your crop will be removed from the marketplace.") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -55,12 +57,12 @@ fun FarmerProductDetailScreen(
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = Error)
                 ) {
-                    Text("DELETE", fontWeight = FontWeight.Black)
+                    AgriText("DELETE", fontWeight = FontWeight.Black)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("CANCEL", fontWeight = FontWeight.Bold, color = Gray500)
+                    AgriText("CANCEL", fontWeight = FontWeight.Bold, color = Gray500)
                 }
             },
             shape = RoundedCornerShape(24.dp),
@@ -84,7 +86,7 @@ fun FarmerProductDetailScreen(
             }
         } else if (currentProduct == null) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text("Node unavailable.", fontWeight = FontWeight.Black)
+                AgriText("Node unavailable.", fontWeight = FontWeight.Black)
             }
         } else {
             val product = currentProduct!!
@@ -102,10 +104,15 @@ fun FarmerProductDetailScreen(
                 ) {
                     if (product.images != null && (product.images!!.startsWith("http") || product.images!!.startsWith("content"))) {
                         AsyncImage(
-                            model = product.images,
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(product.images)
+                                .crossfade(true)
+                                .build(),
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier.fillMaxSize(),
+                            placeholder = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_gallery),
+                            error = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_report_image)
                         )
                     } else {
                         Icon(
@@ -128,7 +135,7 @@ fun FarmerProductDetailScreen(
                         shape = RoundedCornerShape(bottomStart = 20.dp),
                         modifier = Modifier.align(Alignment.TopEnd)
                     ) {
-                        Text(
+                        AgriText(
                             text = status.uppercase(),
                             color = White,
                             style = MaterialTheme.typography.labelSmall,
@@ -139,13 +146,13 @@ fun FarmerProductDetailScreen(
                 }
 
                 Column(modifier = Modifier.padding(24.dp)) {
-                    Text(
+                    AgriText(
                         text = product.name ?: "Unknown Crop",
                         style = MaterialTheme.typography.displayMedium,
                         fontWeight = FontWeight.Black,
                         color = Gray900
                     )
-                    Text(
+                    AgriText(
                         text = product.category?.uppercase() ?: "GENERAL",
                         style = MaterialTheme.typography.labelLarge,
                         color = AgriPrimary,
@@ -156,7 +163,7 @@ fun FarmerProductDetailScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                     
                     AgriSectionTitle(title = "Registry Metadata")
-                    Text(
+                    AgriText(
                         text = product.description ?: "Verified supply node in the decentralized marketplace.",
                         style = MaterialTheme.typography.bodyLarge,
                         color = Gray600,
@@ -224,6 +231,8 @@ fun FarmerProductDetailScreen(
                         )
                     }
 
+                    AgriFooter()
+
                     Spacer(modifier = Modifier.height(40.dp))
                 }
             }
@@ -240,8 +249,8 @@ fun InfoBox(modifier: Modifier, label: String, value: String) {
         border = androidx.compose.foundation.BorderStroke(1.dp, Gray100.copy(alpha = 0.5f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(label, style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Black)
-            Text(value, style = MaterialTheme.typography.titleMedium, color = Gray900, fontWeight = FontWeight.Black)
+            AgriText(label, style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Black)
+            AgriText(value, style = MaterialTheme.typography.titleMedium, color = Gray900, fontWeight = FontWeight.Black)
         }
     }
 }

@@ -19,6 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import androidx.compose.ui.platform.LocalContext
 import com.agriconnect.app.ui.components.*
 import com.agriconnect.app.ui.theme.*
 import com.agriconnect.app.ui.viewmodel.AuthViewModel
@@ -101,10 +103,15 @@ fun ProductDetailScreen(
                 ) {
                     if (product.images != null && (product.images!!.startsWith("http") || product.images!!.startsWith("content"))) {
                         AsyncImage(
-                            model = product.images,
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(product.images)
+                                .crossfade(true)
+                                .build(),
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier.fillMaxSize(),
+                            placeholder = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_gallery),
+                            error = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_report_image)
                         )
                     } else {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

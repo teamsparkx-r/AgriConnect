@@ -16,12 +16,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.agriconnect.app.ui.components.AgriButton
+import coil.request.ImageRequest
+import com.agriconnect.app.ui.components.*
 import com.agriconnect.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,15 +32,10 @@ fun MyFarmScreen(onBack: () -> Unit) {
     Scaffold(
         containerColor = AgriBackground,
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier.statusBarsPadding(),
-                title = { Text("My Farm", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = White) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = White)
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = AgriPrimary)
+            AgriTopAppBar(
+                title = "My Farm",
+                showLogo = false,
+                onBackClick = onBack
             )
         }
     ) { padding ->
@@ -51,17 +48,22 @@ fun MyFarmScreen(onBack: () -> Unit) {
             // Hero Image
             Box(modifier = Modifier.fillMaxWidth().height(220.dp)) {
                 AsyncImage(
-                    model = "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800",
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data("https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800")
+                        .crossfade(true)
+                        .build(),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    placeholder = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_gallery),
+                    error = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_report_image)
                 )
                 Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f)))
                 
                 Column(modifier = Modifier.align(Alignment.BottomStart).padding(24.dp)) {
-                    Text("Farm Details", style = MaterialTheme.typography.labelSmall, color = White, fontWeight = FontWeight.Black)
-                    Text("Demo Farm", style = MaterialTheme.typography.headlineMedium, color = White, fontWeight = FontWeight.Black)
-                    Text("Warangal, Telangana", style = MaterialTheme.typography.bodySmall, color = White.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)
+                    AgriText("Farm Details", style = MaterialTheme.typography.labelSmall, color = White, fontWeight = FontWeight.Black)
+                    AgriText("Demo Farm", style = MaterialTheme.typography.headlineMedium, color = White, fontWeight = FontWeight.Black)
+                    AgriText("Warangal, Telangana", style = MaterialTheme.typography.bodySmall, color = White.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -94,6 +96,8 @@ fun MyFarmScreen(onBack: () -> Unit) {
                     contentColor = AgriPrimary
                 )
                 
+                AgriFooter()
+                
                 Spacer(modifier = Modifier.height(40.dp))
             }
         }
@@ -105,8 +109,8 @@ fun FarmInfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label: St
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         Icon(icon, null, tint = AgriPrimary, modifier = Modifier.size(20.dp))
         Spacer(modifier = Modifier.width(12.dp))
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = Gray500, fontWeight = FontWeight.Bold)
+        AgriText(label, style = MaterialTheme.typography.bodyMedium, color = Gray500, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.weight(1f))
-        Text(value, style = MaterialTheme.typography.bodyLarge, color = Gray900, fontWeight = FontWeight.Black)
+        AgriText(value, style = MaterialTheme.typography.bodyLarge, color = Gray900, fontWeight = FontWeight.Black)
     }
 }

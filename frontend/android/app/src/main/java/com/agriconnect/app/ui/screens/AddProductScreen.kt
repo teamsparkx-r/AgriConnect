@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.agriconnect.app.ui.components.*
 import com.agriconnect.app.ui.theme.*
 import com.agriconnect.app.ui.viewmodel.ProductViewModel
@@ -341,7 +342,17 @@ fun StepImages(images: List<Uri>, context: android.content.Context, perm: androi
             }
         }
         items(images) { uri ->
-            AsyncImage(model = uri, contentDescription = null, modifier = Modifier.size(120.dp).clip(RoundedCornerShape(18.dp)), contentScale = ContentScale.Crop)
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(uri)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = null,
+                modifier = Modifier.size(120.dp).clip(RoundedCornerShape(18.dp)),
+                contentScale = ContentScale.Crop,
+                placeholder = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_gallery),
+                error = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_report_image)
+            )
         }
     }
 }
