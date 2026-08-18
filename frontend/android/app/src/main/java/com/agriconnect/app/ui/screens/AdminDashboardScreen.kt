@@ -1,6 +1,7 @@
 package com.agriconnect.app.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -46,7 +47,7 @@ fun AdminDashboardScreen(
     }
 
     Scaffold(
-        containerColor = Color(0xFFF8F9FA),
+        containerColor = AgriBackground,
         topBar = {
             AgriTopAppBar(
                 title = "Admin Panel",
@@ -57,7 +58,7 @@ fun AdminDashboardScreen(
             )
         }
     ) { padding ->
-        if (loading) {
+        if (loading && dashboardData == null) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = AgriPrimary)
             }
@@ -69,14 +70,14 @@ fun AdminDashboardScreen(
                     .verticalScroll(rememberScrollState())
             ) {
                 // Header Welcome
-                Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)) {
-                    Text(
+                Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp)) {
+                    AgriText(
                         text = "Dashboard",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Black,
                         color = Gray900
                     )
-                    Text(
+                    AgriText(
                         text = "Welcome back, Admin! Here's what's happening today.",
                         style = MaterialTheme.typography.bodySmall,
                         color = Gray500
@@ -84,45 +85,45 @@ fun AdminDashboardScreen(
                 }
 
                 // Stats Grid
-                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        StatsCard(Modifier.weight(1f), dashboardData?.stats?.totalFarmers?.toString() ?: "0", "Total Farmers", Icons.Outlined.Person, Color(0xFFE3F2FD), Color(0xFF1976D2))
-                        StatsCard(Modifier.weight(1f), dashboardData?.stats?.totalMerchants?.toString() ?: "0", "Total Merchants", Icons.Outlined.Storefront, Color(0xFFF3E5F5), Color(0xFF7B1FA2))
-                        StatsCard(Modifier.weight(1f), dashboardData?.stats?.activeProducts?.toString() ?: "0", "Active Listings", Icons.Outlined.Agriculture, Color(0xFFE8F5E9), Color(0xFF388E3C))
+                        StatsCard(Modifier.weight(1f), dashboardData?.stats?.totalFarmers?.toString() ?: "0", "Farmers", Icons.Outlined.Person, Color(0xFFE3F2FD), Color(0xFF1976D2))
+                        StatsCard(Modifier.weight(1f), dashboardData?.stats?.totalMerchants?.toString() ?: "0", "Merchants", Icons.Outlined.Storefront, Color(0xFFF3E5F5), Color(0xFF7B1FA2))
+                        StatsCard(Modifier.weight(1f), dashboardData?.stats?.activeProducts?.toString() ?: "0", "Listings", Icons.Outlined.Agriculture, Color(0xFFE8F5E9), Color(0xFF388E3C))
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        StatsCard(Modifier.weight(1f), dashboardData?.stats?.totalBookings?.toString() ?: "0", "Total Bookings", Icons.Outlined.Assignment, Color(0xFFFDF2F2), Color(0xFFE02424))
-                        StatsCard(Modifier.weight(1f), dashboardData?.stats?.totalBookings?.toString() ?: "0", "Total Orders", Icons.Outlined.ShoppingBag, Color(0xFFFFF7ED), Color(0xFFEA580C))
-                        StatsCard(Modifier.weight(1f), "₹${(dashboardData?.stats?.totalRevenue ?: 0.0) / 100000.0}L", "Revenue (Est)", Icons.Outlined.Payments, Color(0xFFF0FDFA), Color(0xFF0D9488))
+                        StatsCard(Modifier.weight(1f), dashboardData?.stats?.totalBookings?.toString() ?: "0", "Bookings", Icons.Outlined.Assignment, Color(0xFFFDF2F2), Color(0xFFE02424))
+                        StatsCard(Modifier.weight(1f), dashboardData?.stats?.totalBookings?.toString() ?: "0", "Orders", Icons.Outlined.ShoppingBag, Color(0xFFFFF7ED), Color(0xFFEA580C))
+                        StatsCard(Modifier.weight(1f), "₹${(dashboardData?.stats?.totalRevenue ?: 0.0) / 100000.0}L", "Revenue", Icons.Outlined.Payments, Color(0xFFF0FDFA), Color(0xFF0D9488))
                     }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
                 // Listings Overview (Mock Chart)
-                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text("Listings Overview", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black)
+                        AgriText("Listings Overview", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black)
                         Surface(color = Gray100, shape = RoundedCornerShape(8.dp)) {
-                            Text("This Month", modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            AgriText("This Month", modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    Box(modifier = Modifier.fillMaxWidth().height(200.dp).background(White, RoundedCornerShape(16.dp)).padding(16.dp)) {
+                    Box(modifier = Modifier.fillMaxWidth().height(200.dp).background(White, RoundedCornerShape(24.dp)).border(1.dp, Gray100.copy(alpha = 0.5f), RoundedCornerShape(24.dp)).padding(16.dp)) {
                         // Mock Chart Placeholder
-                        Text("LISTINGS TREND CHART", modifier = Modifier.align(Alignment.Center), color = Gray300, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                        AgriText("LISTINGS TREND CHART", modifier = Modifier.align(Alignment.Center), color = Gray300, fontWeight = FontWeight.Black, fontSize = 12.sp)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
                 // Recent Bookings
-                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text("Recent Bookings", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black)
+                        AgriText("Recent Bookings", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black)
                         TextButton(onClick = { }) {
-                            Text("View All", color = AgriPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            AgriText("View All", color = AgriPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -144,36 +145,32 @@ fun StatsCard(modifier: Modifier, value: String, label: String, icon: ImageVecto
     Surface(
         modifier = modifier,
         color = White,
-        shape = RoundedCornerShape(12.dp),
-        shadowElevation = 0.5.dp
+        shape = RoundedCornerShape(24.dp),
+        shadowElevation = 0.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, Gray100.copy(alpha = 0.5f))
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Box(modifier = Modifier.size(32.dp).background(bgColor, RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
-                Icon(icon, null, tint = iconColor, modifier = Modifier.size(18.dp))
+        Column(modifier = Modifier.padding(16.dp)) {
+            Box(modifier = Modifier.size(36.dp).background(bgColor, RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) {
+                Icon(icon, null, tint = iconColor, modifier = Modifier.size(20.dp))
             }
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(value, fontSize = 16.sp, fontWeight = FontWeight.Black, color = Gray900)
-            Text(label, fontSize = 9.sp, color = Gray500, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(16.dp))
+            AgriText(value, fontSize = 18.sp, fontWeight = FontWeight.Black, color = Gray900)
+            AgriText(label, style = MaterialTheme.typography.labelSmall, color = Gray500, fontWeight = FontWeight.Bold)
         }
     }
 }
 
 @Composable
 fun BookingItem(crop: String, farmer: String, status: String, time: String) {
-    Surface(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        color = White,
-        shape = RoundedCornerShape(16.dp),
-        shadowElevation = 0.5.dp
-    ) {
-        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(modifier = Modifier.size(48.dp).background(Gray100, RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
+    AgriCard(modifier = Modifier.padding(vertical = 4.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Box(modifier = Modifier.size(48.dp).background(AgriSecondary, RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
                 Icon(Icons.Default.Agriculture, null, tint = AgriPrimary)
             }
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(crop, fontWeight = FontWeight.Black, fontSize = 14.sp)
-                Text("by $farmer", color = Gray500, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                AgriText(crop, fontWeight = FontWeight.Black, fontSize = 14.sp)
+                AgriText("by $farmer", color = Gray500, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
             }
             Column(horizontalAlignment = Alignment.End) {
                 val statusColor = when(status.lowercase()) {
@@ -183,13 +180,17 @@ fun BookingItem(crop: String, farmer: String, status: String, time: String) {
                     "rejected", "cancelled" -> Error
                     else -> Gray500
                 }
-                Text(
-                    text = status.replace("_", " ").uppercase(),
-                    color = statusColor,
-                    fontWeight = FontWeight.Black,
-                    fontSize = 10.sp
-                )
-                Text(time.take(10), color = Gray400, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                Surface(color = statusColor.copy(alpha = 0.1f), shape = RoundedCornerShape(8.dp)) {
+                    AgriText(
+                        text = status.replace("_", " ").uppercase(),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        color = statusColor,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 10.sp
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                AgriText(time.take(10), color = Gray400, fontSize = 9.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

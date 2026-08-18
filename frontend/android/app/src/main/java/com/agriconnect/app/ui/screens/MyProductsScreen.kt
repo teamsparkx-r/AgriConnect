@@ -31,6 +31,8 @@ fun MyProductsScreen(
     onAddProduct: () -> Unit,
     onEditProduct: (String) -> Unit,
     onBack: () -> Unit,
+    onNotificationsClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
     onMenuClick: () -> Unit = {}
 ) {
     val products by viewModel.products
@@ -51,6 +53,8 @@ fun MyProductsScreen(
                 title = "My Stock",
                 showLogo = false,
                 onBackClick = onBack,
+                onProfileClick = onProfileClick,
+                onNotificationsClick = onNotificationsClick,
                 onMenuClick = onMenuClick
             )
         },

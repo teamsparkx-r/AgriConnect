@@ -29,6 +29,8 @@ fun MyBookingsScreen(
     onBookingClick: (String) -> Unit = {},
     authViewModel: AuthViewModel = viewModel(),
     merchantViewModel: MerchantViewModel = viewModel(),
+    onNotificationsClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
     onMenuClick: () -> Unit = {}
 ) {
     val token by authViewModel.token
@@ -50,6 +52,8 @@ fun MyBookingsScreen(
             AgriTopAppBar(
                 title = "My Orders",
                 onMenuClick = onMenuClick,
+                onProfileClick = onProfileClick,
+                onNotificationsClick = onNotificationsClick,
                 onBackClick = onBack
             )
         }

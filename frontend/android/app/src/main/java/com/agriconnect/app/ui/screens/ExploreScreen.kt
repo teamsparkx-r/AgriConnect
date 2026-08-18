@@ -32,6 +32,8 @@ fun ExploreScreen(
     viewModel: ProductViewModel,
     onProductClick: (String) -> Unit,
     onBack: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
     onMenuClick: () -> Unit = {}
 ) {
     val products by viewModel.products
@@ -220,6 +222,8 @@ fun ExploreScreen(
             AgriTopAppBar(
                 title = "Global Discovery",
                 showLogo = false,
+                onProfileClick = onProfileClick,
+                onNotificationsClick = onNotificationsClick,
                 onMenuClick = onMenuClick
             )
         }

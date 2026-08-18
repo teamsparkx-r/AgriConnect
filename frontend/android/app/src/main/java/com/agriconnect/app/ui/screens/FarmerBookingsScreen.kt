@@ -29,6 +29,8 @@ fun FarmerBookingsScreen(
     onBookingClick: (String) -> Unit,
     authViewModel: AuthViewModel = viewModel(),
     farmerViewModel: FarmerViewModel = viewModel(),
+    onNotificationsClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
     onMenuClick: () -> Unit = {}
 ) {
     val token by authViewModel.token
@@ -55,6 +57,8 @@ fun FarmerBookingsScreen(
             AgriTopAppBar(
                 title = "Marketplace Inquiries",
                 onMenuClick = onMenuClick,
+                onProfileClick = onProfileClick,
+                onNotificationsClick = onNotificationsClick,
                 onBackClick = onBack
             )
         }

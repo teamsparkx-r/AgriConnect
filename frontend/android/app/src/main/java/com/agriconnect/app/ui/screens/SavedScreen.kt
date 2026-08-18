@@ -25,7 +25,9 @@ fun SavedScreen(
     onProductClick: (String) -> Unit,
     onBack: () -> Unit = {},
     authViewModel: AuthViewModel,
-    merchantViewModel: MerchantViewModel = viewModel()
+    merchantViewModel: MerchantViewModel = viewModel(),
+    onNotificationsClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     val token by authViewModel.token
     val user by authViewModel.user
@@ -44,6 +46,8 @@ fun SavedScreen(
             AgriTopAppBar(
                 title = "Saved Nodes",
                 showLogo = false,
+                onProfileClick = onProfileClick,
+                onNotificationsClick = onNotificationsClick,
                 onBackClick = onBack
             )
         }

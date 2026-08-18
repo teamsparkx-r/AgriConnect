@@ -472,10 +472,10 @@ fun AppBottomNav(
                         onClick = { onNavigate(Screen.AdminUserList.createRoute("merchant")) }
                     )
                     NavButton(
-                        active = false, // Always "More"
-                        icon = Icons.Default.Settings,
-                        label = "More",
-                        onClick = onAddClick // Use onAddClick for More as requested
+                        active = currentRoute == Screen.AdminSettings.route,
+                        icon = if (currentRoute == Screen.AdminSettings.route) Icons.Filled.Settings else Icons.Outlined.Settings,
+                        label = "Settings",
+                        onClick = { onNavigate(Screen.AdminSettings.route) }
                     )
                 }
                 role == "farmer" -> {
@@ -545,10 +545,10 @@ fun AppBottomNav(
                         onClick = { onNavigate(Screen.MyBookings.route) }
                     )
                     NavButton(
-                        active = currentRoute == Screen.MerchantProfile.route,
-                        icon = if (currentRoute == Screen.MerchantProfile.route) Icons.Filled.AccountCircle else Icons.Outlined.AccountCircle,
-                        label = "Profile",
-                        onClick = { onNavigate(Screen.MerchantProfile.route) }
+                        active = currentRoute == Screen.MerchantSettings.route,
+                        icon = if (currentRoute == Screen.MerchantSettings.route) Icons.Filled.Settings else Icons.Outlined.Settings,
+                        label = "Settings",
+                        onClick = { onNavigate(Screen.MerchantSettings.route) }
                     )
                 }
             }

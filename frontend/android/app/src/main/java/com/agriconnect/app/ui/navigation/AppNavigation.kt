@@ -111,6 +111,26 @@ fun AppNavigation(
     val farmerViewModel: FarmerViewModel = viewModel()
     val merchantViewModel: MerchantViewModel = viewModel()
 
+    val profileCallback: () -> Unit = {
+        val user = authViewModel.user.value
+        if (user != null) {
+            val route = when (user.role.lowercase().trim()) {
+                "farmer" -> Screen.FarmerProfile.route
+                "admin" -> Screen.AdminProfile.route
+                else -> Screen.MerchantProfile.route
+            }
+            navController.navigate(route)
+        }
+    }
+
+    val notificationsCallback: () -> Unit = {
+        val user = authViewModel.user.value
+        if (user != null) {
+            val route = if (user.role.lowercase().trim() == "farmer") Screen.FarmerNotifications.route else Screen.MerchantNotifications.route
+            navController.navigate(route)
+        }
+    }
+
     NavHost(
         navController = navController, 
         startDestination = Screen.Splash.route,
@@ -225,8 +245,8 @@ fun AppNavigation(
                 onMyBookingsClick = { navController.navigate(Screen.FarmerBookings.route) },
                 onMyProductsClick = { navController.navigate(Screen.MyProducts.route) },
                 onProductClick = { id -> navController.navigate(Screen.FarmerProductDetail.createRoute(id)) },
-                onNotificationsClick = { navController.navigate(Screen.FarmerNotifications.route) },
-                onProfileClick = { navController.navigate(Screen.FarmerProfile.route) },
+                onNotificationsClick = notificationsCallback,
+                onProfileClick = profileCallback,
                 onMenuClick = onMenuClick
             )
         }
@@ -239,6 +259,8 @@ fun AppNavigation(
                 onAddProduct = { navController.navigate(Screen.AddProduct.route) },
                 onEditProduct = { id: String -> navController.navigate(Screen.FarmerProductDetail.createRoute(id)) },
                 onBack = { navController.popBackStack() },
+                onNotificationsClick = notificationsCallback,
+                onProfileClick = profileCallback,
                 onMenuClick = onMenuClick
             )
         }
@@ -288,7 +310,10 @@ fun AppNavigation(
                 onBack = { navController.popBackStack() },
                 onBookingClick = { id -> navController.navigate(Screen.FarmerBookingDetail.createRoute(id)) },
                 authViewModel = authViewModel,
-                farmerViewModel = farmerViewModel
+                farmerViewModel = farmerViewModel,
+                onNotificationsClick = notificationsCallback,
+                onProfileClick = profileCallback,
+                onMenuClick = onMenuClick
             )
         }
         composable(
@@ -363,7 +388,8 @@ fun AppNavigation(
                 onProductClick = { id -> navController.navigate(Screen.ProductDetail.createRoute(id)) },
                 onExploreClick = { navController.navigate(Screen.Explore.route) },
                 onMyBookingsClick = { navController.navigate(Screen.MyBookings.route) },
-                onNotificationsClick = { navController.navigate(Screen.MerchantNotifications.route) },
+                onNotificationsClick = notificationsCallback,
+                onProfileClick = profileCallback,
                 onMenuClick = onMenuClick
             )
         }
@@ -372,6 +398,8 @@ fun AppNavigation(
                 token = authViewModel.token.value ?: "",
                 viewModel = productViewModel,
                 onProductClick = { id -> navController.navigate(Screen.ProductDetail.createRoute(id)) },
+                onNotificationsClick = notificationsCallback,
+                onProfileClick = profileCallback,
                 onMenuClick = onMenuClick
             )
         }
@@ -381,6 +409,8 @@ fun AppNavigation(
                 onBookingClick = { id -> navController.navigate(Screen.MerchantBookingDetail.createRoute(id)) },
                 authViewModel = authViewModel,
                 merchantViewModel = merchantViewModel,
+                onNotificationsClick = notificationsCallback,
+                onProfileClick = profileCallback,
                 onMenuClick = onMenuClick
             )
         }
@@ -402,7 +432,9 @@ fun AppNavigation(
             SavedScreen(
                 onProductClick = { id -> navController.navigate(Screen.ProductDetail.createRoute(id)) },
                 onBack = { navController.popBackStack() },
-                authViewModel = authViewModel
+                authViewModel = authViewModel,
+                onNotificationsClick = notificationsCallback,
+                onProfileClick = profileCallback
             )
         }
         composable(Screen.MerchantProfile.route) {
@@ -453,7 +485,9 @@ fun AppNavigation(
                 productViewModel = productViewModel,
                 merchantViewModel = merchantViewModel,
                 onBack = { navController.popBackStack() },
-                onLoginRequired = { navController.navigate(Screen.Login.createRoute("buyer")) }
+                onLoginRequired = { navController.navigate(Screen.Login.createRoute("buyer")) },
+                onNotificationsClick = notificationsCallback,
+                onProfileClick = profileCallback
             )
         }
         composable(
@@ -481,7 +515,7 @@ fun AppNavigation(
                 onCropManagementClick = { navController.navigate(Screen.AdminCropManagement.route) },
                 onMenuClick = onMenuClick,
                 onNotificationsClick = { navController.navigate(Screen.AdminNotifications.route) },
-                onProfileClick = { navController.navigate(Screen.AdminProfile.route) }
+                onProfileClick = profileCallback
             )
         }
         composable(Screen.AdminManagement.route) {

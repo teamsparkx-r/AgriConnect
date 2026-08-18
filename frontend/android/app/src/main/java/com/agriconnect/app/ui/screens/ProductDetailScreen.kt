@@ -34,7 +34,9 @@ fun ProductDetailScreen(
     productViewModel: ProductViewModel,
     merchantViewModel: MerchantViewModel,
     onBack: () -> Unit,
-    onLoginRequired: () -> Unit
+    onLoginRequired: () -> Unit,
+    onNotificationsClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     val token by authViewModel.token
     val user by authViewModel.user
@@ -69,6 +71,8 @@ fun ProductDetailScreen(
             AgriTopAppBar(
                 title = "Supply Node",
                 showLogo = false,
+                onProfileClick = onProfileClick,
+                onNotificationsClick = onNotificationsClick,
                 onBackClick = onBack
             )
         }
