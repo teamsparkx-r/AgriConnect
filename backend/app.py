@@ -90,20 +90,27 @@ def seed_db():
 
         # Update/Reset demo products
         if farmer_profile:
-            # Clear old products for this farmer to avoid duplicates (with dependency handling)
+            # Clear old products for this farmer to avoid duplicates (with deep dependency handling)
             try:
+                from models import Booking, SavedProduct, NegotiationHistory, Report
                 demo_product_ids = [p.id for p in db.query(Product).filter(Product.farmer_id == farmer_profile.id).all()]
                 if demo_product_ids:
+                    booking_ids = [b.id for b in db.query(Booking).filter(Booking.product_id.in_(demo_product_ids)).all()]
+                    if booking_ids:
+                        db.query(NegotiationHistory).filter(NegotiationHistory.booking_id.in_(booking_ids)).delete(synchronize_session=False)
+                        db.query(Report).filter(Report.booking_id.in_(booking_ids)).delete(synchronize_session=False)
+
+                    db.query(Report).filter(Report.product_id.in_(demo_product_ids)).delete(synchronize_session=False)
                     db.query(Booking).filter(Booking.product_id.in_(demo_product_ids)).delete(synchronize_session=False)
                     db.query(SavedProduct).filter(SavedProduct.product_id.in_(demo_product_ids)).delete(synchronize_session=False)
                     db.query(Product).filter(Product.id.in_(demo_product_ids)).delete(synchronize_session=False)
                     db.flush()
-                    print(f"Cleaned up {len(demo_product_ids)} old products and dependencies")
+                    print(f"Deep cleaned {len(demo_product_ids)} old products and dependencies")
             except Exception as cleanup_err:
-                print(f"Soft cleanup failed, attempting append: {cleanup_err}")
+                print(f"Deep cleanup failed: {cleanup_err}")
 
             crops_pool = [
-                ("Organic Wheat", ProductCategory.GRAINS, 25.0, "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800"),
+                ("Organic Wheat", "grains", 25.0, "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800"),
                 ("Red Tomatoes", ProductCategory.VEGETABLES, 18.5, "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800"),
                 ("Basmati Rice", ProductCategory.GRAINS, 65.0, "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800"),
                 ("Yellow Corn", ProductCategory.GRAINS, 22.0, "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=800"),
