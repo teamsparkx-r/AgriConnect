@@ -26,7 +26,7 @@ class ReportResolveRequest(BaseModel):
 def seed_massive_crops(db: Session = Depends(get_db)):
     """Special endpoint to force-seed 60 crops for the demo farmer"""
     try:
-        from models import Farmer, Product, ProductCategory, User
+        from models import Farmer, Product, ProductCategory, User, Booking, SavedProduct
         import random
 
         farmer_user_id = "5737b51e-8640-48c2-bdaa-63fbba1b70a7"
@@ -35,9 +35,16 @@ def seed_massive_crops(db: Session = Depends(get_db)):
         if not farmer:
             return {"success": False, "message": "Demo farmer profile not found. Run standard seed first."}
 
-        # 1. Clear existing products to prevent duplicates
-        db.query(Product).filter(Product.farmer_id == farmer.id).delete()
-        db.flush()
+        # 1. Clear existing products to prevent duplicates (with dependency handling)
+        demo_product_ids = [p.id for p in db.query(Product).filter(Product.farmer_id == farmer.id).all()]
+        if demo_product_ids:
+            # Delete bookings associated with these products
+            db.query(Booking).filter(Booking.product_id.in_(demo_product_ids)).delete(synchronize_session=False)
+            # Delete wishlist items
+            db.query(SavedProduct).filter(SavedProduct.product_id.in_(demo_product_ids)).delete(synchronize_session=False)
+            # Finally delete the products
+            db.query(Product).filter(Product.id.in_(demo_product_ids)).delete(synchronize_session=False)
+            db.flush()
 
         # 2. Define templates
         crops_pool = [
