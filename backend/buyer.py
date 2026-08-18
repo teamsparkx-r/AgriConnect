@@ -426,6 +426,8 @@ def create_booking(request: BookingRequest, user_id: str, db: Session = Depends(
         # Log status for debugging
         if user:
             print(f"DEBUG: User {user_id} status in DB: '{user.account_status}'")
+        else:
+            print(f"DEBUG: User {user_id} NOT FOUND in DB")
 
         status = user.account_status.lower() if user and user.account_status else ""
         if not user or status != "active":
@@ -434,6 +436,7 @@ def create_booking(request: BookingRequest, user_id: str, db: Session = Depends(
         product = db.query(Product).filter(Product.id == request.product_id).first()
 
         if not product:
+            print(f"DEBUG: Product {request.product_id} NOT FOUND")
             raise HTTPException(status_code=404, detail="Product listing no longer available.")
 
         # Normalize product status for comparison
@@ -444,6 +447,7 @@ def create_booking(request: BookingRequest, user_id: str, db: Session = Depends(
         # Get buyer
         buyer = db.query(Buyer).filter(Buyer.user_id == user_id).first()
         if not buyer:
+            print(f"DEBUG: Buyer profile for user {user_id} NOT FOUND")
             raise HTTPException(status_code=404, detail="Buyer profile not found")
 
         # Check if already booked by this merchant
@@ -460,7 +464,7 @@ def create_booking(request: BookingRequest, user_id: str, db: Session = Depends(
             buyer_id=buyer.id,
             farmer_id=product.farmer_id,
             product_id=product.id,
-            status=BookingStatus.ENQUIRY_SENT,
+            status="enquiry_sent",
             requested_quantity=request.quantity,
             negotiated_price=request.price,
             terms_accepted=True
@@ -478,7 +482,7 @@ def create_booking(request: BookingRequest, user_id: str, db: Session = Depends(
             quantity=request.quantity,
             price=request.price,
             message=request.message,
-            status=BookingStatus.ENQUIRY_SENT
+            status="enquiry_sent"
         )
         db.add(negotiation)
 
@@ -513,15 +517,7 @@ def create_booking(request: BookingRequest, user_id: str, db: Session = Depends(
         db.rollback()
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
-    except HTTPException as e:
-        db.rollback()
-        raise e
-    except Exception as e:
-        db.rollback()
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Booking creation failed: {str(e)}")
 
 @router.get("/bookings")
 def get_buyer_bookings(user_id: str, db: Session = Depends(get_db)):

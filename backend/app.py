@@ -200,6 +200,16 @@ def seed_db():
         else:
             # Force status to active for demo buyer
             existing_buyer.account_status = "active"
+            # Ensure profile exists
+            existing_profile = db.query(Buyer).filter(Buyer.user_id == buyer_user_id).first()
+            if not existing_profile:
+                print("Demo buyer profile missing. Creating it...")
+                new_profile = Buyer(
+                    user_id=existing_buyer.id,
+                    state="Maharashtra",
+                    district="Mumbai"
+                )
+                db.add(new_profile)
 
         db.commit()
         print("Database seeded successfully!")
