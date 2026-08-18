@@ -556,7 +556,7 @@ def farmer_accept_offer(booking_id: str, user_id: str, db: Session = Depends(get
     if booking.farmer_id != farmer.id:
         raise HTTPException(status_code=403, detail="Unauthorized")
 
-    booking.status = BookingStatus.CONFIRMED
+    booking.status = "confirmed"
     booking.updated_at = datetime.utcnow()
 
     # Create history entry
@@ -567,7 +567,7 @@ def farmer_accept_offer(booking_id: str, user_id: str, db: Session = Depends(get
         receiver_id=booking.buyer.user_id,
         quantity=booking.requested_quantity,
         price=booking.negotiated_price,
-        status=BookingStatus.ACCEPTED
+        status="accepted"
     )
     db.add(negotiation)
 
@@ -595,7 +595,7 @@ def farmer_reject_offer(booking_id: str, user_id: str, db: Session = Depends(get
     if booking.farmer_id != farmer.id:
         raise HTTPException(status_code=403, detail="Unauthorized")
 
-    booking.status = BookingStatus.REJECTED
+    booking.status = "rejected"
     booking.updated_at = datetime.utcnow()
 
     # Record history
@@ -606,7 +606,7 @@ def farmer_reject_offer(booking_id: str, user_id: str, db: Session = Depends(get
         receiver_id=booking.buyer.user_id,
         quantity=booking.requested_quantity,
         price=booking.negotiated_price,
-        status=BookingStatus.REJECTED
+        status="rejected"
     )
     db.add(negotiation)
 
@@ -634,7 +634,7 @@ def farmer_counter_offer(booking_id: str, user_id: str, request: CounterOfferReq
     if booking.farmer_id != farmer.id:
         raise HTTPException(status_code=403, detail="Unauthorized")
 
-    booking.status = BookingStatus.COUNTER_OFFER
+    booking.status = "counter_offer"
     booking.requested_quantity = request.quantity
     booking.negotiated_price = request.price
     booking.updated_at = datetime.utcnow()
@@ -648,7 +648,7 @@ def farmer_counter_offer(booking_id: str, user_id: str, request: CounterOfferReq
         quantity=request.quantity,
         price=request.price,
         message=request.message,
-        status=BookingStatus.COUNTER_OFFER
+        status="counter_offer"
     )
     db.add(negotiation)
 

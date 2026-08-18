@@ -605,7 +605,7 @@ def merchant_accept_offer(booking_id: str, user_id: str, db: Session = Depends(g
     if booking.buyer_id != buyer.id:
         raise HTTPException(status_code=403, detail="Unauthorized")
 
-    booking.status = BookingStatus.CONFIRMED
+    booking.status = "confirmed"
     booking.updated_at = datetime.utcnow()
 
     # Create history entry
@@ -616,7 +616,7 @@ def merchant_accept_offer(booking_id: str, user_id: str, db: Session = Depends(g
         receiver_id=booking.farmer.user_id,
         quantity=booking.requested_quantity,
         price=booking.negotiated_price,
-        status=BookingStatus.ACCEPTED
+        status="accepted"
     )
     db.add(negotiation)
 
@@ -644,7 +644,7 @@ def merchant_reject_offer(booking_id: str, user_id: str, db: Session = Depends(g
     if booking.buyer_id != buyer.id:
         raise HTTPException(status_code=403, detail="Unauthorized")
 
-    booking.status = BookingStatus.REJECTED
+    booking.status = "rejected"
     booking.updated_at = datetime.utcnow()
 
     # Record history
@@ -655,7 +655,7 @@ def merchant_reject_offer(booking_id: str, user_id: str, db: Session = Depends(g
         receiver_id=booking.farmer.user_id,
         quantity=booking.requested_quantity,
         price=booking.negotiated_price,
-        status=BookingStatus.REJECTED
+        status="rejected"
     )
     db.add(negotiation)
 
@@ -683,7 +683,7 @@ def merchant_counter_offer(booking_id: str, user_id: str, request: CounterOfferR
     if booking.buyer_id != buyer.id:
         raise HTTPException(status_code=403, detail="Unauthorized")
 
-    booking.status = BookingStatus.MERCHANT_RESPONDED
+    booking.status = "merchant_responded"
     booking.requested_quantity = request.quantity
     booking.negotiated_price = request.price
     booking.updated_at = datetime.utcnow()
@@ -697,7 +697,7 @@ def merchant_counter_offer(booking_id: str, user_id: str, request: CounterOfferR
         quantity=request.quantity,
         price=request.price,
         message=request.message,
-        status=BookingStatus.MERCHANT_RESPONDED
+        status="merchant_responded"
     )
     db.add(negotiation)
 
