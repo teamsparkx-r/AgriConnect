@@ -17,8 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.agriconnect.app.ui.components.AgriCard
-import com.agriconnect.app.ui.components.AgriSectionTitle
+import com.agriconnect.app.ui.components.*
 import com.agriconnect.app.ui.theme.*
 import com.agriconnect.app.ui.viewmodel.FarmerViewModel
 
@@ -151,22 +150,21 @@ fun FarmerBookingDetailScreen(
                             Divider(color = Gray100, thickness = 0.5.dp)
                             Spacer(modifier = Modifier.height(16.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Button(
+                                AgriButton(
+                                    text = "ACCEPT",
                                     onClick = { viewModel.acceptOffer(token, bookingId, userId) { } },
                                     modifier = Modifier.weight(1f),
-                                    shape = RoundedCornerShape(12.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Success)
-                                ) {
-                                    Text("ACCEPT", fontWeight = FontWeight.Black, fontSize = 12.sp)
-                                }
-                                Button(
+                                    containerColor = Success,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                AgriButton(
+                                    text = "REJECT",
                                     onClick = { viewModel.rejectOffer(token, bookingId, userId) { } },
                                     modifier = Modifier.weight(1f),
-                                    shape = RoundedCornerShape(12.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Error.copy(alpha = 0.1f), contentColor = Error)
-                                ) {
-                                    Text("REJECT", fontWeight = FontWeight.Black, fontSize = 12.sp)
-                                }
+                                    containerColor = Error.copy(alpha = 0.1f),
+                                    contentColor = Error,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
                                 OutlinedButton(
                                     onClick = { 
                                         counterQty = reqQty.toString()
@@ -177,24 +175,24 @@ fun FarmerBookingDetailScreen(
                                     shape = RoundedCornerShape(12.dp),
                                     border = androidx.compose.foundation.BorderStroke(1.dp, AgriPrimary)
                                 ) {
-                                    Text("COUNTER", fontWeight = FontWeight.Black, color = AgriPrimary, fontSize = 12.sp)
+                                    AgriText("COUNTER", fontWeight = FontWeight.Black, color = AgriPrimary, fontSize = 12.sp)
                                 }
                             }
                         } else if (status == "counter_offer") {
                             Spacer(modifier = Modifier.height(20.dp))
                             Divider(color = Gray100, thickness = 0.5.dp)
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button(
+                            AgriButton(
+                                text = "REJECT & END NEGOTIATION",
                                 onClick = { viewModel.rejectOffer(token, bookingId, userId) { } },
                                 modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Error.copy(alpha = 0.1f), contentColor = Error)
-                            ) {
-                                Text("REJECT & END NEGOTIATION", fontWeight = FontWeight.Black, fontSize = 12.sp)
-                            }
+                                containerColor = Error.copy(alpha = 0.1f),
+                                contentColor = Error,
+                                shape = RoundedCornerShape(12.dp)
+                            )
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                "WAITING FOR MERCHANT", 
+                            AgriText(
+                                text = "WAITING FOR MERCHANT",
                                 style = MaterialTheme.typography.labelSmall, 
                                 color = Warning, 
                                 fontWeight = FontWeight.Black,

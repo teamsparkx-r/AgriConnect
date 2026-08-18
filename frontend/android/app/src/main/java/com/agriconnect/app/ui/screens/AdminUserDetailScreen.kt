@@ -19,8 +19,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.agriconnect.app.ui.components.AgriTopAppBar
-import com.agriconnect.app.ui.components.AgriText
+import com.agriconnect.app.ui.components.*
 import com.agriconnect.app.ui.theme.*
 
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -171,8 +170,6 @@ fun AdminUserDetailScreen(
                                 } 
                             },
                             containerColor = Success,
-                            contentColor = White,
-                            shape = RoundedCornerShape(18.dp),
                             modifier = Modifier.weight(1f)
                         )
                         AgriButton(
@@ -184,7 +181,6 @@ fun AdminUserDetailScreen(
                             },
                             containerColor = Error.copy(alpha = 0.1f),
                             contentColor = Error,
-                            shape = RoundedCornerShape(18.dp),
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -193,8 +189,7 @@ fun AdminUserDetailScreen(
                         text = if (status == "active") "Suspend Node" else "Activate Node",
                         onClick = { },
                         containerColor = if (status == "active") Error.copy(alpha = 0.1f) else Success.copy(alpha = 0.1f),
-                        contentColor = if (status == "active") Error else Success,
-                        shape = RoundedCornerShape(18.dp)
+                        contentColor = if (status == "active") Error else Success
                     )
                 }
                 
@@ -239,25 +234,5 @@ fun ReportCard(title: String, desc: String, date: String) {
             Spacer(modifier = Modifier.height(12.dp))
             AgriText(date, style = MaterialTheme.typography.labelSmall, color = Gray400, fontWeight = FontWeight.Bold)
         }
-    }
-}
-
-@Composable
-fun AgriButton(
-    text: String,
-    onClick: () -> Unit,
-    containerColor: Color,
-    contentColor: Color,
-    shape: RoundedCornerShape,
-    modifier: Modifier = Modifier
-) {
-    Button(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth().height(56.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = containerColor, contentColor = contentColor),
-        shape = shape,
-        elevation = ButtonDefaults.buttonElevation(0.dp)
-    ) {
-        AgriText(text, fontWeight = FontWeight.Black)
     }
 }

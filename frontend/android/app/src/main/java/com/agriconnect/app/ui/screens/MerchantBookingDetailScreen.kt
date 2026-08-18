@@ -150,22 +150,21 @@ fun MerchantBookingDetailScreen(
                             Divider(color = Gray100, thickness = 0.5.dp)
                             Spacer(modifier = Modifier.height(16.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Button(
+                                AgriButton(
+                                    text = "ACCEPT",
                                     onClick = { viewModel.acceptOffer(token, bookingId, userId) { } },
                                     modifier = Modifier.weight(1f),
-                                    shape = RoundedCornerShape(12.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Success)
-                                ) {
-                                    Text("ACCEPT", fontWeight = FontWeight.Black, fontSize = 12.sp)
-                                }
-                                Button(
+                                    containerColor = Success,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                AgriButton(
+                                    text = "REJECT",
                                     onClick = { viewModel.rejectOffer(token, bookingId, userId) { } },
                                     modifier = Modifier.weight(1f),
-                                    shape = RoundedCornerShape(12.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Error.copy(alpha = 0.1f), contentColor = Error)
-                                ) {
-                                    Text("REJECT", fontWeight = FontWeight.Black, fontSize = 12.sp)
-                                }
+                                    containerColor = Error.copy(alpha = 0.1f),
+                                    contentColor = Error,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
                                 OutlinedButton(
                                     onClick = { 
                                         counterQty = reqQty.toString()
@@ -176,24 +175,24 @@ fun MerchantBookingDetailScreen(
                                     shape = RoundedCornerShape(12.dp),
                                     border = androidx.compose.foundation.BorderStroke(1.dp, AgriPrimary)
                                 ) {
-                                    Text("COUNTER", fontWeight = FontWeight.Black, color = AgriPrimary, fontSize = 12.sp)
+                                    AgriText("COUNTER", fontWeight = FontWeight.Black, color = AgriPrimary, fontSize = 12.sp)
                                 }
                             }
                         } else if (status == "enquiry_sent" || status == "merchant_responded") {
                             Spacer(modifier = Modifier.height(20.dp))
                             Divider(color = Gray100, thickness = 0.5.dp)
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button(
+                            AgriButton(
+                                text = "CANCEL ENQUIRY",
                                 onClick = { viewModel.rejectOffer(token, bookingId, userId) { } },
                                 modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Error.copy(alpha = 0.1f), contentColor = Error)
-                            ) {
-                                Text("CANCEL ENQUIRY", fontWeight = FontWeight.Black, fontSize = 12.sp)
-                            }
+                                containerColor = Error.copy(alpha = 0.1f),
+                                contentColor = Error,
+                                shape = RoundedCornerShape(12.dp)
+                            )
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                "AWAITING FARMER RESPONSE", 
+                            AgriText(
+                                text = "AWAITING FARMER RESPONSE",
                                 style = MaterialTheme.typography.labelSmall, 
                                 color = Warning, 
                                 fontWeight = FontWeight.Black,

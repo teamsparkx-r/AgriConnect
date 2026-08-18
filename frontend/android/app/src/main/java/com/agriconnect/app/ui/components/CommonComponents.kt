@@ -145,6 +145,7 @@ fun AgriButton(
             AgriText(
                 text = text,
                 style = MaterialTheme.typography.titleMedium,
+                color = contentColor,
                 fontWeight = FontWeight.Black,
                 letterSpacing = 0.sp
             )
