@@ -90,10 +90,17 @@ def seed_db():
 
         # Update/Reset demo products
         if farmer_profile:
-            # Clear old products for this farmer to avoid duplicates
-            count_deleted = db.query(Product).filter(Product.farmer_id == farmer_profile.id).delete()
-            print(f"Deleted {count_deleted} old products for demo farmer")
-            db.flush()
+            # Clear old products for this farmer to avoid duplicates (with dependency handling)
+            try:
+                demo_product_ids = [p.id for p in db.query(Product).filter(Product.farmer_id == farmer_profile.id).all()]
+                if demo_product_ids:
+                    db.query(Booking).filter(Booking.product_id.in_(demo_product_ids)).delete(synchronize_session=False)
+                    db.query(SavedProduct).filter(SavedProduct.product_id.in_(demo_product_ids)).delete(synchronize_session=False)
+                    db.query(Product).filter(Product.id.in_(demo_product_ids)).delete(synchronize_session=False)
+                    db.flush()
+                    print(f"Cleaned up {len(demo_product_ids)} old products and dependencies")
+            except Exception as cleanup_err:
+                print(f"Soft cleanup failed, attempting append: {cleanup_err}")
 
             crops_pool = [
                 ("Organic Wheat", ProductCategory.GRAINS, 25.0, "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800"),
