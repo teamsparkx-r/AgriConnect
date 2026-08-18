@@ -35,26 +35,13 @@ def seed_massive_crops(db: Session = Depends(get_db)):
         if not farmer:
             return {"success": False, "message": "Demo farmer profile not found. Run standard seed first."}
 
-        # 1. Clear existing products to prevent duplicates (with deep dependency handling)
-        demo_product_ids = [p.id for p in db.query(Product).filter(Product.farmer_id == farmer.id).all()]
-        if demo_product_ids:
-            booking_ids = [b.id for b in db.query(Booking).filter(Booking.product_id.in_(demo_product_ids)).all()]
-
-            if booking_ids:
-                # Delete negotiation history first
-                db.query(NegotiationHistory).filter(NegotiationHistory.booking_id.in_(booking_ids)).delete(synchronize_session=False)
-                # Delete reports linked to bookings
-                db.query(Report).filter(Report.booking_id.in_(booking_ids)).delete(synchronize_session=False)
-
-            # Delete reports linked directly to products
-            db.query(Report).filter(Report.product_id.in_(demo_product_ids)).delete(synchronize_session=False)
-            # Delete bookings associated with these products
-            db.query(Booking).filter(Booking.product_id.in_(demo_product_ids)).delete(synchronize_session=False)
-            # Delete wishlist items
-            db.query(SavedProduct).filter(SavedProduct.product_id.in_(demo_product_ids)).delete(synchronize_session=False)
-            # Finally delete the products
-            db.query(Product).filter(Product.id.in_(demo_product_ids)).delete(synchronize_session=False)
+        # 1. Clear existing products to prevent duplicates (with soft cleanup)
+        try:
+            db.query(Product).filter(Product.farmer_id == farmer.id, Product.name.like('%Lot #%')).delete(synchronize_session=False)
             db.flush()
+        except:
+            print("Soft delete of old lots failed, continuing with insertion.")
+            db.rollback()
 
         # 2. Define templates
         crops_pool = [
