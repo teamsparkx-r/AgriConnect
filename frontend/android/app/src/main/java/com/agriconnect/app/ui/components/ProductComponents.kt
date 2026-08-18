@@ -382,35 +382,12 @@ fun MerchantProductCard(product: Product, onClick: () -> Unit, modifier: Modifie
 
                 Spacer(modifier = Modifier.height(12.dp))
                 
-                Button(
+                AgriButton(
+                    text = "VIEW NODE",
                     onClick = onClick,
                     modifier = Modifier.fillMaxWidth().height(40.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = AgriPrimary,
-                        contentColor = White
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        AgriText(
-                            "VIEW NODE", 
-                            style = MaterialTheme.typography.labelLarge, 
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 0.5.sp
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            Icons.Default.ChevronRight, 
-                            null, 
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
+                    shape = RoundedCornerShape(12.dp)
+                )
             }
         }
     }

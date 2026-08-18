@@ -422,8 +422,8 @@ fun AgriText(
 
     Text(
         text = translatedText,
-        style = style,
-        color = color,
+        style = style.copy(color = Color.Unspecified),
+        color = if (color != Color.Unspecified) color else LocalContentColor.current,
         fontWeight = fontWeight,
         textAlign = textAlign,
         lineHeight = lineHeight,
