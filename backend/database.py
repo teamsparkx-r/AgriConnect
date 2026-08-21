@@ -10,26 +10,45 @@ from urllib.parse import quote_plus
 load_dotenv()
 
 # Database URL
-DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
-DB_PASSWORD = os.getenv("DB_PASSWORD", "").strip()
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip().strip("'").strip('"')
+DB_PASSWORD = os.getenv("DB_PASSWORD", "").strip().strip("'").strip('"')
 
 if DATABASE_URL and "@" in DATABASE_URL:
-    # If a separate DB_PASSWORD is provided, override the one in the URL
-    protocol_part, remainder = DATABASE_URL.split("://", 1)
-    userinfo, hostinfo = remainder.split("@", 1)
+    try:
+        # Robust parsing
+        protocol_part, remainder = DATABASE_URL.split("://", 1)
+        user_pass, host_info = remainder.rsplit("@", 1)
 
-    # Use DB_PASSWORD if it exists, otherwise keep existing password in userinfo
-    current_user = userinfo.split(":", 1)[0]
+        if ":" in user_pass:
+            current_user, current_pass = user_pass.split(":", 1)
+        else:
+            current_user = user_pass
+            current_pass = ""
 
-    if DB_PASSWORD:
-        # URL encode password to handle special characters like '.'
-        DATABASE_URL = f"{protocol_part}://{current_user}:{quote_plus(DB_PASSWORD)}@{hostinfo}"
+        # Override password if DB_PASSWORD is provided
+        if DB_PASSWORD:
+            current_pass = DB_PASSWORD
 
-    print(f"DATABASE CONFIG: Using user '{current_user}' on host '{hostinfo.split(':')[0]}'")
-elif not DATABASE_URL:
+        # FIX: Ensure Supabase pooler username has the project ref
+        # Project Ref: bgcgmmrmakgvuiozqvjy
+        if "pooler.supabase.com" in host_info and "." not in current_user:
+            current_user = f"{current_user}.bgcgmmrmakgvuiozqvjy"
+            print(f"DATABASE CONFIG: Appending project ref to Supabase user -> {current_user}")
+
+        # Rebuild URL with proper encoding
+        from urllib.parse import quote
+        DATABASE_URL = f"{protocol_part}://{quote(current_user)}:{quote(current_pass)}@{host_info}"
+
+        print(f"DATABASE CONFIG: Connecting to {host_info.split(':')[0]} as user '{current_user}'")
+    except Exception as e:
+        print(f"DATABASE CONFIG: Error parsing URL: {e}")
+
+if not DATABASE_URL or "sqlite" in DATABASE_URL:
     # Final fallback for Render if environment variables fail
-    DATABASE_URL = f"postgresql://postgres.bgcgmmrmakgvuiozqvjy:{quote_plus('AgriConnect.123')}@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?sslmode=require"
-    print("DATABASE CONFIG: Using hardcoded fallback credentials")
+    # Using the direct connection host which is often more reliable
+    db_pass = quote("AgriConnect.123")
+    DATABASE_URL = f"postgresql://postgres:{db_pass}@db.bgcgmmrmakgvuiozqvjy.supabase.co:5432/postgres?sslmode=require"
+    print("DATABASE CONFIG: Using direct connection fallback")
 
 if "sqlite" not in DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
