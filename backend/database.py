@@ -4,13 +4,14 @@ from sqlalchemy.pool import StaticPool
 from models import Base
 import os
 from dotenv import load_dotenv
+from urllib.parse import quote_plus
 
 # Load environment variables from .env file
 load_dotenv()
 
 # Database URL
-DATABASE_URL = os.getenv("DATABASE_URL")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+DB_PASSWORD = os.getenv("DB_PASSWORD", "").strip()
 
 if DATABASE_URL and "@" in DATABASE_URL:
     # If a separate DB_PASSWORD is provided, override the one in the URL
@@ -21,18 +22,16 @@ if DATABASE_URL and "@" in DATABASE_URL:
     current_user = userinfo.split(":", 1)[0]
 
     if DB_PASSWORD:
-        DATABASE_URL = f"{protocol_part}://{current_user}:{DB_PASSWORD}@{hostinfo}"
+        # URL encode password to handle special characters like '.'
+        DATABASE_URL = f"{protocol_part}://{current_user}:{quote_plus(DB_PASSWORD)}@{hostinfo}"
 
-    # Safe logging
-    masked_url = f"{protocol_part}://{current_user}:****@{hostinfo.split('?')[0]}"
     print(f"DATABASE CONFIG: Using user '{current_user}' on host '{hostinfo.split(':')[0]}'")
+elif not DATABASE_URL:
+    # Final fallback for Render if environment variables fail
+    DATABASE_URL = f"postgresql://postgres.bgcgmmrmakgvuiozqvjy:{quote_plus('AgriConnect.123')}@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?sslmode=require"
+    print("DATABASE CONFIG: Using hardcoded fallback credentials")
 
-if not DATABASE_URL:
-    db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "agriconnect.db"))
-    DATABASE_URL = f"sqlite:///{db_path}"
-
-# Supabase fix: SQLAlchemy requires postgresql:// instead of postgres://
-if DATABASE_URL.startswith("postgres://"):
+if "sqlite" not in DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 # Create engine with appropriate options
