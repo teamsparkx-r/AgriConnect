@@ -46,7 +46,7 @@ if DATABASE_URL and "@" in DATABASE_URL:
 if not DATABASE_URL or "sqlite" in DATABASE_URL:
     # Final fallback for Render if environment variables fail
     # Using the direct connection host which is often more reliable
-    db_pass = quote("AgriConnect.123")
+    db_pass = quote("AgriConnect2026")
     DATABASE_URL = f"postgresql://postgres:{db_pass}@db.bgcgmmrmakgvuiozqvjy.supabase.co:5432/postgres?sslmode=require"
     print("DATABASE CONFIG: Using direct connection fallback")
 
