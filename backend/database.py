@@ -12,15 +12,20 @@ load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
-if DATABASE_URL and DB_PASSWORD and "@" in DATABASE_URL:
-    # Check if there is already a password after the first colon but before the @
-    # Format: postgresql://user[:password]@host
+if DATABASE_URL and "@" in DATABASE_URL:
+    # If a separate DB_PASSWORD is provided, override the one in the URL
     protocol_part, remainder = DATABASE_URL.split("://", 1)
     userinfo, hostinfo = remainder.split("@", 1)
 
-    if ":" not in userinfo:
-        # No password in URL, inject it
-        DATABASE_URL = f"{protocol_part}://{userinfo}:{DB_PASSWORD}@{hostinfo}"
+    # Use DB_PASSWORD if it exists, otherwise keep existing password in userinfo
+    current_user = userinfo.split(":", 1)[0]
+
+    if DB_PASSWORD:
+        DATABASE_URL = f"{protocol_part}://{current_user}:{DB_PASSWORD}@{hostinfo}"
+
+    # Safe logging
+    masked_url = f"{protocol_part}://{current_user}:****@{hostinfo.split('?')[0]}"
+    print(f"DATABASE CONFIG: Using user '{current_user}' on host '{hostinfo.split(':')[0]}'")
 
 if not DATABASE_URL:
     db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "agriconnect.db"))
